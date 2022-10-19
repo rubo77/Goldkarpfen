@@ -2,7 +2,7 @@
 #GPL-3 - See LICENSE file for copyright and license details.
 if ! test -f $(basename $0);then echo "  EE run this script in its folder";exit;fi
 . ./include.sh
-echo "### PRUNE_BEGIN   (ALPHA auto pruning - pls check carefully!.)"
+echo "### PRUNE_BEGIN - YOU NEED TO PRUNE TO KEEP YOUR ITP-FILE SANE - anyway ... if you abort you need to fix it by hand and restart"
 if sed -n "4,4p" "$2" | ag "^#";then echo "  II nothing to prune"; return; fi
 FIRST=$(( ${1#0}  +1 ))
 LAST=$(date --utc +"%m") 

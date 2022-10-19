@@ -86,7 +86,7 @@ __SYNC_ALL(){
     if $T_CMD -o tmp/server.dat --max-filesize 9K;then
       if file -b --mime-type tmp/server.dat | sed 's|/.*||' | ag -v "text";then echo "  EE fatal: server.dat is not a textfile";return 1;fi
       grep $LIST_MODE -f $LIST_RGXP < tmp/server.dat | ag "^[0-9A-Za-z_]{1,12}-[0-9A-Za-z]{34}\.itp\.tar\.gz \d\d-\d\d-\d\d$|^$UPD_NAME_REGEXP \d\d-\d\d-\d\d$" | sort -R > tmp/filtered_server.dat
-      CH_LINE=$(grep -n "^$URL" nodes.dat | __collum 1 ":")
+      CH_LINE=$(grep -n "^$URL" nodes.dat | head -n 1 | __collum 1 ":")
       sed -i "$CH_LINE c$URL last_success:$(date +"%y-%m-%d")" nodes.dat
       while IFS= read -r LINE; do
         FILE=$(echo $LINE | __collum 1); DATE=$(echo $LINE | __collum 2)
