@@ -98,6 +98,14 @@ if [ "$BUF1" != "$BUF2" ];then
   exit 1
 fi
 
+###double entry test
+BUF1=$(sed -n -e '/^#COMMENTS_BEGIN/,$p' $FILENAME | ag $RE_PREFIX | sed 's/\s.*$//' | sort | uniq | wc -l)
+BUF2=$(sed -n -e '/^#COMMENTS_BEGIN/,$p' $FILENAME | ag $RE_PREFIX | sed 's/\s.*$//' | wc -l)
+if [ "$BUF1" != "$BUF2" ];then
+  >&2 echo "  EE $FILENAME contains double entries"
+  exit 1
+fi
+
 ###entry order test
 for MONTH in $(sed '/^#POSTS_END/q' $FILENAME | ag -v '^#' | sed 's/\..*//' | uniq); do
   BUF1="$(sed '/^#POSTS_END/q' $FILENAME | ag "^$MONTH.\d\d:\d\s.*" | sed 's/\s.*$//'  | sort)"
