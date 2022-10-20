@@ -1,0 +1,18 @@
+#!/bin/bash
+
+#!/usr/bin/tmux source-file
+
+cd ~/Goldkarpfen
+
+tmux new-session -d
+tmux new-window \; split-window -h\; split-window -p 86 \;
+
+tmux send-keys -t 0 'bash Goldkarpfen.sh' enter
+tmux send-keys -t 1 'sleep 10; ./sync-from-nodes.sh --loop' enter
+tmux send-keys -t 2 'i2pd' enter
+tmux send-keys -t 0 '' enter
+
+tmux select-pane -t 0
+
+tmux attach
+
