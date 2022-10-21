@@ -117,7 +117,7 @@ __PRUNE_ARCHIVES(){
   done < archives/server.dat
   if ! test -z "$T_BUF";then
     printf "\n  II OLD ARCHIVES NEED PRUNING!\n"
-    echo -n "  ?? c-ontinue a-abort [Return] >"
+    echo -n "  ?? [c]-continue [a]-abort [Return] >"
     read T_CONFIRM;if test "$T_CONFIRM" != "c";then echo "  EE Goldkarpfen will exit now, because you should not distribute outdated tarballs";exit 1;fi
     echo
   fi
