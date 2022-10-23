@@ -1,5 +1,5 @@
 #GPL-3 - See LICENSE file for copyright and license details.
-#V0.7
+#V0.8
 #Goldkarpfen-1JULSJ5Nnba9So48zi21rpfTuZ3tqNRaFB.itp
 USER_PLUGINS_MENU="[D]-delete:__USER_DELETE $USER_PLUGINS_MENU"
 __USER_DELETE(){
@@ -10,6 +10,7 @@ __USER_DELETE(){
   if test -z "$T_BUF";then echo "  II empty";return;fi
   echo -n "  ?? really delete $T_BUF? (Y/n) >"
   $GK_READ_CMD T_CONFIRM;if test "$T_CONFIRM" != "Y";then printf "\n  II aborted\n";return;fi
+  ITPFILE=$OWN_STREAM; __INIT_GLOBALS
   if test "$(echo $T_BUF | __collum 1 "/")" = "archives";then
     rm "$T_BUF"
     ./update-archive-date.sh

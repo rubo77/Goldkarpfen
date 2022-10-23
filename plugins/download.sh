@@ -1,5 +1,5 @@
 #GPL-3 - See LICENSE file for copyright and license details.
-#V0.15
+#V0.16
 #Goldkarpfen-1JULSJ5Nnba9So48zi21rpfTuZ3tqNRaFB.itp
 if ! test "$GK_MODE" = "PASSIVE";then
   USER_PLUGINS_MENU="[d]-download:__USER_DOWNLOAD $USER_PLUGINS_MENU"
@@ -32,7 +32,7 @@ if ! test "$GK_MODE" = "PASSIVE";then
       fi
       mkdir -p archives/share
       echo "  ## copying $2 to archives/share"; cp downloads/"$(basename $2)" archives/share
-      echo "  II add a post with this: <download=share/$2>"
+      echo "  II add a post with this: <download=share/$(basename $2)>"
     fi
   }
 fi
