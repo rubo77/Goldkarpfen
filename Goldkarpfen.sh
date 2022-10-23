@@ -61,6 +61,7 @@ __CHECK_INPUT(){
 
 __COMMENT(){
   if test -z $GK_JM;then echo "  EE no post selected";return;fi
+  if ! date -d "20-$(echo $GK_JM | sed -e 's/\./-/' -e 's/:.*//')" > /dev/null;then echo "  EE invalid date - this may be just technical data";return 1;fi
   echo
   sed -n -e "$GK_LN p" "$ITPFILE" -e 's/\&bsol;/\\/g'
   printf "\n  ?? comment this post?  [c]-continue [a]-abort >"
@@ -151,9 +152,8 @@ __VIEW(){
         T_COUNTER=$GK_LN;T_BUF=1
       ;;
       c)
-        __COMMENT
+        __COMMENT;T_BUF=1
         printf "\n  \e[4mMM SUBMENU: viewer\e[0m  [t]-topic [/]-search_comments [n]-next [p]-previous [c]-comment [q]-exit_viewer\n"
-        T_BUF=1
         ;;
       q) GK_LN=$T_COUNTER;break ;;
     esac

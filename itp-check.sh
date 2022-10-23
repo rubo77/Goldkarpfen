@@ -24,7 +24,7 @@ if ! basename $FILENAME | ag '^[0-9A-Za-z_]{1,12}-[0-9A-Za-z]{34}.itp$' > /dev/n
 fi
 
 ###format tests
-RE_PREFIX='^\d\d\.\d\d:\d\s.*'
+RE_PREFIX='^([0][0-9]|[1][0-2])\.([0-2][0-9]|[3][0-1]):\d\s.*'
 
 BUF1="$(ag --no-numbers "^#" $FILENAME | sed 's/\s.*$//' | tr '\n' ' ')"
 if ! echo $BUF1 | ag "^#ITP #PEM_PUBKEY #POSTS_BEGIN #POSTS_END #COMMENTS_BEGIN #COMMENTS_END #LICENSE:CC0$" > /dev/null;then
@@ -76,22 +76,22 @@ if [ "$BUF1" != "$BUF2" ];then
 fi
 
 ###prune test
-BUF1=$(sed '/^#POSTS_END/q' $FILENAME | ag $RE_PREFIX | sed 's/\..*$//' | uniq | sort | uniq | wc -l)
-BUF2=$(sed '/^#POSTS_END/q' $FILENAME | ag $RE_PREFIX | sed 's/\..*$//' | uniq | sort | wc -l)
+BUF1=$(sed '/^#POSTS_END/q' $FILENAME | ag $RE_PREFIX | sed 's/\..*$//' | uniq | sort -k1 -n | uniq | wc -l)
+BUF2=$(sed '/^#POSTS_END/q' $FILENAME | ag $RE_PREFIX | sed 's/\..*$//' | uniq | sort -k1 -n | wc -l)
 if [ "$BUF1" != "$BUF2" ];then
   >&2 echo "  EE $FILENAME is not itp-prune conform or is ordered corruptly"
   exit 1
 fi
 
-BUF1=$(sed -n -e '/^#COMMENTS_BEGIN/,$p' $FILENAME | ag $RE_PREFIX | sed 's/\..*$//' | uniq | sort | uniq | wc -l)
-BUF2=$(sed -n -e '/^#COMMENTS_BEGIN/,$p' $FILENAME | ag $RE_PREFIX | sed 's/\..*$//' | uniq | sort | wc -l)
+BUF1=$(sed -n -e '/^#COMMENTS_BEGIN/,$p' $FILENAME | ag $RE_PREFIX | sed 's/\..*$//' | uniq | sort -k1 -n | uniq | wc -l)
+BUF2=$(sed -n -e '/^#COMMENTS_BEGIN/,$p' $FILENAME | ag $RE_PREFIX | sed 's/\..*$//' | uniq | sort -k1 -n | wc -l)
 if [ "$BUF1" != "$BUF2" ];then
   >&2 echo "  EE $FILENAME is not itp-prune conform or is ordered corruptly"
   exit 1
 fi
 
 ###double entry test
-BUF1=$(sed '/^#POSTS_END/q' $FILENAME | ag $RE_PREFIX | sed 's/\s.*$//' | sort | uniq | wc -l)
+BUF1=$(sed '/^#POSTS_END/q' $FILENAME | ag $RE_PREFIX | sed 's/\s.*$//' | sort -k1 -n | uniq | wc -l)
 BUF2=$(sed '/^#POSTS_END/q' $FILENAME | ag $RE_PREFIX | sed 's/\s.*$//' | wc -l)
 if [ "$BUF1" != "$BUF2" ];then
   >&2 echo "  EE $FILENAME contains double entries"
@@ -99,7 +99,7 @@ if [ "$BUF1" != "$BUF2" ];then
 fi
 
 ###double entry test
-BUF1=$(sed -n -e '/^#COMMENTS_BEGIN/,$p' $FILENAME | ag $RE_PREFIX | sed 's/\s.*$//' | sort | uniq | wc -l)
+BUF1=$(sed -n -e '/^#COMMENTS_BEGIN/,$p' $FILENAME | ag $RE_PREFIX | sed 's/\s.*$//' | sort -k1 -n | uniq | wc -l)
 BUF2=$(sed -n -e '/^#COMMENTS_BEGIN/,$p' $FILENAME | ag $RE_PREFIX | sed 's/\s.*$//' | wc -l)
 if [ "$BUF1" != "$BUF2" ];then
   >&2 echo "  EE $FILENAME contains double entries"
@@ -108,7 +108,7 @@ fi
 
 ###entry order test
 for MONTH in $(sed '/^#POSTS_END/q' $FILENAME | ag -v '^#' | sed 's/\..*//' | uniq); do
-  BUF1="$(sed '/^#POSTS_END/q' $FILENAME | ag "^$MONTH.\d\d:\d\s.*" | sed 's/\s.*$//'  | sort)"
+  BUF1="$(sed '/^#POSTS_END/q' $FILENAME | ag "^$MONTH.\d\d:\d\s.*" | sed 's/\s.*$//'  | sort -k1 -n )"
   BUF2="$(sed '/^#POSTS_END/q' $FILENAME | ag "^$MONTH.\d\d:\d\s.*" | sed 's/\s.*$//')"
   if ! test "$BUF1" = "$BUF2" > /dev/null;then
     >&2 echo "  EE $FILENAME posts are not in order"
@@ -117,7 +117,7 @@ for MONTH in $(sed '/^#POSTS_END/q' $FILENAME | ag -v '^#' | sed 's/\..*//' | un
 done
 
 for MONTH in $(sed -n -e '/^#COMMENTS_BEGIN/,$p' $FILENAME | ag -v '^#' | sed 's/\..*//' | uniq); do
-  BUF1="$(sed -n -e '/^#COMMENTS_BEGIN/,$p' $FILENAME | ag "^$MONTH.\d\d:\d\s.*" | sed 's/\s.*$//' | sort | tr "\n" " ")"
+  BUF1="$(sed -n -e '/^#COMMENTS_BEGIN/,$p' $FILENAME | ag "^$MONTH.\d\d:\d\s.*" | sed 's/\s.*$//' | sort -k1 -n | tr "\n" " ")"
   BUF2="$(sed -n -e '/^#COMMENTS_BEGIN/,$p' $FILENAME | ag "^$MONTH.\d\d:\d\s.*" | sed 's/\s.*$//' | tr "\n" " ")"
   if ! test "$BUF1" = "$BUF2" > /dev/null;then
     >&2 echo "  EE $FILENAME comments are not in order"

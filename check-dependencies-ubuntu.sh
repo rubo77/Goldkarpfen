@@ -6,8 +6,8 @@ __WHICH_UBUNTU(){
     if ! which "$PROG" > /dev/null;then echo "  EE $PROG not found";RE="$2";fi
   done
 }
-__WHICH_UBUNTU "ss python3 curl darkhttpd" "PASSIVE"
-if ! python3 -c "import stem" > /dev/null 2>&1 ;then >&2 echo "  II python-stem not found";RE="PASSIVE";fi
+__WHICH_UBUNTU "ss curl darkhttpd" "PASSIVE"
+if ! python3 -c "import stem" > /dev/null 2>&1 || ! which python3 > /dev/null 2>&1;then >&2 echo "  II python-stem and/or python3 not found (ignore this if you are running i2p only or tor-static)";RE="PASSIVE";fi
 if ! test -f /var/lib/tor/control_auth_cookie;then >&2 echo "  II cannot access tor auth cookie (ignore this if you are running i2p only or tor-static)";RE="PASSIVE";fi
 if test "$RE" = "PASSIVE" && which curl > /dev/null 2>&1 && ss -tulpn | ag "127.0.0.1:4444" > /dev/null 2>&1;then RE="i2p";fi
 if test "$RE" = "PASSIVE" && which curl > /dev/null 2>&1 && ss -tulpn | ag "127.0.0.1:9050" > /dev/null 2>&1;then RE="tor-passive";fi

@@ -14,7 +14,7 @@ __UPDATE_DATE(){
     return
   fi
   if test -z "$BUF";then
-    >&2 echo "  EE $1 does not contain an itp file - moved to quarantine"
+    >&2 echo "  EE $1 doas not contain an itp file - moved to quarantine"
     mv $1 ../quarantine/"$1.$(mktemp -u XXXXXXXX)"
     return
   fi
