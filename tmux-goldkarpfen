@@ -1,11 +1,11 @@
-#!/bin/bash
+#!/bin/sh
 
 #!/usr/bin/tmux source-file
 
-cd ~/Goldkarpfen
+cd ~/Goldkarpfen || exit; # adapt this line with the correct path
 
 tmux new-session -d
-tmux new-window \; split-window -h\; split-window -p 86 \;
+tmux new-window \; split-window -h\; split-window -p 26 \;
 
 tmux send-keys -t 0 'bash Goldkarpfen.sh' enter
 tmux send-keys -t 1 'sleep 10; ./sync-from-nodes.sh --loop' enter
