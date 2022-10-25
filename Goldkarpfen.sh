@@ -37,6 +37,8 @@ trap "cd $GK_PATH;. ./.Goldkarpfen.exit.sh; trap - EXIT; exit" EXIT HUP TERM QUI
 #source include
 . ./include.sh
 
+USER_HOOK_START="return"; USER_HOOK_ARCHIVE_START="return"
+
 #functions
 __CONFIRM_EXIT(){
   if test "$T_CHAR" = "Q";then return 0;fi
@@ -193,6 +195,7 @@ __POST(){
 }
 
 __ARCHIVE(){
+  __HOOK_ARCHIVE_START
   echo "  ## sanity check"
   if ./itp-check.sh $OWN_STREAM $OWN_SUM;then echo "  II your file is itp conform";else echo "  EE your itp file is not conform!";return;fi
   if test -f "archives/""$OWN_ALIAS"-"$OWN_ADDR"".itp.tar.gz";then
@@ -321,22 +324,17 @@ __REBUILD_ALL(){
   ITPFILE=$OWN_STREAM;__INIT_GLOBALS
 }
 
-__HOOK_END_ITP_PRUNE_MONTH(){
-  return
-}
 __HOOK_START(){
-  return
+  $USER_HOOK_START
 }
-__HOOK_START_PLUGINS(){
-  return
+__HOOK_ARCHIVE_START(){
+  $USER_HOOK_ARCHIVE_START
 }
-
 __USER_RETURN(){
   return
 }
 
 __PLUGINS(){
-  __HOOK_START_PLUGINS
   printf "  \e[4mMM SUBMENU: plugins\e[0m\n"
   printf "$USER_PLUGINS_MENU >" | sed 's/\b:__[A-Za-z_]*\b//g' | fold -s -w $GK_COLS
   $GK_READ_CMD T_CHAR
@@ -409,7 +407,6 @@ if test $(cat cache/last_prune/last_prune) != $(date --utc +"%m");then
     date --utc +"%m" > cache/last_prune/last_prune
     __OWN_SHA_SUM_UPDATE
     __INIT_FILES
-    __HOOK_END_ITP_PRUNE_MONTH
   fi
 fi
 

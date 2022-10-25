@@ -24,7 +24,7 @@ if ! basename $FILENAME | ag '^[0-9A-Za-z_]{1,12}-[0-9A-Za-z]{34}.itp$' > /dev/n
 fi
 
 ###format tests
-RE_PREFIX='^([0][0-9]|[1][0-2])\.([0-2][0-9]|[3][0-1]):\d\s.*'
+RE_PREFIX='^([0][0-9]|[1][0-2])\.([0][1-9]|[1-2][0-9]|[3][0-1]):[1-9]\s.*'
 
 BUF1="$(ag --no-numbers "^#" $FILENAME | sed 's/\s.*$//' | tr '\n' ' ')"
 if ! echo $BUF1 | ag "^#ITP #PEM_PUBKEY #POSTS_BEGIN #POSTS_END #COMMENTS_BEGIN #COMMENTS_END #LICENSE:CC0$" > /dev/null;then

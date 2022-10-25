@@ -1,6 +1,6 @@
 #GPL-3 - See LICENSE file for copyright and license details.
 ############################################################################
-#VERSION 1.0-RC
+#VERSION 1.0-RC2
 
 ITP FILESET
 * filenames:
@@ -28,13 +28,13 @@ the ITP notation of the backslash is &bsol;
 #PEM_PUBKEY STRIPPED_PUBKEY  //the line is mandatory, the entry not
 #POSTS_BEGIN //no trailing characters
 ...
-'^\d\d\.\d\d:\d .*$' // POST
+'^([0][0-9]|[1][0-2])\.([0][1-9]|[1-2][0-9]|[3][0-1]):[1-9] .*$' // POST
 ...
 #POSTS_END //no trailing characters
 
 #COMMENTS_BEGIN //no trailing characters
 ...
-'^\d\d\.\d\d:\d @1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa .*$'  \\ COMMENT (example KEY_ADDR)
+'^([0][0-9]|[1][0-2])\.([0][1-9]|[1-2][0-9]|[3][0-1]):[1-9] \d\d\.\d\d:\d @1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa .*$'  \\ COMMENT (example KEY_ADDR)
 ...
 #COMMENTS_END //no trailing characters
 #LICENSE:CC0 yy-mm-dd //no trailing characters // any itp-file has the LICENSE: CREATIVE COMMONS CC0 // time stamp optional
@@ -119,24 +119,16 @@ MUST
 1.  MUST only process and generate itp-conform files (including sha512sum files).
 2.  MUST only generate tarballs with the correct preserved mtimes.
 3.  MUST not overwrite local itp-files with older ones.
-4.  MUST not allow to add post with "^\d\d\.\d\d:\d @"
 
 Any client not following the MUST's is not valid.
 
-SHOULD
-0. SHOULD have a solution for alias-doublettes.
-1. SHOULD not show comments of non existing or deleted posts.
-2. SHOULD validate KEY adresses and sign/check signatures of itp-files (with the KEY_ADDR).
-3. SHOULD not utilize timestamps with higher resolution than days.
+SHOULD (1-2 will possibly be enforced by ITP-DEF. 1.0 or later versions)
+1. SHOULD not generate posts with "^([0][0-9]|[1][0-2])\.([0][1-9]|[1-2][0-9]|[3][0-1]):[1-9] \d\d\.\d\d:\d @"
+2. SHOULD generate comments with "^([0][0-9]|[1][0-2])\.([0][1-9]|[1-2][0-9]|[3][0-1]):[1-9] ([0][0-9]|[1][0-2])\.([0][1-9]|[1-2][0-9]|[3][0-1]):[1-9] @"
+3. SHOULD generate posts (comments) and collum 1 (and collum 2) are real dates (except ^00-entries)
+4. SHOULD have a solution for alias-doublettes.
+5. SHOULD not show comments of non existing or deleted posts.
+6. SHOULD validate KEY adresses and sign/check signatures of itp-files (with the KEY_ADDR).
+7. SHOULD not utilize timestamps with higher resolution than days.
+
 Any client not following the SHOULD's count not as invalid, but i call them unusable.
-
-MAY
-- MAY have an mechanism for automated syncing of the tarballs of your peers.
-- MAY have automated systems for enforcing a comment ettiquette
-- MAY enable inline processing of encryption/decryption, tags, markup, pics, url's, emotes, votes and more... (via in-text-tags)
-- MAY have some other fun features...
-
-############################################################################
-ENCRYPTION OF POSTS AND COMMENTS
-The syntax for encrypted posts is not part of the itp format. Inline encryption/decryption of posts and comments is done by clients with the public key of the recievers KED_ADDR. The syntax for the encryption tags is a CONVENTION, which is:
-[[@KED_ADDR:---encrypted text---]]
