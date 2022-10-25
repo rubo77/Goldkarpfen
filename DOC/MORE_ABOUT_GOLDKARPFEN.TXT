@@ -1,4 +1,4 @@
-#V0.10
+#V0.12
 
 ### QUICK INSTALL FOR UBUNTU LIKE SYSTEMS (... come on arch-users... you can read a README, can you?)
 ### NOTE: ABSOLUTELY NO WARRANTY!
@@ -91,8 +91,10 @@ Example:
 Please remember - all variables in POSIX-SHELL are GLOBAL! (except vars exclusively defined in a while loop)
 Goldkarpfen uses this globals:
   GENERAL:
-    GK_ALIAS GK_COLS GK_FZF_CMD GK_ID GK_JM GK_LN GK_MODE GK_PATH GK_READ_CMD ITPFILE OWN_ADDR OWN_ALIAS OWN_STREAM OWN_SUM
-    UPD_NAME UPD_NAME_REGEXP VERIFICATION_STREAM
+    GK_ALIAS GK_COLS GK_FZF_CMD GK_ID GK_JM GK_LN GK_MODE GK_PATH GK_READ_CMD
+    OWN_ADDR OWN_ALIAS OWN_STREAM OWN_SUM
+    ITPFILE  UPD_NAME UPD_NAME_REGEXP VERIFICATION_STREAM
+    USER_PLUGINS_MENU USER_QUIT USER_HOOK_START USER_HOOK_ARCHIVE_START
 
 
   SCRATCH VARIABLES (you can use them, if you do not call Goldkarpfen functions in between definition and processing)
@@ -107,6 +109,11 @@ If you want to use some globals, add a uniq Prefix (f.e. $MYPLUGIN_XYZ)
 Goldkarpfen-1JULSJ5Nnba9So48zi21rpfTuZ3tqNRaFB.itp.tar.gz
 Goldkarpfen-latest.tar.gz
 - add more streams of your choice
+
+### SHARE HOSTING / 00-ENTRIES
+You can share host plugins and other downloads. plugin.sh and download.sh will echo the format for it. If you want to add persistent entries of this technical data, that will not be pruned, you can use 00-entries. Have a look at itp-files/Goldkarpfen-1JULSJ5Nnba9So48zi21rpfTuZ3tqNRaFB.itp .
+The 00 entries have to be edited manually ([!]-edit) - both, posts and comments, are allowed.
+BE SURE THAT THOSE ENTRIES ARE ABOVE ALL "real-date-entries" AND IN ORDER.
 
 ### FORKING GOLDKARPFEN
 - edit update-provider.inc.sh and change the entries - use your itp-file as the verification stream
