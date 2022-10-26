@@ -8,5 +8,7 @@ if test "$RE" = "PASSIVE" && which curl > /dev/null 2>&1 && ss -tulpn | ag "127.
 if test "$RE" = "PASSIVE" && which curl > /dev/null 2>&1 && ss -tulpn | ag "127.0.0.1:9050" > /dev/null 2>&1;then RE="tor-passive";fi
 if test -z $EDITOR;then echo >&2 "EDITOR env var is empty.";RE="ERROR";fi
 if ! which fzf > /dev/null 2>&1  && ! which fzy > /dev/null 2>&1 ;then >&2 echo "  EE fzf or fzy not found";RE="ERROR";fi
-if ! which pidof ps tput gzip dd du mktemp xxd ag dc openssl more fold awk sed grep basename sha512sum tr cat touch tail head cmp tar date sort uniq wc file pwd diff> /dev/null;then RE="ERROR";fi
+for PROG in ps tput gzip dd du mktemp xxd ag dc openssl more fold awk sed grep basename sha512sum tr cat touch tail head cmp tar date sort uniq wc file pwd diff; do
+    if ! which pidof $PROG> /dev/null;then echo "  EE $PROG not found""; RE="ERROR";fi
+done
 echo $RE
