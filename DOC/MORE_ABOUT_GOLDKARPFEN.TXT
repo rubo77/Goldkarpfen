@@ -4,7 +4,7 @@
 ### NOTE: ABSOLUTELY NO WARRANTY!
 #GET THE LATEST Goldkarpfen-latest.tar.gz AND GO INTO THE FOLDER CONTAINING IT
 tar xfv Goldkarpfen-latest.tar.gz && cd Goldkarpfen
-sudo apt-get install build-essential python3-stem fzy silversearcher-ag tor
+sudo apt install build-essential python3-stem fzy moreutils openssl xxd rsync silversearcher-ag tor dc
 if ! grep "export EDITOR" ~/.bashrc;then echo 'export EDITOR="nano"' >> ~/.bashrc;source ~/.bashrc;fi
 mkdir -p tmp && cd tmp
 wget https://raw.githubusercontent.com/emikulic/darkhttpd/master/darkhttpd.c
