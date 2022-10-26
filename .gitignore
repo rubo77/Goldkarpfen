@@ -5,12 +5,14 @@
 /cache
 /cache/last_prune/last_prune
 /tmp/darkhttpd.pid
-/archives
+/archives/*.tar*
+/archives/server.dat
+/archives/share/*
 /sync-from-nodes.pid
 /tmp/filtered_server.dat
 /tmp/server.dat
 /downloads
-/itp-files
+/itp-files/*.itp*
 /.keys
 /blacklist.dat
 /Goldkarpfen.config
