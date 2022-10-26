@@ -13,5 +13,5 @@ if test "$RE" = "PASSIVE" && which curl > /dev/null 2>&1 && ss -tulpn | ag "127.
 if test "$RE" = "PASSIVE" && which curl > /dev/null 2>&1 && ss -tulpn | ag "127.0.0.1:9050" > /dev/null 2>&1;then RE="tor-passive";fi
 if test -z $EDITOR;then echo >&2 "EDITOR env var is empty.";RE="ERROR";fi
 if ! which fzf > /dev/null 2>&1  && ! which fzy > /dev/null 2>&1 ;then >&2 echo "  EE fzf or fzy not found";RE="ERROR";fi
-__WHICH_UBUNTU "tput gzip dd du mktemp xxd ag dc openssl more fold awk sed grep basename sha512sum tr cat touch tail head cmp tar date sort uniq wc file pwd diff" "ERROR"
+__WHICH_UBUNTU "pidof ps tput gzip dd du mktemp xxd ag dc openssl more fold awk sed grep basename sha512sum tr cat touch tail head cmp tar date sort uniq wc file pwd diff" "ERROR"
 echo $RE

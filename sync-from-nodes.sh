@@ -1,11 +1,10 @@
 #!/bin/sh
 #GPL-3 - See LICENSE file for copyright and license details.
 if ! test -f $(basename $0);then echo "  EE run this script in its folder";exit;fi
-if test $(pidof -x sync-from-nodes.sh | wc -w) -gt 1 && test -f ./sync-from-nodes.pid;then echo "  EE sync-from-nodes.pid exists";exit;fi
+if test -f ./sync-from-nodes.pid && ps --pid $(cat sync-from-nodes.pid) > /dev/null;then echo "  EE sync-from-nodes.pid exists";exit;fi
 echo $$ > sync-from-nodes.pid
 . ./update-provider.inc.sh
 if test -f ./whitelist.dat;then LIST_MODE=""; LIST_RGXP="whitelist.dat";else LIST_MODE="-v"; LIST_RGXP="blacklist.dat";fi
-if test -z $2;then PAUSE=3600;else PAUSE="$2";fi
 
 __CHECK_FOR_UPD(){
   __INIT_FILES
@@ -95,7 +94,7 @@ __SYNC_ALL(){
           LOCAL_DATE=$(ag --no-numbers --no-filename  "^$FILE " archives/server.dat | head -n 1 | __collum 2)
           if ./check-dates.sh "$DATE" "$LOCAL_DATE" > /dev/null 2>&1;then
             __DOWNLOAD "$FILE"
-          else
+          elif ! test "$LESS_VERBOSE" = "yes";then
             echo "  II no new version for $FILE"
           fi
         else
@@ -113,15 +112,18 @@ __SYNC_ALL(){
   done
 }
 
+./update-archive-date.sh
 if test "$1" = "--loop";then
-  ./update-archive-date.sh
+  shift
+  if test "$1" = "--less-verbose";then LESS_VERBOSE="yes";shift;fi
+  if test -z $1;then PAUSE=3600;else PAUSE="$1";shift;fi
   while true;do
     __SYNC_ALL
     echo "  ## idle for $PAUSE - exit with ^C (-> ONCE <-)"
     sleep $PAUSE
   done
 else
-  ./update-archive-date.sh
+  if test "$1" = "--less-verbose";then LESS_VERBOSE="yes";shift;fi
   __SYNC_ALL
 fi
 
