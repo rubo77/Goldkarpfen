@@ -12,7 +12,7 @@ fi
 #test for dependencies
 echo "  ## startup ..."
 GK_MODE="ERROR"
-GK_MODE=$(./check-dependencies.sh | tail -n 1)
+if test -f my-check-dependencies.sh;then GK_MODE=$(./my-check-dependencies.sh | tail -n 1);else GK_MODE=$(./check-dependencies.sh | tail -n 1);fi
 if test "$GK_MODE" = "ERROR";then exit 1;fi
 
 #new account?

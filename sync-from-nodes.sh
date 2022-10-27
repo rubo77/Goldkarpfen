@@ -58,15 +58,13 @@ __DOWNLOAD(){
       fi
     fi
     if ! echo "$1" | grep "^$UPD_NAME$" > /dev/null;then
-      if grep $(/usr/bin/basename -s .tar.gz "$1") cache/sane_files || test "$1" = "$VERIFICATION_STREAM"".tar.gz"  || test -f "archives/$1";then
-        if __TEST_AND_UNPACK_ARCHIVE "sync/$1";then
-          mv "sync/$1" archives/
-        fi
+      if grep $(/usr/bin/basename -s .tar.gz "$1") cache/sane_files || test "$1" = "$VERIFICATION_STREAM"".tar.gz";then
+        if __TEST_AND_UNPACK_ARCHIVE "sync/$1";then mv "sync/$1" archives/;fi
+      elif test -f "archives/$1";then
+        if __TEST_AND_UNPACK_ARCHIVE "sync/$1" --no-unpack;then mv "sync/$1" archives/;fi
       else
         echo "  II NEW ARCHIVE - first unpack needs to be done manually"
-        if __TEST_AND_UNPACK_ARCHIVE "sync/$1" --no-unpack;then
-          mv "sync/$1" quarantine/
-        fi
+        if __TEST_AND_UNPACK_ARCHIVE "sync/$1" --no-unpack;then mv "sync/$1" quarantine/;fi
       fi
     else
       mv sync/"$1" quarantine
@@ -99,7 +97,7 @@ __SYNC_ALL(){
           fi
         else
           if test -f "quarantine/$FILE";then
-            echo "  II $FILE is quarantined - skipping download" | ag -v "^$UPD_NAME_REGEXP"
+            if ! test "$LESS_VERBOSE" = "yes";then echo "  II $FILE is quarantined - skipping download" | ag -v "^$UPD_NAME_REGEXP";fi
           elif echo $FILE | ag "^(\b$UPD_NAME_REGEXP\b|\b$VERIFICATION_STREAM.tar.gz\b)" > /dev/null;then
             __DOWNLOAD "$FILE" --upd
           elif test -z $UPDATE_ONLY;then
