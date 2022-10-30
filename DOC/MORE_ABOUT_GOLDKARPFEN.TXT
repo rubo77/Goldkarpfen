@@ -1,4 +1,4 @@
-#V0.12
+#V0.13
 
 ### QUICK INSTALL FOR UBUNTU LIKE SYSTEMS (... come on arch-users... you can read a README, can you?)
 ### NOTE: ABSOLUTELY NO WARRANTY!
@@ -102,6 +102,13 @@ Goldkarpfen uses this globals:
 
 You should avoid using new globals at any cost (use set or scratch variables where ever possible).
 If you want to use some globals, add a uniq Prefix (f.e. $MYPLUGIN_XYZ)
+
+### CUSTOM SCRIPTS
+Instead of the default scripts you can use:
+my-sync-from-nodes.sh
+my-check-dependencies.sh
+my-start-services.sh
+my-stop-services.sh
 
 ### WHITLISTING (DOWNLOAD MODE)
 - create a file in your Goldkarpfen folder called whitelist.dat
