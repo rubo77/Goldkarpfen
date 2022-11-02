@@ -1,4 +1,4 @@
-#V0.13
+#V0.14
 
 ### QUICK INSTALL FOR UBUNTU LIKE SYSTEMS (... come on arch-users... you can read a README, can you?)
 ### NOTE: ABSOLUTELY NO WARRANTY!
@@ -55,7 +55,7 @@ To use static-tor:
 - check the dependencies with ./check-dependencies.sh (read README 4. PRE-START) until it returns "tor-passive".
 - ./new-account.sh and copy $SERVER_PORT and KEY_ADDR
 - add this to your /etc/torrc (KEY_ADDR and SERVER_PORT ... what you copied in the step above!)
-  HiddenServiceDir /usr/local/etc/tor/KEY_ADDR/
+  HiddenServiceDir /var/lib/tor/KEY_ADDR/
   HiddenServicePort 80 127.0.0.1:SERVER_PORT
 
 - change your services:

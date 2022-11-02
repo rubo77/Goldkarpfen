@@ -33,7 +33,7 @@ fi
 #run script on exit
 trap "cd $GK_PATH;if __CONFIRM_EXIT; then . ./.Goldkarpfen.exit.sh; trap - EXIT; exit;fi" INT
 trap "cd $GK_PATH;. ./.Goldkarpfen.exit.sh; trap - EXIT; exit" EXIT HUP TERM QUIT
-  
+
 #source include
 . ./include.sh
 

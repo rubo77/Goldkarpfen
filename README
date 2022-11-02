@@ -40,7 +40,7 @@ Edit my-start-service.sh and comment out the hidden service line:
 Edit my-stop-service.sh and comment out the hidden service line:
   #python3 stop-hidden-service.py $1
 
-AFTER STEP 5 
+AFTER STEP 5
 configure a http tunnel (use the port number defined in your Goldkarpfen.config)
 start your i2p-daemon
 AFTER STEP 6
