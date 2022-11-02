@@ -230,7 +230,7 @@ __ARCHIVE(){
 }
 
 __UNPACK(){
-  set "$(ag -f -g "\.itp\.tar\.gz$" quarantine/ archives/ | pipe_if_not_empty $GK_FZF_CMD )"
+  set "$(find quarantine/ archives/ -name "*.gz" |while read f; do fn=$(basename $f); fn=${fn::-7}; if [ ! -f "itp-files/$fn" ] && [ "$fn" != "Goldkarpfen-latest" ]; then echo "$f"; fi; done | pipe_if_not_empty $GK_FZF_CMD )"
   if test -z "$1" || ! test -f "$1";then echo "  II empty";return;fi
   if ! __TEST_ARCHIVE_DATE "$1";then
     echo -n "  ?? force unpack? (Y/n) >"
