@@ -215,7 +215,7 @@ __ARCHIVE(){
   __OWN_SHA_SUM_UPDATE; cp "$OWN_SUM" cache
   cd itp-files
   echo "  ## archiving"
-  if tar czfv "../tmp/""$OWN_ALIAS"-"$OWN_ADDR"".itp.tar.gz" --mtime="$(date +'%Y-%m-%d %H:00')" "$OWN_ALIAS""-""$OWN_ADDR"".itp.sha512sum" "$OWN_ALIAS""-""$OWN_ADDR"".itp" "$OWN_ALIAS""-""$OWN_ADDR"".itp.sha512sum"".sig" --utc;then
+  if tar czfv "../tmp/""$OWN_ALIAS"-"$OWN_ADDR"".itp.tar.gz" --mtime="$(date +'%Y-%m-%d %H:00')" "$OWN_ALIAS""-""$OWN_ADDR"".itp.sha512sum" "$OWN_ALIAS""-""$OWN_ADDR"".itp" "$OWN_ALIAS""-""$OWN_ADDR"".itp.sha512sum"".sig" --utc --numeric-owner;then
     mv "../tmp/""$OWN_ALIAS"-"$OWN_ADDR"".itp.tar.gz" ../archives
   fi
   cd ..
