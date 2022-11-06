@@ -69,7 +69,7 @@ fi
 
 ###sha512sum test
 BUF1=$(awk '{print $1}' $SUMNAME )
-BUF2=$(/usr/bin/sha512sum "$FILENAME" | awk '{print $1}')
+BUF2=$(sha512sum "$FILENAME" | awk '{print $1}')
 if [ "$BUF1" != "$BUF2" ];then
   >&2 echo "  EE $FILENAME sha512sum error"
   exit 1

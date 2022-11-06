@@ -127,8 +127,7 @@ SHOULD (1-2 will possibly be enforced by ITP-DEF. 1.0 or later versions)
 2. SHOULD generate comments with "^([0][0-9]|[1][0-2])\.([0][1-9]|[1-2][0-9]|[3][0-1]):[1-9] ([0][0-9]|[1][0-2])\.([0][1-9]|[1-2][0-9]|[3][0-1]):[1-9] @"
 3. SHOULD generate posts (comments) and collum 1 (and collum 2) are real dates (except ^00-entries)
 4. SHOULD have a solution for alias-doublettes.
-5. SHOULD not show comments of non existing or deleted posts.
-6. SHOULD validate KEY adresses and sign/check signatures of itp-files (with the KEY_ADDR).
-7. SHOULD not utilize timestamps with higher resolution than days.
+5. SHOULD validate KEY adresses and sign/check signatures of itp-files (with the KEY_ADDR).
+6. SHOULD not utilize timestamps with higher resolution than days.
 
 Any client not following the SHOULD's count not as invalid, but i call them unusable.

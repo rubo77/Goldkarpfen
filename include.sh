@@ -79,7 +79,7 @@ __TEST_AND_UNPACK_ARCHIVE(){
   if ! __TEST_ARCHIVE_CONTENT $1;then return 1;fi
   tar xfv "$1" -C tmp/ > /dev/null
   # FILENAME TMP_FILENAME OPTION_NO_UNPACK
-  set "$1" "tmp/$(/usr/bin/basename -s .tar.gz "$1")" "$2"
+  set "$1" "tmp/$(basename "${1%.tar.gz}")" "$2"
   T_BUF=$(tail -n 1 $2 | ag "^#LICENSE:CC0 \d\d-\d\d-\d\d$" | awk '{print $2}')
   if ! test "$T_BUF" = "$(date -d $(TZ="UTC" ls -l --time-style="long-iso"  $2 | __collum 6) +%y-%m-%d)";then
     echo "  EE $1 time stamp is not valid - moved to quarantine for inspection"

@@ -14,8 +14,8 @@ echo "-----BEGIN PUBLIC KEY-----" > tmp/pub.pem
 sed -n "2p" "$FILE" | awk '{print $2}' | fold -w 65 >> tmp/pub.pem
 echo "-----END PUBLIC KEY-----" >> tmp/pub.pem
 
-#if ! test "$(/usr/bin/basename -s .itp $FILE | sed "s/^.*-//")" = "$(./keys.sh tmp/pub.pem | sed 's/^0*//')";then ### after migration timeout
-if ! test "$(printf "%34s\n" "$(/usr/bin/basename -s .itp $FILE | sed "s/^.*-//" | sed 's/^0*//')" | sed 'y/ /1/')" = "$( printf "%34s\n" "$(./keys.sh tmp/pub.pem | sed 's/^0*//')" | sed 'y/ /1/' )";then
+#if ! test "$(basename ${FILE%.itp} | sed "s/^.*-//")" = "$(./keys.sh tmp/pub.pem | sed 's/^0*//')";then ### after migration timeout
+if ! test "$(printf "%34s\n" "$(basename ${FILE%.itp} | sed "s/^.*-//" | sed 's/^0*//')" | sed 'y/ /1/')" = "$( printf "%34s\n" "$(./keys.sh tmp/pub.pem | sed 's/^0*//')" | sed 'y/ /1/' )";then
   printf "%34s\n" "$(./keys.sh .keys/pub.pem | sed 's/^0*//')" | sed 'y/ /1/'
   >&2 echo "  EE pubkey / address mismatch error"
   exit 1

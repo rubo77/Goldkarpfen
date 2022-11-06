@@ -18,6 +18,9 @@ __UPDATE_DATE(){
     mv $1 ../quarantine/"$1.$(mktemp -u XXXXXXXX)"
     return
   fi
+  #DIFF-PATCH-VERSION
+  #DDATE="$(ls "$1"* | ag "_D\d\d-\d\d-\d\d$" | tail -n 1 | awk -F "_" '{print $2}')"
+  #if test -z "$DDATE";then echo "$1 $DATE";else echo "$1 $DATE $DDATE";fi
   DATE=$(date --utc -d "$BUF" +"%y-%m-%d")
   echo "$1 $DATE"
 }
