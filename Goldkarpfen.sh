@@ -199,17 +199,10 @@ __ARCHIVE(){
   echo "  ## sanity check"
   if ./itp-check.sh $OWN_STREAM $OWN_SUM;then echo "  II your file is itp conform";else echo "  EE your itp file is not conform!";return;fi
   if test -f "archives/""$OWN_ALIAS"-"$OWN_ADDR"".itp.tar.gz";then
-    cd tmp
-    tar -xvf "../archives/""$OWN_ALIAS"-"$OWN_ADDR"".itp.tar.gz" "$OWN_ALIAS"-"$OWN_ADDR"".itp.sha512sum" > /dev/null
-    tar -xvf "../archives/""$OWN_ALIAS"-"$OWN_ADDR"".itp.tar.gz" "$OWN_ALIAS"-"$OWN_ADDR"".itp.sha512sum.sig" > /dev/null
-    if cmp "$OWN_ALIAS"-"$OWN_ADDR"".itp.sha512sum" ../"$OWN_SUM" > /dev/null 2>&1 && cmp "$OWN_ALIAS"-"$OWN_ADDR"".itp.sha512sum.sig" ../"$OWN_SUM"".sig" > /dev/null 2>&1;then
+    if test "$(tar xOf "archives/""$OWN_ALIAS"-"$OWN_ADDR"".itp.tar.gz" "$OWN_ALIAS"-"$OWN_ADDR"".itp.sha512sum")" = "$(cat "itp-files/""$OWN_ALIAS"-"$OWN_ADDR"".itp.sha512sum")";then
       echo "  II you haven’t changed anything - abort"
-      rm "$OWN_ALIAS"-"$OWN_ADDR"".itp.sha512sum"
-      rm -f "$OWN_ALIAS"-"$OWN_ADDR"".itp.sha512sum.sig"
-      cd ..
       return
     fi
-    cd ..
   fi
   sed -i "s/^#LICENSE:CC0.*$/#LICENSE:CC0 $(date --utc '+%y-%m-%d')/" "$OWN_STREAM"
   __OWN_SHA_SUM_UPDATE; cp "$OWN_SUM" cache
