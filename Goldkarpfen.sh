@@ -207,21 +207,22 @@ __ARCHIVE(){
   echo "  ## archiving"
   if tar cfv "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar" --mtime="$(date +'%Y-%m-%d %H:00')" -C itp-files "$OWN_ALIAS-$OWN_ADDR.itp.sha512sum" "$OWN_ALIAS-$OWN_ADDR.itp" "$OWN_ALIAS-$OWN_ADDR.itp.sha512sum.sig" --utc --numeric-owner;then
     if test -f "archives/$OWN_ALIAS-$OWN_ADDR.itp.tar.gz";then
-      set  "$(date --utc -d "$(tar -tvf "archives/$OWN_ALIAS-$OWN_ADDR.itp.tar.gz" --utc "$OWN_ALIAS-$OWN_ADDR.itp.sha512sum" | __collum 4)" +"%y-%m-%d")"
-      rm -f "bkp/__$OWN_ALIAS-$OWN_ADDR.itp.tar"; gunzip -c "archives/$OWN_ALIAS-$OWN_ADDR.itp.tar.gz" > "bkp/$OWN_ALIAS-$OWN_ADDR.itp.tar"
-      if test "$(date --utc "+%y-%m-%d")" = "$1";then
-        mv "bkp/$OWN_ALIAS-$OWN_ADDR.itp.tar" "bkp/__$OWN_ALIAS-$OWN_ADDR.itp.tar"; echo "  II rearchived - diff for $1 blocked"
-      elif test -f "bkp/$OWN_ALIAS-$OWN_ADDR.itp.tar" && test "$GK_DIFF_MODE" = "yes" > /dev/null 2>&1;then
+      if test -f "bkp/$OWN_ALIAS-$OWN_ADDR.itp.tar" && test "$GK_DIFF_MODE" = "yes" > /dev/null 2>&1;then
         set  "$(date --utc -d "$(tar -tvf "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar" --utc "$OWN_ALIAS-$OWN_ADDR.itp.sha512sum" | __collum 4)" +"%y-%m-%d")" "$(date --utc -d "$(tar -tvf "bkp/$OWN_ALIAS-$OWN_ADDR.itp.tar" --utc "$OWN_ALIAS-$OWN_ADDR.itp.sha512sum" | __collum 4)" +"%y-%m-%d")"
         if ! test "$1" = "$2";then
           echo "  II generating diff from $2"
           bsdiff "bkp/$OWN_ALIAS-$OWN_ADDR.itp.tar" "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar" "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar.gz_D$2"
         fi
       fi
+      rm -f "bkp/__$OWN_ALIAS-$OWN_ADDR.itp.tar"; cp "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar" bkp/
+      set  "$(date --utc -d "$(tar -tvf "archives/$OWN_ALIAS-$OWN_ADDR.itp.tar.gz" --utc "$OWN_ALIAS-$OWN_ADDR.itp.sha512sum" | __collum 4)" +"%y-%m-%d")" "$(date --utc -d "$(tar -tvf "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar" --utc "$OWN_ALIAS-$OWN_ADDR.itp.sha512sum" | __collum 4)" +"%y-%m-%d")" "$2"
+      if test "$1" = "$2";then
+        mv "bkp/$OWN_ALIAS-$OWN_ADDR.itp.tar" "bkp/__$OWN_ALIAS-$OWN_ADDR.itp.tar"; echo "  II rearchived - diff for $1 blocked"
+      fi
     fi
     gzip "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar"
     rm -f "archives/$OWN_ALIAS-$OWN_ADDR.itp.tar.gz_D"*
-    if test -f "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar.gz_D$2";then mv "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar.gz_D$2" archives;fi
+    if test -f "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar.gz_D$3";then mv "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar.gz_D$3" archives;fi
     mv "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar.gz" archives
   fi
   ./update-archive-date.sh "$OWN_ALIAS-$OWN_ADDR.itp.tar.gz"
