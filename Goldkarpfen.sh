@@ -283,9 +283,9 @@ __EDIT(){
   echo -n "  ?? [c]-continue [a]-abort >"
   $GK_READ_CMD T_CONFIRM; if test "$T_CONFIRM" != "c";then printf "\n  II aborted\n";return;fi
   GK_JM=""; GK_LN=""
-  cat $OWN_STREAM | sed 's/\&bsol;/\\/g' "$OWN_STREAM" > tmp/"$OWN_ALIAS"-"$OWN_ADDR"."itp"
+  sed 's/\&bsol;/\\/g' "$OWN_STREAM" > "tmp/$OWN_ALIAS-$OWN_ADDR.itp"
   $EDITOR tmp/"$OWN_ALIAS"-"$OWN_ADDR"."itp"; echo
-  cat tmp/"$OWN_ALIAS"-"$OWN_ADDR"."itp" | sed 's/\\/\&bsol;/g' > tmp/"$OWN_ALIAS"-"$OWN_ADDR"."itp"."clean"
+  sed 's/\\/\&bsol;/g' "tmp/$OWN_ALIAS-$OWN_ADDR.itp" > tmp/"$OWN_ALIAS"-"$OWN_ADDR"."itp"."clean"
   if cmp "tmp/$OWN_ALIAS-$OWN_ADDR.itp.clean"  "$OWN_STREAM" > /dev/null 2>&1;then
     echo "  II you haven’t changed anything"
   else
@@ -357,12 +357,12 @@ __PLUGINS(){
 }
 
 __REBUILD_ALIASES(){
-  if ! __TEST_DOUBLE_ALIASES cache/aliases;then echo "  II you have no double aliases, you should abort here";fi
+  if __TEST_ALIAS_FILE cache/aliases > /dev/null;then echo "  II you have no double aliases, you should abort here";fi
   echo -n "  ?? [c]-continue [a]-abort >"
   $GK_READ_CMD T_CONFIRM; if ! test "$T_CONFIRM" = "c";then printf "\n  II aborted\n";return;fi
   cp cache/aliases tmp/aliases
   $EDITOR tmp/aliases
-  if __TEST_DOUBLE_ALIASES tmp/aliases;then echo "  EE your file still contains doublettes - abort";rm tmp/aliases;return 1;fi
+  if ! __TEST_ALIAS_FILE tmp/aliases > /dev/null;then echo "  EE your file still contains doublettes - abort";rm tmp/aliases;return 1;fi
   if __collum 1 < tmp/aliases | grep -v -E '^[0-9A-Za-z_]{1,12}$';then echo "  EE alias contains not allowed characters or is too long (12 max)";rm tmp/aliases;return 1;fi
   mv tmp/aliases cache/
   printf "\n  II alias file ok\n"
@@ -429,9 +429,7 @@ if ! test -f cache/aliases;then
     T_BUF=$(basename "$T_FILE"| __collum 1 "-" )
     echo "$T_BUF "$(basename $T_FILE) >> cache/aliases
   done < cache/sane_files
-  if __TEST_DOUBLE_ALIASES cache/aliases;then
-    printf "\n  II WARNING: you have double aliases - pls run [y][y] after initialization\n"
-  fi
+  __TEST_ALIAS_FILE cache/aliases
 fi
 
 #create sane files if needed

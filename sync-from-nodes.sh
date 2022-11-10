@@ -4,12 +4,13 @@ if ! test -f $(basename $0);then echo "  EE run this script in its folder";exit;
 if test -f ./sync-from-nodes.pid && ps --pid $(cat sync-from-nodes.pid) > /dev/null;then echo "  EE sync-from-nodes.pid exists";exit;fi
 echo $$ > sync-from-nodes.pid
 . ./update-provider.inc.sh
+. ./include.sh
 if test -f ./whitelist.dat;then LIST_MODE=""; LIST_RGXP="whitelist.dat";else LIST_MODE="-v"; LIST_RGXP="blacklist.dat";fi
 
 __CHECK_FOR_UPD(){
   __INIT_FILES
   if test -f "quarantine/$UPD_NAME";then
-    VERSION_ARCHIVES=$(tar -tvf quarantine/"$UPD_NAME" 2> /dev/null | ag "VERSION" | sed 's/.*\.//' || echo 0)
+    VERSION_ARCHIVES=$(tar -tf quarantine/"$UPD_NAME" 2> /dev/null | ag "VERSION" | __collum 3 "." || echo 0)
     if test "$(grep "$UDP_NAME VERSION" itp-files/$VERIFICATION_STREAM | sed 's/.*\.//' )" = "$VERSION_ARCHIVES";then
       if ! grep "$(sha512sum quarantine/$UPD_NAME | __collum 1)" itp-files/$VERIFICATION_STREAM;then
         printf "  EE Could not verify checksum. Be sure to have the latest Goldkarpfen-1JULSJ5Nnba9So48zi21rpfTuZ3tqNRaFB.itp file\n  $UPD_NAME is in quarantine and further downloads of it are paused.\n  Sync again and test manually with:\n"
@@ -26,14 +27,13 @@ __CHECK_FOR_UPD(){
 }
 
 __UPD_NOTIFY(){
-  VERSION_ARCHIVES=$(tar -tvf archives/"$UPD_NAME" 2> /dev/null | ag "VERSION" | sed 's/.*\.//' || echo 0)
-  VERSION_LOCAL=$(ls VERSION-* | tail -n 1 | sed "s/.*\.//")
+  VERSION_ARCHIVES=$(tar -tf archives/"$UPD_NAME" 2> /dev/null | ag "VERSION" | __collum 3 "." || echo 0)
+  VERSION_LOCAL=$(ls VERSION-* | tail -n 1);VERSION_LOCAL=${VERSION_LOCAL#VERSION-2.1.}
   if test "$VERSION_ARCHIVES" -gt "$VERSION_LOCAL";then echo "  II NEW GOLDKARPFEN : 2.1.$VERSION_ARCHIVES -> UPDATE WITH [r][U] " | ag ".";fi
 }
 
 trap 'echo "  ## pls wait ...";__CHECK_FOR_UPD;__UPD_NOTIFY; rm -f tmp/server.dat tmp/filtered_server.dat sync-from-nodes.pid; trap - EXIT; exit' EXIT INT HUP TERM QUIT
 
-. ./include.sh
 if which bspatch > /dev/null 2>&1;then GK_DIFF_MODE="yes";fi
 touch -a blacklist.dat
 touch -a archives/server.dat

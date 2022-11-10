@@ -12,8 +12,8 @@ __SYNC(){
 }
 
 if test "$1" = "--first-run";then
-  VERSION_ARCHIVES=$(tar -tvf ../archives/"$UPD_NAME"| ag "VERSION" | sed "s/.*\.//")
-  VERSION_LOCAL=$(ls ../VERSION-* | tail -n 1 | sed "s/.*\.//")
+  VERSION_ARCHIVES=$(tar -tf ../archives/"$UPD_NAME"| ag "VERSION" |  __collum 3 ".")
+  VERSION_LOCAL=$(ls ../VERSION-* | tail -n 1);VERSION_LOCAL=${VERSION_LOCAL#../VERSION-2.1.}
   if test -z "$VERSION_ARCHIVES";then exit 1;fi
   echo "  II tarball version: "$DATE_ARCHIVES"  "$VERSION_ARCHIVES
   echo "  II local version  : "$DATE_LOCAL"  "$VERSION_LOCAL

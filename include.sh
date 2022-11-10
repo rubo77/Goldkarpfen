@@ -103,8 +103,10 @@ __TEST_AND_UNPACK_ARCHIVE(){
   fi
 }
 
-__TEST_DOUBLE_ALIASES(){
-  if test "$(__collum 1 < "$1" | sort | uniq | wc -l)" = "$(__collum 1 < "$1" | wc -l)";then return 1;fi
+__TEST_ALIAS_FILE(){
+  if ! test "$(__collum 1 < "$1" | sort | uniq | wc -l)" = "$(__collum 1 < "$1" | wc -l)";then
+    printf "\n  II WARNING: you have double aliases - pls run [y][y] after initialization\n"; return 1
+  fi
 }
 
 __PRUNE_ARCHIVES(){
@@ -165,9 +167,8 @@ __INIT_FILES(){
             echo "$T_BUF "$(basename "$T_FILE") >> cache/aliases
           fi
         fi
+        if ! ag "^$T_FILE$" cache/sane_files > /dev/null; then echo "$T_FILE" >> cache/sane_files;fi
         T_BUF=$(basename "$T_FILE")
-        sed -i "/$T_BUF/d" cache/sane_files
-        echo "$T_FILE" >> cache/sane_files
         if ! ag "$T_BUF" cache/aliases > /dev/null;then echo $(echo "$T_BUF"| __collum 1 "-")" $T_BUF" >> cache/aliases;fi
         cp $T_FILE".sha512sum" cache
       else
@@ -178,7 +179,5 @@ __INIT_FILES(){
       fi
     fi
   done
-  if __TEST_DOUBLE_ALIASES cache/aliases;then
-    printf "\n  II WARNING: you have double aliases - pls run [y][y] after initialization\n"
-  fi
+  __TEST_ALIAS_FILE cache/aliases
 }
