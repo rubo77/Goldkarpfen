@@ -103,7 +103,7 @@ __SYNC_ALL(){
         if ag "^$FILE " archives/server.dat > /dev/null && ! test -f "quarantine/$FILE";then
           LOCAL_DATE=$(ag --no-numbers --no-filename  "^$FILE " archives/server.dat | head -n 1 | __collum 2)
           if ./check-dates.sh "$DATE" "$LOCAL_DATE" > /dev/null 2>&1;then
-            if test "$LOCAL_DATE" = "$DDATE" && test "$GK_DIFF_MODE" = "yes";then echo "TESTING: would apply patch $FILE""_D$DDATE";fi
+            if test "$LOCAL_DATE" = "$DDATE" && test "$GK_DIFF_MODE" = "yes" && ! test "$FILE" = "$UPD_NAME" && ! test "$FILE" = "$VERIFICATION_STREAM.tar.gz";then echo "TESTING: would apply patch $FILE""_D$DDATE";fi
             __DOWNLOAD "$FILE"
           elif ! test "$LESS_VERBOSE" = "yes";then
             echo "  II no new version for $FILE"
@@ -111,7 +111,7 @@ __SYNC_ALL(){
         else
           if test -f "quarantine/$FILE";then
             if ! test "$LESS_VERBOSE" = "yes";then echo "  II $FILE is quarantined - skipping download" | ag -v "^$UPD_NAME_REGEXP";fi
-          elif echo $FILE | ag "^(\b$UPD_NAME_REGEXP\b|\b$VERIFICATION_STREAM.tar.gz\b)" > /dev/null;then
+          elif test "$FILE" = "$UPD_NAME" || test "$FILE" = "$VERIFICATION_STREAM.tar.gz";then
             __DOWNLOAD "$FILE" --upd
           elif test -z $UPDATE_ONLY;then
             __DOWNLOAD "$FILE" --new

@@ -196,7 +196,7 @@ __POST(){
 }
 
 __ARCHIVE(){
-  __HOOK_ARCHIVE_START
+  if ! __HOOK_ARCHIVE_START;then return;fi
   echo "  ## sanity check"
   if ./itp-check.sh $OWN_STREAM $OWN_SUM;then echo "  II your file is itp conform";else echo "  EE your itp file is not conform!";return;fi
   if test -f "archives/$OWN_ALIAS-$OWN_ADDR.itp.tar.gz" && test "$(tar xOf "archives/$OWN_ALIAS-$OWN_ADDR.itp.tar.gz" "$OWN_ALIAS-$OWN_ADDR.itp.sha512sum")" = "$(cat "itp-files/$OWN_ALIAS-$OWN_ADDR.itp.sha512sum")";then
