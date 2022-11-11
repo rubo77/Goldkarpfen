@@ -58,10 +58,10 @@ __TEST_ARCHIVE_CONTENT(){
 }
 
 __TEST_ARCHIVE_DATE(){
-  T_BUF1=$(date --utc -d "$(tar -tvf "$1" --utc | ag '[0-9A-Za-z_]{1,12}-[0-9A-Za-z]{34}\.itp\.sha512sum$|/Goldkarpfen.sh$' | __collum 4)" "+%y-%m-%d")
+  T_BUF1=$(date --utc "+%y-%m-%d" -d $(tar -tvf "$1" --utc | ag '[0-9A-Za-z_]{1,12}-[0-9A-Za-z]{34}\.itp\.sha512sum$|/Goldkarpfen.sh$' | __collum 4))
   if ! ./check-dates.sh "$T_BUF1";then return 1;fi
   if ! test -z "$2";then
-    T_BUF2=$(date --utc -d "$(tar -tvf "$2" --utc | ag '[0-9A-Za-z_]{1,12}-[0-9A-Za-z]{34}\.itp\.sha512sum$|/Goldkarpfen.sh$' | __collum 4)" "+%y-%m-%d")
+    T_BUF2=$(date --utc "+%y-%m-%d" -d $(tar -tvf "$2" --utc | ag '[0-9A-Za-z_]{1,12}-[0-9A-Za-z]{34}\.itp\.sha512sum$|/Goldkarpfen.sh$' | __collum 4))
   else
     T_BUF="itp-files/$(basename "$1" |sed 's/\.tar\.gz$//').sha512sum"
     if test -f "$T_BUF";then
@@ -126,7 +126,7 @@ __PRUNE_ARCHIVES(){
   T_BUF=""
   while IFS= read -r T_LINE; do
     if ! ./check-dates.sh $(echo $T_LINE | __collum 2);then
-      rm "archives/"$(echo $T_LINE | __collum 1)
+      rm "archives/$(echo $T_LINE | __collum 1)"*
       sed -i "/$T_LINE/d" archives/server.dat
     fi
   done < archives/server.dat

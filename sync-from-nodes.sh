@@ -50,36 +50,37 @@ __DOWNLOAD(){
   if $T_CMD -o "sync/$1" --max-filesize 318K;then
     #DIFF-PATCH-VERSION
     #if echo "$1" | ag '_D\d\d-\d\d-\d\d$' > /dev/null;then
-    #  T_BUF1="$1"; set "$(echo $1 | __collum 1 "_")" "$2"
-    #  gunzip "archives/$1" tmp/tmp.tar; bspatch tmp/tmp.tar "sync/${1%.gz}" "sync/$T_BUF"; gzip "sync/${1%.gz}" ; rm -f tmp/tmp.tar
+    #  set "$(echo $1 | __collum 1 "_")" "$2" "$1"
+    #  gunzip -c "archives/$1" > tmp/tmp.tar; bspatch tmp/tmp.tar "sync/${1%.gz}" "sync/$3"; gzip "sync/${1%.gz}" ; rm -f tmp/tmp.tar
     #fi
     if test -z "$2";then
       if ! __TEST_ARCHIVE_DATE "sync/$1" "archives/$1" > /dev/null;then
         printf "  EE There is a difference in the server.dat and the real age of the archive,\n  The archive is missing files or your server.dat is corrupt.\n  moving the archive to quarantine for inspection\n"
         mv "sync/$1" quarantine/"$(basename $1)"".""$(mktemp -u XXXXXXXX)"
         echo "NODE: $NODE" | ag "."
+        #DIFF-PATCH-VERSION
+        #if test -f "sync/$3";then mv "sync/$3" quarantine/"$(basename $3)"".""$(mktemp -u XXXXXXXX)";fi
         return
       fi
     fi
     if ! test "$1" = "$UPD_NAME";then
       if grep $(basename "${1%.tar.gz}") cache/sane_files || test "$1" = "$VERIFICATION_STREAM.tar.gz";then
-        if __TEST_AND_UNPACK_ARCHIVE "sync/$1";then
-          mv "sync/$1" archives/
-          #DIFF-PATCH-VERSION
-          #if test -f "sync/$T_BUF";then mv "sync/$T_BUF" archives/; T_BUF=;fi
-        fi
+         TARGET="archives/" ; OPTIONS=
       elif test -f "archives/$1";then
-        if __TEST_AND_UNPACK_ARCHIVE "sync/$1" --no-unpack;then
-          mv "sync/$1" archives/
-          #DIFF-PATCH-VERSION
-          #if test -f "sync/$T_BUF";then mv "sync/$T_BUF" archives/; T_BUF=;fi
-        fi
+         TARGET="archives/" ; OPTIONS="--no-unpack"
       else
-        echo "  II NEW ARCHIVE - first unpack needs to be done manually"
-        if __TEST_AND_UNPACK_ARCHIVE "sync/$1" --no-unpack;then mv "sync/$1" quarantine/;fi
+         echo "  II NEW ARCHIVE - first unpack needs to be done manually"
+         TARGET="quarantine/" ; OPTIONS="--no-unpack"
       fi
+      if __TEST_AND_UNPACK_ARCHIVE "sync/$1" $OPTIONS;then
+        mv "sync/$1" $TARGET
+        #DIFF-PATCH-VERSION
+        #if test -f "sync/$3";then rm -f archives/$3_D*; mv "sync/$3" archives/;fi
+      fi
+      #DIFF-PATCH-VERSION
+      #if test -f "sync/$3";then mv "sync/$3" quarantine/"$(basename $3)"".""$(mktemp -u XXXXXXXX)";fi
     else
-      mv sync/"$1" quarantine
+      mv "sync/$1" quarantine
     fi
   fi
   ./update-archive-date.sh "$1"
@@ -103,8 +104,11 @@ __SYNC_ALL(){
         if ag "^$FILE " archives/server.dat > /dev/null && ! test -f "quarantine/$FILE";then
           LOCAL_DATE=$(ag --no-numbers --no-filename  "^$FILE " archives/server.dat | head -n 1 | __collum 2)
           if ./check-dates.sh "$DATE" "$LOCAL_DATE" > /dev/null 2>&1;then
-            if test "$LOCAL_DATE" = "$DDATE" && test "$GK_DIFF_MODE" = "yes" && ! test "$FILE" = "$UPD_NAME" && ! test "$FILE" = "$VERIFICATION_STREAM.tar.gz";then echo "TESTING: would apply patch $FILE""_D$DDATE";fi
-            __DOWNLOAD "$FILE"
+            if test "$LOCAL_DATE" = "$DDATE" && test "$GK_DIFF_MODE" = "yes" && ! test "$FILE" = "$UPD_NAME" && ! test "$FILE" = "$VERIFICATION_STREAM.tar.gz";then
+                __DOWNLOAD "$FILE" #DIFF-PATCH-VERSION __DOWNLOAD "$FILE""_D$DDATE"
+              else
+                __DOWNLOAD "$FILE"
+            fi
           elif ! test "$LESS_VERBOSE" = "yes";then
             echo "  II no new version for $FILE"
           fi
