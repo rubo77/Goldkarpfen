@@ -208,14 +208,14 @@ __ARCHIVE(){
   if tar cfv "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar" --mtime="$(date +'%Y-%m-%d %H:00')" -C itp-files "$OWN_ALIAS-$OWN_ADDR.itp.sha512sum" "$OWN_ALIAS-$OWN_ADDR.itp" "$OWN_ALIAS-$OWN_ADDR.itp.sha512sum.sig" --utc --numeric-owner;then
     if test -f "archives/$OWN_ALIAS-$OWN_ADDR.itp.tar.gz";then
       if test -f "bkp/$OWN_ALIAS-$OWN_ADDR.itp.tar" && test "$GK_DIFF_MODE" = "yes" > /dev/null 2>&1;then
-        set  "$(date --utc -d "$(tar -tvf "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar" --utc "$OWN_ALIAS-$OWN_ADDR.itp.sha512sum" | __collum 4)" +"%y-%m-%d")" "$(date --utc -d "$(tar -tvf "bkp/$OWN_ALIAS-$OWN_ADDR.itp.tar" --utc "$OWN_ALIAS-$OWN_ADDR.itp.sha512sum" | __collum 4)" +"%y-%m-%d")"
+        set "$(__ARCHIVE_DATE "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar")" "$(__ARCHIVE_DATE "bkp/$OWN_ALIAS-$OWN_ADDR.itp.tar")"
         if ! test "$1" = "$2";then
           echo "  II generating diff from $2"
           bsdiff "bkp/$OWN_ALIAS-$OWN_ADDR.itp.tar" "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar" "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar.gz_D$2"
         fi
       fi
       rm -f "bkp/__$OWN_ALIAS-$OWN_ADDR.itp.tar"; cp "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar" bkp/
-      set  "$(date --utc -d "$(tar -tvf "archives/$OWN_ALIAS-$OWN_ADDR.itp.tar.gz" --utc "$OWN_ALIAS-$OWN_ADDR.itp.sha512sum" | __collum 4)" +"%y-%m-%d")" "$(date --utc -d "$(tar -tvf "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar" --utc "$OWN_ALIAS-$OWN_ADDR.itp.sha512sum" | __collum 4)" +"%y-%m-%d")" "$2"
+      set "$(__ARCHIVE_DATE "archives/$OWN_ALIAS-$OWN_ADDR.itp.tar.gz")" "$(__ARCHIVE_DATE "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar")"
       if test "$1" = "$2";then
         mv "bkp/$OWN_ALIAS-$OWN_ADDR.itp.tar" "bkp/__$OWN_ALIAS-$OWN_ADDR.itp.tar"; echo "  II rearchived - diff for $1 blocked"
       fi
@@ -254,8 +254,7 @@ __MOVE_OUT_OF_QUARANTINE (){
 __DELETE_FROM_QUARANTINE (){
   printf "\n  ## removing $1\n"
   if test "$(basename $ITPFILE)" = "$(basename ${1%.tar.gz})";then ITPFILE=$OWN_STREAM; __INIT_GLOBALS;fi
-  rm "$1"
-  rm -f "itp-files/"$(basename "$1" | __collum 1 "." ).itp
+  rm -f "$1" "itp-files/"$(basename "$1" | __collum 1 "." ).itp
   __INIT_FILES
   echo -n "  ?? add this stream to your blacklist? (y/n) >"
   $GK_READ_CMD T_CONFIRM;if test "$T_CONFIRM" != "y";then printf "\n  II blacklisting skipped\n";return;fi

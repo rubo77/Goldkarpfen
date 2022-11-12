@@ -99,26 +99,28 @@ __SYNC_ALL(){
       CH_LINE=$(grep -n "^$URL" nodes.dat | head -n 1 | __collum 1 ":")
       sed -i "$CH_LINE c$URL last_success:$(date +"%y-%m-%d")" nodes.dat
       while IFS= read -r LINE; do
-        FILE=$(echo $LINE | __collum 1); DATE=$(echo $LINE | __collum 2); DDATE=$(echo $LINE | __collum 3 | sed 's/^D//')
-        if ! ./check-dates.sh "$DATE" > /dev/null;then break;fi
-        if ag "^$FILE " archives/server.dat > /dev/null && ! test -f "quarantine/$FILE";then
-          LOCAL_DATE=$(ag --no-numbers --no-filename  "^$FILE " archives/server.dat | head -n 1 | __collum 2)
-          if ./check-dates.sh "$DATE" "$LOCAL_DATE" > /dev/null 2>&1;then
-            if test "$LOCAL_DATE" = "$DDATE" && test "$GK_DIFF_MODE" = "yes" && ! test "$FILE" = "$UPD_NAME" && ! test "$FILE" = "$VERIFICATION_STREAM.tar.gz";then
-                __DOWNLOAD "$FILE" #DIFF-PATCH-VERSION __DOWNLOAD "$FILE""_D$DDATE"
-              else
-                __DOWNLOAD "$FILE"
+        #FILE DATE DIFF-DATE
+        set $LINE
+        if ./check-dates.sh "$2" > /dev/null;then
+          if ag "^$1 " archives/server.dat > /dev/null && ! test -f "quarantine/$1";then
+            LOCAL_DATE=$(ag --no-numbers --no-filename  "^$1 " archives/server.dat | head -n 1 | __collum 2)
+            if ./check-dates.sh "$2" "$LOCAL_DATE" > /dev/null 2>&1;then
+              if test "$LOCAL_DATE" = "${3#D}" && test "$GK_DIFF_MODE" = "yes" && ! test "$FILE" = "$UPD_NAME" && ! test "$FILE" = "$VERIFICATION_STREAM.tar.gz";then
+                  __DOWNLOAD "$1" #DIFF-PATCH-VERSION __DOWNLOAD "$1""_$3"
+                else
+                  __DOWNLOAD "$1"
+              fi
+            elif ! test "$LESS_VERBOSE" = "yes";then
+              echo "  II no new version for $1"
             fi
-          elif ! test "$LESS_VERBOSE" = "yes";then
-            echo "  II no new version for $FILE"
-          fi
-        else
-          if test -f "quarantine/$FILE";then
-            if ! test "$LESS_VERBOSE" = "yes";then echo "  II $FILE is quarantined - skipping download" | ag -v "^$UPD_NAME_REGEXP";fi
-          elif test "$FILE" = "$UPD_NAME" || test "$FILE" = "$VERIFICATION_STREAM.tar.gz";then
-            __DOWNLOAD "$FILE" --upd
-          elif test -z $UPDATE_ONLY;then
-            __DOWNLOAD "$FILE" --new
+          else
+            if test -f "quarantine/$1";then
+              if ! test "$LESS_VERBOSE" = "yes";then echo "  II $1 is quarantined - skipping download" | ag -v "^$UPD_NAME_REGEXP";fi
+            elif test "$1" = "$UPD_NAME" || test "$1" = "$VERIFICATION_STREAM.tar.gz";then
+              __DOWNLOAD "$1" --upd
+            elif test -z $UPDATE_ONLY;then
+              __DOWNLOAD "$1" --new
+            fi
           fi
         fi
       done < tmp/filtered_server.dat
@@ -141,4 +143,3 @@ else
   if test "$1" = "--less-verbose";then LESS_VERBOSE="yes";shift;fi
   __SYNC_ALL
 fi
-

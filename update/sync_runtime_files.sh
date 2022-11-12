@@ -17,7 +17,6 @@ if test "$1" = "--first-run";then
   if test -z "$VERSION_ARCHIVES";then exit 1;fi
   echo "  II tarball version: "$DATE_ARCHIVES"  "$VERSION_ARCHIVES
   echo "  II local version  : "$DATE_LOCAL"  "$VERSION_LOCAL
-  cd ..
   if ! test "$VERSION_ARCHIVES" -gt "$VERSION_LOCAL";then
     echo -n "  ?? there seems to be no new version - update anyway? (Y/n) [Return] >"
     read BUF
@@ -27,10 +26,8 @@ if test "$1" = "--first-run";then
     read BUF
     if test "$BUF" != "y";then exit 1;fi
   fi
-  cd update
-  rm -Rf ./Goldkarpfen/
-  cp -a ../archives/"$UPD_NAME" .
-  if tar xfv "$UPD_NAME" > /dev/null;then
+  rm -f "$UPD_NAME"
+  if tar -xvf "../archives/$UPD_NAME" > /dev/null;then
     cp -a Goldkarpfen/update/sync_runtime_files.sh .
     exit 0
   else

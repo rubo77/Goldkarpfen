@@ -49,6 +49,10 @@ __DOWNLOAD_COMMAND () {
   fi
 }
 
+__ARCHIVE_DATE(){
+  date --utc "+%y-%m-%d" -d $(tar -tvf "$1" --utc | head -n 1 | __collum 4)
+}
+
 __TEST_ARCHIVE_CONTENT(){
   if ! test $(tar -tvf "$1" | ag " $(basename $1 | __collum 1 ".").itp$| $(basename $1 | __collum 1 ".").itp.sha512sum$| $(basename $1 | __collum 1 ".").itp.sha512sum.sig$" | wc -l) = 3;then
     >&2 echo "  EE $1 does not contain the required file set - moved to quarantine for inspection"
@@ -58,10 +62,10 @@ __TEST_ARCHIVE_CONTENT(){
 }
 
 __TEST_ARCHIVE_DATE(){
-  T_BUF1=$(date --utc "+%y-%m-%d" -d $(tar -tvf "$1" --utc | ag '[0-9A-Za-z_]{1,12}-[0-9A-Za-z]{34}\.itp\.sha512sum$|/Goldkarpfen.sh$' | __collum 4))
+  T_BUF1=$(__ARCHIVE_DATE $1)
   if ! ./check-dates.sh "$T_BUF1";then return 1;fi
   if ! test -z "$2";then
-    T_BUF2=$(date --utc "+%y-%m-%d" -d $(tar -tvf "$2" --utc | ag '[0-9A-Za-z_]{1,12}-[0-9A-Za-z]{34}\.itp\.sha512sum$|/Goldkarpfen.sh$' | __collum 4))
+    T_BUF2=$(__ARCHIVE_DATE $2)
   else
     T_BUF="itp-files/$(basename "$1" |sed 's/\.tar\.gz$//').sha512sum"
     if test -f "$T_BUF";then
@@ -110,26 +114,20 @@ __TEST_ALIAS_FILE(){
 }
 
 __PRUNE_ARCHIVES(){
-  T_BUF=""
+  set "$(__collum 2 < archives/server.dat | sort -t "-" -k1n -k2n -k3n | head -n 1)"
+  if test -z "$1" || ./check-dates.sh "$1";then return;fi
+  printf "\n  II OLD ARCHIVES NEED PRUNING!\n"
+  mkdir -p quarantine/old-archives
   while IFS= read -r T_LINE; do
-    if ! ./check-dates.sh $(echo $T_LINE | __collum 2);then
-      echo "  EE archives/$(echo $T_LINE | __collum 1) is too old" | ag "."
-      T_BUF="1"
-    fi
-  done < archives/server.dat
-  if ! test -z "$T_BUF";then
-    printf "\n  II OLD ARCHIVES NEED PRUNING!\n"
-    echo -n "  ?? [c]-continue [a]-abort [Return] >"
-    read T_CONFIRM;if test "$T_CONFIRM" != "c";then echo "  EE Goldkarpfen will exit now, because you should not distribute outdated tarballs";exit 1;fi
-    echo
-  fi
-  T_BUF=""
-  while IFS= read -r T_LINE; do
-    if ! ./check-dates.sh $(echo $T_LINE | __collum 2);then
-      rm "archives/$(echo $T_LINE | __collum 1)"*
+    set $T_LINE
+    if ! ./check-dates.sh $2;then
+      echo "  EE archives/$1 is too old - moved to quarantine/old-archives" | ag "."
+      mv "archives/$1" "quarantine/old-archives/$2-$1"
+      if test -f "archives/$1_$3"; then mv "archives/$1_$3" "quarantine/old-archives/$2-$1_$3";fi
       sed -i "/$T_LINE/d" archives/server.dat
     fi
   done < archives/server.dat
+  ./update-archive-date.sh
 }
 
 __REMOVE_IF_MISSING(){
@@ -137,12 +135,8 @@ __REMOVE_IF_MISSING(){
     if ! test -f "$T_FILE";then
       echo "  II $T_FILE is missing but in the sane list - removing cached files" | ag "."
       BN=$(basename "$T_FILE")
-      ADDRESS=$(echo $BN | __collum 1 "." | __collum 2 "-")
-      rm $T_FILE".sha512sum"
-      rm $T_FILE".sha512sum"".sig"
-      sed -i "/$BN/d" cache/sane_files
-      sed -i "/$BN/d" cache/aliases
-      rm cache/$BN".sha512sum"
+      rm -f "$T_FILE.sha512sum" "$T_FILE.sha512sum.sig" "cache/$BN.sha512sum"
+      sed -i "/$BN/d" cache/sane_files cache/aliases
     fi
   done < cache/sane_files
 }
@@ -173,8 +167,7 @@ __INIT_FILES(){
         cp $T_FILE".sha512sum" cache
       else
         T_BUF=$(basename "$T_FILE")
-        sed -i "/$T_BUF/d" cache/sane_files
-        sed -i "/$T_BUF/d" cache/aliases
+        sed -i "/$T_BUF/d" cache/sane_files cache/aliases
         echo "  EE $T_FILE is not itp-conform: remove it from ./itp-files/"
       fi
     fi
