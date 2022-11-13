@@ -85,23 +85,23 @@ __TEST_AND_UNPACK_ARCHIVE(){
   # FILENAME TMP_FILENAME OPTION_NO_UNPACK
   set "$1" "tmp/$(basename "${1%.tar.gz}")" "$2"
   T_BUF=$(tail -n 1 $2 | ag "^#LICENSE:CC0 \d\d-\d\d-\d\d$" | awk '{print $2}')
-  if ! test "$T_BUF" = "$(date -d $(TZ="UTC" ls -l --time-style="long-iso"  $2 | __collum 6) +%y-%m-%d)";then
+  if ! test "$T_BUF" = "$(date --utc +%y-%m-%d -d $(TZ="UTC" ls -l --time-style="long-iso"  $2 | __collum 6))";then
     echo "  EE $1 time stamp is not valid - moved to quarantine for inspection"
-    rm "$2"".sha512sum" "$2"".sha512sum.sig" "$2"
+    rm "$2.sha512sum" "$2.sha512sum.sig" "$2"
     mv "$1" quarantine/"$(basename $1)"".""$(mktemp -u XXXXXXXX)"
     return 1
   fi
   if ./itp-check.sh "$2" "$2"".sha512sum" && ./check-sign.sh "$2" > /dev/null 2>&1;then
     if ! test "$3" = "--no-unpack";then
-      mv "$2"".sha512sum" itp-files
-      mv "$2"".sha512sum.sig" itp-files
+      mv "$2.sha512sum" itp-files
+      mv "$2.sha512sum.sig" itp-files
       mv "$2" itp-files
     else
-      rm "$2" "$2"".sha512sum" "$2"".sha512sum.sig"
+      rm "$2" "$2.sha512sum" "$2.sha512sum.sig"
     fi
   else
     echo "  EE $1 no valid signature or/and itp-check failed - moved to quarantine for inspection"
-    rm "$2"".sha512sum" "$2"".sha512sum.sig" "$2"
+    rm "$2.sha512sum" "$2.sha512sum.sig" "$2"
     mv "$1" quarantine/"$(basename $1)"".""$(mktemp -u XXXXXXXX)"
     return 1
   fi

@@ -26,7 +26,7 @@ if test "$1" = "--first-run";then
     read BUF
     if test "$BUF" != "y";then exit 1;fi
   fi
-  rm -f "$UPD_NAME"
+  rm -f "$UPD_NAME" Goldkarpfen/VERSION*
   if tar -xvf "../archives/$UPD_NAME" > /dev/null;then
     cp -a Goldkarpfen/update/sync_runtime_files.sh .
     exit 0

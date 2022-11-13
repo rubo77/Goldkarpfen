@@ -215,7 +215,7 @@ __ARCHIVE(){
         fi
       fi
       rm -f "bkp/__$OWN_ALIAS-$OWN_ADDR.itp.tar"; cp "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar" bkp/
-      set "$(__ARCHIVE_DATE "archives/$OWN_ALIAS-$OWN_ADDR.itp.tar.gz")" "$(__ARCHIVE_DATE "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar")"
+      set "$(__ARCHIVE_DATE "archives/$OWN_ALIAS-$OWN_ADDR.itp.tar.gz")" "$(__ARCHIVE_DATE "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar")" "$2"
       if test "$1" = "$2";then
         mv "bkp/$OWN_ALIAS-$OWN_ADDR.itp.tar" "bkp/__$OWN_ALIAS-$OWN_ADDR.itp.tar"; echo "  II rearchived - diff for $1 blocked"
       fi
@@ -263,7 +263,7 @@ __DELETE_FROM_QUARANTINE (){
 }
 
 __QUARANTINE(){
-  set "$(ag -f -g "\.itp\.tar\.gz$" quarantine/ | pipe_if_not_empty $GK_FZF_CMD)"
+  set "$(ag --depth 0 -f -g '[0-9A-Za-z_]{1,12}-[0-9A-Za-z]{34}\.itp\.tar\.gz$' quarantine/ | pipe_if_not_empty $GK_FZF_CMD)"
   if test -z "$1" || ! test -f "$1";then echo "  II empty";return;fi
   echo "$1"
   printf "  \e[4mMM SUBMENU: quarantine\e[0m  [m]-move-into-archives [d]-delete-from-q [q]-abort >"
