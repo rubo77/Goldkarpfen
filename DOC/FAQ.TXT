@@ -1,0 +1,48 @@
+#V0.1
+
+Q: Why exchange files only once a day?
+A: Many users are baffeled that the Goldkarpfen/ITP is desinged that way, that itp-files are only synced on a daily basis.
+This has (A) technical reasons : it makes a p2p system like this robust and reliable and makes it even usable if you have a limited bandwidth.
+And (B) is a more human aproach to communication (having publishing in mind): It is something you have to try for some time : it will reduce stress and improve the quality of content.
+And (C) can establish a group communication under the worst conditions, where even a network connection isn't avaible. The itp-files could be exchanged via usb-sticks or adhoc-networks ; the time resolution based on days is the natural choice for that.
+
+Q: Why the ?*$! POSIX-SHELL?
+A1:
+POSIX-SHELL has many limitations, has only global variables and produces some messy code and a lot of nasty bugs, BUT:
+  - it is a very solid and matured standard, that is, and will be, the heart of any *nix system
+  - the limitations of it will force the overall size of a project to a sane level
+  - it is platform independent (more or less - depending on the prog's we use) (i guess we can port GK to (nearly) any *nix system)
+  - the *nix designers had POSIX-SHELL as the main control interface in mind, when designing the system - it's just the obvious choice
+  - if mastered ... it is just such a powerful and joyful way of achieving things with so little
+A2:
+It is the best machine dialect (i wouldn't call any of those language) i found - it is just perfect.
+A3:
+It may be not for you, but you can analyse the ITP-format and crypto (standard old school BTC) and build a compatible client in ANY machine dialect: elisp, pyhton, Go, C, C++ ...
+
+Q: How can we interpret the version?
+A:
+The leading 2 stands for the feature set. 1 was only the itp-reader, 2 stands for the reader with node management.
+The second number is the "real life proof indicator" ; 0 was alpha-early_beta, 1 stands for "real life tested".
+The last number is the running number, resulting in a version like : VERSION-2.1.xyz
+
+Q: Why the protocol break with BTC?
+A1:
+It is more secure.
+A2:
+To make clear that Goldkarpfen/ITP is not connected to the blockchain ; we are just using a similar crypto.
+A3:
+I think it looks nicer ;)
+
+Q: Why not comments of comments (of comments of comments...)?
+A:
+Comments of posts are already secondary in the ITP-format, because the async nature of the system. Obviously comments work only if both participants are "subscribed" to each other. A comments-of-comments tree under a post will be too chaotic if too many different users comment on each others comments and other users, who are not subscribed to all of those users, would try to understand it. I wasn't a big fan of comments-of-comments trees anyway - i think the post-comment structure is more focused and keeps the primary topic (the post) prioritized and is in general a less chaotic structure.
+
+Q: Why not utilizing minute-based timestamps for post/comments?
+A:
+One main goal of the ITP-format was to create more calm way of communication to improve the overall quality of the content. "The daily routine" ; planing content on a daily basis, checking it and publishing it after carefully thinking, will produce better user generated content. Also, the reductionist format produces less metadata and that, with the 9 post/comments-limitation, keeps the files smaller.
+
+Q: Why not establish some kind of private channel between 2 users?
+A:
+The Goldkarpfen/ITP is designed to follow the *nix rules, esp. "do one thing and do it perfectly". The one thing Goldkarpfen/ITP is designed for : a share hosted p2p publishing system: it is made for publishing. For private conversations you should use better suited tools (like eg. tox) - ((although you could implement inline encryption/decryption with a plugin))
+
+#LICENSE:CC0
