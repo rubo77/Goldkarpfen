@@ -1,7 +1,9 @@
-# ABOUT
-Goldkarpfen is a pure p2p communication system without any central authority.
+# Goldkarpfen
+Goldkarpfen is a p2p-share-hosted daily-routine blogging system without any central authority. The unique selling point of Goldkarpfen is its calm way of publishing: nodes will only sync once a day. This is a more human aproach to communication and will reduce stress and improve the quality of content.
 
 ## INSTALLATION AND FIRST START
+
+For quick install instructions see MORE_ABOUT_GOLDKARPFEN.TXT
 
 ### 1. Set EDITOR enviroment variable
 Your `EDITOR` enviroment variable needs to be set similar to this (add this to `~/.bashrc` or `~/.mkshrc` or alike):
@@ -96,5 +98,11 @@ Edit `my-stop-service.sh` and comment out darkhttp lines and add:
 
 ### BE SURE TO USE THE LATEST GOLDKARPFEN:
 From a running Goldkarpfen (>= 2.1.42) you should be able to update via [r][A] [r][U]
+
+### Further Information
+- MORE_ABOUT_GOLDKARPFEN.TXT
+- FAQ.TXT
+- ITP-DEFINITION
+- address_migration.txt
 
 #LICENSE:CC0
