@@ -6,14 +6,21 @@ if ! test -f $(basename $0);then echo "  EE run this script in its folder.";exit
 
 __SYNC(){
   rm ../VERSION*
-  for T_FILE in Goldkarpfen/DOC Goldkarpfen/itp-check.sh Goldkarpfen/Goldkarpfen.sh Goldkarpfen/include.sh Goldkarpfen/keys.sh Goldkarpfen/sign.sh Goldkarpfen/check-sign.sh Goldkarpfen/check-dates.sh Goldkarpfen/new-account.sh Goldkarpfen/prune-month.sh Goldkarpfen/plugins Goldkarpfen/sync-from-nodes.sh Goldkarpfen/update-archive-date.sh Goldkarpfen/start-hidden-service.py Goldkarpfen/start-services.sh Goldkarpfen/stop-hidden-service.py Goldkarpfen/stop-services.sh Goldkarpfen/help-en.dat Goldkarpfen/check-dependencies.sh Goldkarpfen/check-dependencies-ubuntu.sh Goldkarpfen/LICENSE Goldkarpfen/VERSION* Goldkarpfen/README Goldkarpfen/update-provider.inc.sh Goldkarpfen/.Goldkarpfen.start.sh Goldkarpfen/.Goldkarpfen.exit.sh;do
-    cp -a $T_FILE ..
+  mkdir -p ../DOC ../plugins
+  cd Goldkarpfen
+  for T_FILE in DOC/address_migration.txt DOC/ITP-DEFINITION itp-check.sh Goldkarpfen.sh include.sh keys.sh sign.sh check-sign.sh check-dates.sh new-account.sh prune-month.sh plugins/migration-warning.sh plugins/nodes.sh plugins/plugin.sh plugins/update.sh sync-from-nodes.sh update-archive-date.sh start-hidden-service.py start-services.sh stop-hidden-service.py stop-services.sh help-en.dat check-dependencies.sh check-dependencies-ubuntu.sh LICENSE README update-provider.inc.sh .Goldkarpfen.start.sh .Goldkarpfen.exit.sh;do
+    if ! cmp "$T_FILE" "../../$T_FILE" > /dev/null 2>&1;then
+      echo -n "  ## updating" ; echo " $T_FILE"
+      cp -a "$T_FILE" "../../$T_FILE"
+    fi
   done
+  cp -a VERSION-* ../../
+  cd ..
 }
 
 if test "$1" = "--first-run";then
   VERSION_ARCHIVES=$(tar -tf ../archives/"$UPD_NAME"| ag "VERSION" |  __collum 3 ".")
-  VERSION_LOCAL=$(ls ../VERSION-* | tail -n 1);VERSION_LOCAL=${VERSION_LOCAL#../VERSION-2.1.}
+  VERSION_LOCAL=$(ls ../VERSION-* | tail -n 1);VERSION_LOCAL=$(printf "%i" ${VERSION_LOCAL#../VERSION-2.1.})
   if test -z "$VERSION_ARCHIVES";then exit 1;fi
   echo "  II tarball version: "$DATE_ARCHIVES"  "$VERSION_ARCHIVES
   echo "  II local version  : "$DATE_LOCAL"  "$VERSION_LOCAL
@@ -34,8 +41,7 @@ if test "$1" = "--first-run";then
     exit 1
   fi
 else
-  __SYNC > /dev/null
-  echo "  ## updating"
+  __SYNC
   #CONFIG MIGRATION
   cd ..
   if ! test -f Goldkarpfen.config;then

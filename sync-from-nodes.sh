@@ -11,7 +11,7 @@ __CHECK_FOR_UPD(){
   __INIT_FILES
   if test -f "quarantine/$UPD_NAME";then
     VERSION_ARCHIVES=$(tar -tf quarantine/"$UPD_NAME" 2> /dev/null | ag "VERSION" | __collum 3 "." || echo 0)
-    if test "$(grep "$UDP_NAME VERSION" itp-files/$VERIFICATION_STREAM | sed 's/.*\.//' )" = "$VERSION_ARCHIVES";then
+    if test "$(grep "$UPD_NAME_REGEXP VERSION-2\.1\." itp-files/$VERIFICATION_STREAM | tail -n 1 | sed 's/.*\.//' )" = "$VERSION_ARCHIVES";then
       if ! grep "$(sha512sum quarantine/$UPD_NAME | __collum 1)" itp-files/$VERIFICATION_STREAM;then
         printf "  EE Could not verify checksum. Be sure to have the latest Goldkarpfen-1JULSJ5Nnba9So48zi21rpfTuZ3tqNRaFB.itp file\n  $UPD_NAME is in quarantine and further downloads of it are paused.\n  Sync again and test manually with:\n"
         echo 'grep $(sha512sum quarantine/'$UPD_NAME' | awk '"'{print \$1}'"') itp-files/'"$VERIFICATION_STREAM"
@@ -27,8 +27,8 @@ __CHECK_FOR_UPD(){
 }
 
 __UPD_NOTIFY(){
-  VERSION_ARCHIVES=$(tar -tf archives/"$UPD_NAME" 2> /dev/null | ag "VERSION" | __collum 3 "." || echo 0)
-  VERSION_LOCAL=$(ls VERSION-* | tail -n 1);VERSION_LOCAL=${VERSION_LOCAL#VERSION-2.1.}
+  VERSION_ARCHIVES=$(printf "%i" "$(tar -tf archives/"$UPD_NAME" 2> /dev/null | ag "VERSION" | __collum 3 ".")")
+  VERSION_LOCAL=$(ls VERSION-* | tail -n 1);VERSION_LOCAL=$(printf "%i" ${VERSION_LOCAL#VERSION-2.1.})
   if test "$VERSION_ARCHIVES" -gt "$VERSION_LOCAL";then echo "  II NEW GOLDKARPFEN : 2.1.$VERSION_ARCHIVES -> UPDATE WITH [r][U] " | ag ".";fi
 }
 
