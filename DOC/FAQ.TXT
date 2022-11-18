@@ -1,4 +1,12 @@
-#V0.1
+#V0.2
+
+Q: Why is Goldkarpfen needed, aren't there enough communications platforms?
+A1: Goldkarpfen is a real-pure p2p system. There are no centralized services needed to establish a Goldkarpfen-cloud. It is a tool that enables the user 100% - as the master, that controls his part of the network, without any compromise. With your Goldkarpfen instance, you have ALL the infrastructure that is needed to start a communication network : every instance of Goldkarpfen is a seed for the total network - there is no difference/hierarchy between users - the users are the rulers of this network.
+A2: There are no other services (bootstrap nodes, account services, trackers, nameservers, blockchain...) needed, all you need is a transport-layer (tor, i2p, tld, mesh-nets, usb-sticks, sheets of paper...<- yes this works! just send me a post card with your new post, date, the new checksum and signature, and i can reseed your new archive :D ) ((NOTE: also the update-provider can be changed at any time))
+A3: Goldkarpfen in its POSIX version gives total control to the user : your ITP-Stream, your stream collection, your node. The simplicity of the ITP-format enables the user to change and adapt the backend to his/her needs : as long as you offer a node-url with a valid server.dat and valid ITP-tarballs you can do whatever what you want.
+A4: The things mentioned above plus the primitive-robust rules for exchange of itp-files makes this the ultimate communication paradise for power user, who wants total control over her/his communication mechanics. Sure, this may be not for everyone. Users who expect their communication tool to be a product, which can be used effortless, will be disappointed - but we can expect, that others will build versions that are "more userfriendly" (<- which often means, control and power is taken away from the user).
+A5: You don't need a "nerd-diploma" to start with Goldkarpfen and if you try it, you will learn - step by step - more and more about the beauty of the text-based interface of your *nix-system, which is the most powerful way to control a computer and therefore the computer-world.
+   ~~~ a computer that hosts a working Goldkarpfen <°)))>< is a happy computer ~~~
 
 Q: Why exchange files only once a day?
 A: Many users are baffeled that the Goldkarpfen/ITP is desinged that way, that itp-files are only synced on a daily basis.
