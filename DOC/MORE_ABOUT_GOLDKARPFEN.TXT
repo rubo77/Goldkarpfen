@@ -1,4 +1,4 @@
-#V0.17
+#V0.18
 
 ### ABOUT (design goal)
 Goldkarpfen was esp. designed for the christian cyber community to provide a robust communication network, to secure a share hosting platform for the Holy Bible and other important books. Naturally, this is libre software : anybody can use it : for any publishing purpose - just like the printing press can be used for any kind of book.
@@ -77,6 +77,15 @@ Edit my-stop-service.sh and comment out the hidden service line:
 
 ### PRUNING OF ITP-FILES
 itp-files contain yearly rotational data. That means that they have to be pruned on a regular base. Goldkarpfen prunes old entries on the first of every month. It will you inform on startup on that day. Check carfully and backup some entries you wanna keep (reposting)
+
+### DIFF-PATCH-MODE (not activated yet) # dependency : bsdiff (bspatch - part of the package)
+If you have bsdiff installed, GK will produce a diff-file and offers it for download - there is no user interaction needed, generation and processing of diffs works automatically.
+
+Other nodes will download the diff file (if they have the according archive) and patch the according archive - this reduces the used bandwidth significantly (~500 B instead of 1-318 kBs per sync)
+
+GK will only produce and keep one diff (from the last archive) - cascading-diffs are not supported : the recieving user needs to have the last archive to process a diff ; if the "gap" is greater, GK will just download the whole file again.
+
+Diffs can only be generated if your archive was created ONCE a day; GK will take care of that and block generation of diffs, if your archive has been created more than once a day.
 
 ### USER MADE PLUGINS
 - host your plugins in archives/share
