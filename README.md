@@ -77,7 +77,14 @@ Check the config:
 
 Press [h] to get an overview.
 
-NOTE: dash (and others) does not support "read -n 1" - Goldkarpfen will work, but you have to press [Return] a lot ;)
+*NOTE: dash (and others) does not support "read -n 1" - Goldkarpfen will work, but you have to press [Return] a lot ;)*
+
+### Everyday usage
+- press p to **create a new post**
+- press a to update your own stream in ./archives. This will **publish** your stream for others to download
+- press r and A check for **updates** and install with r and U 
+- press r and w to check what's new in the streams you follow 
+- press h for more features
 
 ### OPTIONAL: GOPHER instead of HTTP
 (dependency: geomyidae or alike)  
