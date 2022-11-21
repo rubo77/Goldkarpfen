@@ -1,7 +1,7 @@
 #!/bin/sh
 #GPL-3 - See LICENSE file for copyright and license details.
 if ! test -f $(basename $0);then echo "  EE run this script in its folder";exit;fi
-mkdir -p tmp
+mkdir -p tmp bkp
 if ./keys.sh;then
   PUBKEY=$(grep -v "^-----" < .keys/pub.pem|tr -d "\n")
   ADDRESS=$(cat .keys/pub_hash)
@@ -22,8 +22,8 @@ if ./keys.sh;then
   echo "#COMMENTS_BEGIN" >> $FILENAME
   echo "#COMMENTS_END" >> $FILENAME
   echo "#LICENSE:CC0" >> $FILENAME
-  sha512sum "$FILENAME" > "$FILENAME".sha512sum
-  ./sign.sh "$FILENAME".sha512sum
+  sha512sum "$FILENAME" > "$FILENAME".sha512sum ; ./sign.sh "$FILENAME".sha512sum
+  cp "$FILENAME"* bkp/
   echo "# itp-file" > Goldkarpfen.config
   echo "$(basename $FILENAME)" >> Goldkarpfen.config
   echo "# server-port" >> Goldkarpfen.config

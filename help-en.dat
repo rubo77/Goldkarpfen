@@ -5,7 +5,7 @@ MAIN
 [u]-unpack             Unpack a tarball from your ./archives
 [m]-quarantine         move/delete tarballs from quarantine.
 
-[a]-archive            Archive your own stream to ./archives. This will publish your stream for others to download.
+[a]-archive/release    Archive your own stream to ./archives. This will publish your stream for others to download.
 [r]-run                Run plugins.
 [!]-edit               Edit your itp-file by hand.
 [x/y]-repairs          Rebuild alias cache or rebuild all workfiles - only for troubleshooting.

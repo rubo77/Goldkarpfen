@@ -81,9 +81,6 @@ __COMMENT(){
   if ! __CHECK_INPUT tmp/text 971;then echo "  EE input error";rm -f tmp/text;return;fi
   sed -i ""$1"i "$2":$3 $GK_JM @$GK_ID $(sed -n '1p' tmp/text)" "$OWN_STREAM"
   __OWN_SHA_SUM_UPDATE
-  if ./itp-check.sh "$OWN_STREAM" "$OWN_SUM";then #just to be sure!
-    cp $OWN_SUM cache
-  fi
   rm -f tmp/text
 }
 
@@ -188,22 +185,17 @@ __POST(){
   echo
   sed -i ""$1"i "$2":$3 $(sed -n '1p' tmp/text)" $OWN_STREAM
   rm -f tmp/text
-  __OWN_SHA_SUM_UPDATE
-  if ./itp-check.sh "$OWN_STREAM" "$OWN_SUM";then #just to be sure!
-    cp "$OWN_SUM" cache
-  fi
   GK_JM="$2"":"$3 ;GK_LN=$1
+  __OWN_SHA_SUM_UPDATE
 }
 
 __ARCHIVE(){
   if ! __HOOK_ARCHIVE_START;then return;fi
-  echo "  ## sanity check"
-  if ./itp-check.sh $OWN_STREAM $OWN_SUM;then echo "  II your file is itp conform";else echo "  EE your itp file is not conform!";return;fi
   if test -f "archives/$OWN_ALIAS-$OWN_ADDR.itp.tar.gz" && test "$(tar xOf "archives/$OWN_ALIAS-$OWN_ADDR.itp.tar.gz" "$OWN_ALIAS-$OWN_ADDR.itp.sha512sum")" = "$(cat "itp-files/$OWN_ALIAS-$OWN_ADDR.itp.sha512sum")";then
     echo "  II you haven’t changed anything - abort"; return
   fi
   sed -i "s/^#LICENSE:CC0.*$/#LICENSE:CC0 $(date --utc '+%y-%m-%d')/" "$OWN_STREAM"
-  __OWN_SHA_SUM_UPDATE; cp "$OWN_SUM" cache
+  if ! __OWN_SHA_SUM_UPDATE;then return;fi
   echo "  ## archiving"
   if tar cfv "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar" --mtime="$(date +'%Y-%m-%d %H:00')" -C itp-files "$OWN_ALIAS-$OWN_ADDR.itp.sha512sum" "$OWN_ALIAS-$OWN_ADDR.itp" "$OWN_ALIAS-$OWN_ADDR.itp.sha512sum.sig" --utc --numeric-owner;then
     if test -f "archives/$OWN_ALIAS-$OWN_ADDR.itp.tar.gz";then
@@ -293,7 +285,6 @@ __EDIT(){
     if ./itp-check.sh "tmp/$OWN_ALIAS-$OWN_ADDR.itp" "tmp/$OWN_ALIAS-$OWN_ADDR.itp.sha512sum";then
       cp "tmp/$OWN_ALIAS-$OWN_ADDR.itp" itp-files
       __OWN_SHA_SUM_UPDATE
-      __INIT_FILES
     else
       echo "  EE file is not itp conform - abort"
     fi
@@ -370,11 +361,17 @@ __REBUILD_ALIASES(){
 
 __OWN_SHA_SUM_UPDATE(){
   echo "  ## generating new checksum"
-  cd itp-files
-  sha512sum "$OWN_ALIAS-$OWN_ADDR.itp" > "$OWN_ALIAS-$OWN_ADDR.itp.sha512sum"
-  cd ..
+  cd itp-files ; sha512sum "$OWN_ALIAS-$OWN_ADDR.itp" > "$OWN_ALIAS-$OWN_ADDR.itp.sha512sum" ; cd ..
   printf "  ## signing: "
-  if ./sign.sh "$OWN_STREAM".sha512sum && ./check-sign.sh "$OWN_STREAM" 2> /dev/null;then cp $OWN_STREAM* bkp; else echo "  EE signing failed";fi
+  if ./sign.sh "$OWN_STREAM".sha512sum && ./check-sign.sh "$OWN_STREAM" 2> /dev/null && ./itp-check.sh "$OWN_STREAM" "$OWN_SUM";then
+    cp $OWN_SUM cache/ ; cp $OWN_STREAM* bkp
+  else
+    echo "  EE signing failed and/or itp-check failed - restoring backup (last change - that caused the error - is lost)"
+    cp bkp/"$OWN_ALIAS-$OWN_ADDR.itp" itp-files/ ; cp bkp/"$OWN_ALIAS-$OWN_ADDR.itp.sha512sum" itp-files/ ; cp bkp/"$OWN_ALIAS-$OWN_ADDR.itp.sha512sum.sig" itp-files/
+    __INIT_FILES
+    GK_JM="" ;GK_LN=""
+    return 1
+  fi
 }
 
 ### MAIN starts here
@@ -409,9 +406,7 @@ if ! test -f cache/last_prune/last_prune;then date --utc +"%m" > cache/last_prun
 if test $(cat cache/last_prune/last_prune) != $(date --utc +"%m");then
   echo "  II pruning $OWN_STREAM"
   if ./prune-month.sh $(cat cache/last_prune/last_prune) "$OWN_STREAM";then
-    date --utc +"%m" > cache/last_prune/last_prune
-    __OWN_SHA_SUM_UPDATE
-    __INIT_FILES
+    if __OWN_SHA_SUM_UPDATE;then date --utc +"%m" > cache/last_prune/last_prune;fi
   fi
 fi
 
@@ -452,7 +447,7 @@ __HOOK_START
 #main loop
 while true;do
   GK_COLS=$(( $(tput cols) - 5))
-  printf "\n[$GK_MODE] UTC:[$(date --utc "+%m.%d")] ACCOUNT:\e[7m[$OWN_ALIAS]\e[0m STREAM:\e[7m[$GK_ALIAS]\e[0m TOPIC_ID: [$GK_JM] [$GK_LN]\n[v]-view [p]-post [s]-select_stream [u]-unpack [m]-quarantine [a]-archive [r]-plugins [!]-edit [x/y]-repairs [h]-help [Q]-quit >" | fold -s -w $GK_COLS
+  printf "\n[$GK_MODE] UTC:[$(date --utc "+%m.%d")] ACCOUNT:\e[7m[$OWN_ALIAS]\e[0m STREAM:\e[7m[$GK_ALIAS]\e[0m TOPIC_ID: [$GK_JM] [$GK_LN]\n[v]-view [p]-post [s]-select_stream [u]-unpack [m]-quarantine [a]-archive/release [r]-plugins [!]-edit [x/y]-repairs [h]-help [Q]-quit >" | fold -s -w $GK_COLS
   $GK_READ_CMD T_CHAR
   echo
   case "$T_CHAR" in
