@@ -100,6 +100,7 @@ Edit `my-stop-service.sh` and comment out darkhttp lines and add:
 From a running Goldkarpfen (>= 2.1.42) you should be able to update via [r][A] [r][U]
 
 ### Further Information
+- help-en.dat
 - MORE_ABOUT_GOLDKARPFEN.TXT
 - FAQ.TXT
 - ITP-DEFINITION
