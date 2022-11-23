@@ -8,7 +8,7 @@ __SYNC(){
   rm ../VERSION*
   mkdir -p ../DOC ../plugins
   cd Goldkarpfen
-  for T_FILE in DOC/address_migration.txt DOC/ITP-DEFINITION itp-check.sh Goldkarpfen.sh include.sh keys.sh sign.sh check-sign.sh check-dates.sh new-account.sh prune-month.sh plugins/migration-warning.sh plugins/nodes.sh plugins/plugin.sh plugins/update.sh sync-from-nodes.sh update-archive-date.sh start-hidden-service.py start-services.sh stop-hidden-service.py stop-services.sh help-en.dat check-dependencies.sh check-dependencies-ubuntu.sh LICENSE README update-provider.inc.sh .Goldkarpfen.start.sh .Goldkarpfen.exit.sh;do
+  for T_FILE in DOC/address_migration.txt DOC/ITP-DEFINITION itp-check.sh Goldkarpfen.sh include.sh keys.sh sign.sh check-sign.sh check-dates.sh new-account.sh prune-month.sh plugins/migration-warning.sh plugins/nodes.sh plugins/plugin.sh plugins/update.sh sync-from-nodes.sh update-archive-date.sh start-hidden-service.py start-services.sh stop-hidden-service.py stop-services.sh help-en.dat check-dependencies.sh LICENSE README update-provider.inc.sh .Goldkarpfen.start.sh .Goldkarpfen.exit.sh;do
     if ! cmp "$T_FILE" "../../$T_FILE" > /dev/null 2>&1;then
       echo -n "  ## updating" ; echo " $T_FILE"
       cp -a "$T_FILE" "../../$T_FILE"
@@ -49,7 +49,7 @@ else
     BUF2=$(ag --no-numbers '^.*SERVER_PORT' .Goldkarpfen.config.default.sh | sed 's/^.*="//' | sed 's/".*//')
     echo "# itp-file" > Goldkarpfen.config
     echo "$BUF1" >> Goldkarpfen.config
-    echo "# server-port" >> Goldkarpfen.config
+    echo "# SERVER_PORT" >> Goldkarpfen.config
     echo "$BUF2" >> Goldkarpfen.config
   fi
   if test -f .Goldkarpfen.config.default.sh;then echo; echo "  II .Goldkarpfen.config.default.sh is obsolete. you can delete it" | ag .;fi

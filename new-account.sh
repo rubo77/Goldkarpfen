@@ -26,7 +26,7 @@ if ./keys.sh;then
   cp "$FILENAME"* bkp/
   echo "# itp-file" > Goldkarpfen.config
   echo "$(basename $FILENAME)" >> Goldkarpfen.config
-  echo "# server-port" >> Goldkarpfen.config
+  echo "# SERVER_PORT" >> Goldkarpfen.config
   echo "8087" >> Goldkarpfen.config
   echo "$BUF""-""$ADDRESS".itp > blacklist.dat
   echo "Ok"

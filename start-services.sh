@@ -9,4 +9,4 @@ else
   darkhttpd archives/ --port $2 --daemon --log server.log --maxconn 10 --no-server-id --no-listing --pidfile ./tmp/darkhttpd.pid | sed 's/^/  ## /'
 fi
 
-python3 start-hidden-service.py $1 $2 80 #80 for http, 70 for gopher
+if test "$3" = "tor-ctrl";then python3 start-hidden-service.py $1 $2 80;fi

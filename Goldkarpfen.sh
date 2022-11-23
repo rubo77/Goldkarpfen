@@ -447,7 +447,7 @@ __HOOK_START
 #main loop
 while true;do
   GK_COLS=$(( $(tput cols) - 5))
-  printf "\n[$GK_MODE] UTC:[$(date --utc "+%m.%d")] ACCOUNT:\e[7m[$OWN_ALIAS]\e[0m STREAM:\e[7m[$GK_ALIAS]\e[0m TOPIC_ID: [$GK_JM] [$GK_LN]\n[v]-view [p]-post [s]-select_stream [u]-unpack [m]-quarantine [a]-archive/release [r]-plugins [!]-edit [x/y]-repairs [h]-help [Q]-quit >" | fold -s -w $GK_COLS
+  printf "\n[$GK_MODE] UTC:[$(date --utc "+%m.%d")] MY:[\e[7m$OWN_ALIAS\e[0m] SELECT:[\e[7m$GK_ALIAS\e[0m]$GK_JM\n[v]-view [p]-post [s]-select_stream [u]-unpack [m]-quarantine [a]-archive/release [r]-plugins [!]-edit [x/y]-repairs [h]-help [Q]-quit >" | fold -s -w $GK_COLS
   $GK_READ_CMD T_CHAR
   echo
   case "$T_CHAR" in

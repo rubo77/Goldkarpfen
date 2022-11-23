@@ -1,88 +1,100 @@
 ### ABOUT
-Goldkarpfen is a pure p2p communication system without any central authority.
+  Goldkarpfen is a pure p2p communication system without any central authority.
 
 ### INSTALLATION AND FIRST START
 1. Your EDITOR enviroment variable needs to be set similar to this (add this to ~/.bashrc or ~/.mkshrc or alike):
-  export EDITOR="nano"
+export EDITOR="nano"
 
-2. Install the basic dependencies:
-ag (the-silver-searcher), fzy (or fzf), libressl/openssl, xxd from vim/xxd-standalone
+2. INSTALL THE BASIC DEPENDENCIES
+  ag (the-silver-searcher), fzy (or fzf), libressl/openssl, xxd from vim/xxd-standalone, iproute2
 
-Choose a method for hosting: 3a. ONION-SHARING _or_ 3b. i2p-SHARING
+  IMPORTANT: test if the basic dependencies are met (must not return ERROR):
+./check-dependencies.sh
 
-3a. ONION-SHARING
-Install the dependencies:
-iproute2, python3, python-stem, darkhttpd, tor, curl
+3. CREATE AN ACCOUNT
+./new-account
+  note: KEY_ADDR
+  Check the config:
+more ./Goldkarpfen.config
+  note: SERVER_PORT
 
-Edit your /etc/tor/torrc to contain this:
-  ControlPort 9051
-  CookieAuthentication 1
-  CookieAuthFile /var/lib/tor/control_auth_cookie
-  CookieAuthFileGroupReadable 1
-  DataDirectoryGroupReadable 1
-  CacheDirectoryGroupReadable 1
+  If you want an offline instance -> proceed with STEP 6.
 
-Add your user to the tor group (debian-tor on ubuntu)
+4. Install the dependencies for download and hosting
+  darkhttpd, curl
 
-Proceed with 4. PRE-START.
+  Test your settings:
+./check-dependencies.sh
+  Should return: ... host get ok
 
-3b. i2p-SHARING
-Install the dependencies:
-i2pd or i2p-java, iproute2, darkhttpd, curl
+5.Choose a method for hosting:
+  5A. ONION-CTRL
+  5B. ONION-STATIC
+  5C. I2P
 
-Copy the service files:
-  cp start-services.sh my-start-services.sh
-  cp stop-services.sh my-stop-services.sh
+5A. ONION-CTRL
+  Install the dependencies:
+  python3, python-stem, tor
 
-Edit my-start-service.sh and comment out the hidden service line:
-  #python3 start-hidden-service.py $1 $2 70 #80 for http, 70 for gopher
+  Edit your /etc/tor/torrc to contain this:
+ControlPort 9051
+CookieAuthentication 1
+CookieAuthFile /var/lib/tor/control_auth_cookie
+CookieAuthFileGroupReadable 1
+DataDirectoryGroupReadable 1
+CacheDirectoryGroupReadable 1
 
-Edit my-stop-service.sh and comment out the hidden service line:
-  #python3 stop-hidden-service.py $1
+  Add your user to the tor group (debian-tor on ubuntu) (restart may be neccessary!)
 
-AFTER STEP 5
-configure a http tunnel (use the port number defined in your Goldkarpfen.config)
-start your i2p-daemon
-AFTER STEP 6
-get your i2p hostname (i.e. i2pd: 127.0.0.1:7070/?page=i2p_tunnels ) and add with [r][h]
+  Test your settings:
+./check-dependencies.sh
+  Should return: tor-ctrl ...
 
-Proceed with 4. PRE-START
+5B. ONION-STATIC
+  Install the dependencies:
+  tor
 
-4. PRE-START
-Check the dependencies !!IMPORTANT!!
-NOTE: On some systems (i.e. ubuntu) "which" won't output an error to stderr.
-If check-dependencies.sh returns "ERROR", "tor-passive" or "PASSIVE" and no error message, then use ./check-dependencies-ubuntu.sh
-  ./check-dependencies.sh  # run this until it returns "tor" or "i2p"
+  add this to your /etc/torrc (KEY_ADDR and SERVER_PORT from above)
+HiddenServiceDir /var/lib/tor/KEY_ADDR/
+HiddenServicePort 80 127.0.0.1:SERVER_PORT
 
-5. CREATE AN ACCOUNT
-  ./new-account
+  Start tor (e.g. systemctl)
+sudo systemctl start tor
 
-Check the config:
-  more ./Goldkarpfen.config
+  Test your settings:
+./check-dependencies.sh
+  Should return: tor-static ...
+
+5C. i2p-SHARING
+  Install the dependencies:
+  i2pd or i2p-java
+  configure a http tunnel (use SERVER_PORT defined in your Goldkarpfen.config)
+  start your i2p-daemon (example i2pd)
+i2pd
+
+  Test your settings:
+./check-dependencies.sh
+  Should return: ... i2p ...
 
 6. START
+  NOTE: dash (and others) does not support "read -n 1" - Goldkarpfen will work, but you have to press [Return] a lot ;)
   bash ./Goldkarpfen.sh  # or
   mksh ./Goldkarpfen.sh  # or
   busybox sh ./Goldkarpfen.sh
 
-Press [h] to get an overview.
+  Press [h] to get an overview.
 
-NOTE: dash (and others) does not support "read -n 1" - Goldkarpfen will work, but you have to press [Return] a lot ;)
+  Get your service-url (if you have configured a ONION-hidden service or I2P-tunnel)
+  ONION:
+sudo cat /var/lib/tor/KEY_ADDR/hostname
 
-### OPTIONAL: GOPHER instead of HTTP (dependency: geomyidae or alike)
-NOTE: Do something similar if you want to use a different http-server than darkhttpd.
-  cp start-services.sh my-start-services.sh
-  cp stop-services.sh my-stop-services.sh
+  I2P (example i2pd):
+  http://127.0.0.1:7070/?page=i2p_tunnels
 
-Edit my-start-service.sh and comment out darkhttpd lines and add the gopher related lines:
-  #darkhttpd archives/ --port $2 --daemon --log server.log --maxconn 10 --no-server-id --no-listing --pidfile ./tmp/darkhttpd.pid | sed 's/^/ \* /'
-  geomyidae -b archives -p $2 -logfile server.log
-  python3 start-hidden-service.py $1 $2 70 #80 for http, 70 for gopher
+  and add your onion/i2p url with [r][h]
 
-Edit my-stop-service.sh and comment out darkhttp lines and add:
-  killall geomyidae #or come up with something more elaborated if you are running multiple instances
-
-### BE SURE TO USE THE LATEST GOLDKARPFEN:
-From a running Goldkarpfen (>= 2.1.42) you should be able to update via [r][A] [r][U]
+7. MORE INFO
+http://6f5bmqtipvz7wdurqx7ireer3j47wegaztivl5pnsiumk5jeurua.b32.i2p/share/FAQ.TXT
+http://6f5bmqtipvz7wdurqx7ireer3j47wegaztivl5pnsiumk5jeurua.b32.i2p/share/MORE_ABOUT_GOLDKARPFEN.TXT
 
 #LICENSE:CC0
