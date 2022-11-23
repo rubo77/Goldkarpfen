@@ -17,9 +17,8 @@ __UPDATE_DATE(){
     return
   fi
   DATE=$(date --utc +"%y-%m-%d" -d $BUF)
-  #DIFF-PATCH-VERSION
-  #DDATE="$(ls "$1"* | ag "_D\d\d-\d\d-\d\d$" | tail -n 1 | awk -F "_" '{print $2}')"
-  echo "$1 $DATE" #if test -z "$DDATE";then echo "$1 $DATE";else echo "$1 $DATE $DDATE";fi
+  DDATE="$(ls "$1"* | ag "_D\d\d-\d\d-\d\d$" | tail -n 1 | awk -F "_" '{print $2}')"
+  if test -z "$DDATE";then echo "$1 $DATE";else echo "$1 $DATE $DDATE";fi
 }
 
 if test -z "$1";then

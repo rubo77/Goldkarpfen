@@ -14,7 +14,7 @@ echo "  ## startup ..."
 GK_MODE="ERROR"
 if test -f my-check-dependencies.sh;then GK_MODE=$(./my-check-dependencies.sh | tail -n 1);else GK_MODE=$(./check-dependencies.sh | tail -n 1);fi
 if test "$GK_MODE" = "ERROR";then exit 1;fi
-if which bsdiff > /dev/null 2>&1; then GK_DIFF_MODE="yes";fi #DIFF-PATCH-VERSION else echo "  II install bsdiff to enable diff-mode"
+if which bsdiff > /dev/null 2>&1; then GK_DIFF_MODE="yes";else echo "  II install bsdiff to enable diff-mode";fi
 
 #new account?
 if ! test -d .keys;then
@@ -447,7 +447,7 @@ __HOOK_START
 #main loop
 while true;do
   GK_COLS=$(( $(tput cols) - 5))
-  printf "\n[$GK_MODE] UTC:[$(date --utc "+%m.%d")] MY:[\e[7m$OWN_ALIAS\e[0m] SELECT:[\e[7m$GK_ALIAS\e[0m]$GK_JM\n[v]-view [p]-post [s]-select_stream [u]-unpack [m]-quarantine [a]-archive/release [r]-plugins [!]-edit [x/y]-repairs [h]-help [Q]-quit >" | fold -s -w $GK_COLS
+  printf "\n[$GK_MODE] UTC:[$(date --utc "+%m.%d")] MY:\e[7m[$OWN_ALIAS]\e[0m SELECT:\e[7m[$GK_ALIAS]\e[0m$GK_JM\n[v]-view [p]-post [s]-select_stream [u]-unpack [m]-quarantine [a]-archive/release [r]-plugins [!]-edit [x/y]-repairs [h]-help [Q]-quit >" | fold -s -w $GK_COLS
   $GK_READ_CMD T_CHAR
   echo
   case "$T_CHAR" in

@@ -41,6 +41,7 @@ if test "$1" = "--first-run";then
     exit 1
   fi
 else
+  VERSION_LOCAL=$(ls ../VERSION-* | tail -n 1);VERSION_LOCAL=$(printf "%i" ${VERSION_LOCAL#../VERSION-2.1.})
   __SYNC
   #CONFIG MIGRATION
   cd ..
@@ -53,4 +54,5 @@ else
     echo "$BUF2" >> Goldkarpfen.config
   fi
   if test -f .Goldkarpfen.config.default.sh;then echo; echo "  II .Goldkarpfen.config.default.sh is obsolete. you can delete it" | ag .;fi
+  if test "$VERSION_LOCAL" -lt 208;then echo; echo "  II server.dat format has changed : run [r][A] after restart again" | ag .;fi
 fi

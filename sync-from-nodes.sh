@@ -48,16 +48,14 @@ __DOWNLOAD(){
   printf "\e[7m"$1"\e[0m\n"
   T_CMD=$(__DOWNLOAD_COMMAND "$URL" "$1" || echo "__error_getting_dl_cmd;")
   if $T_CMD -o "sync/$1" --max-filesize 318K;then
-    #DIFF-PATCH-VERSION
-    #if test "$2" = "--patch";then
-    #  set "$(echo $1 | __collum 1 "_")" "$2" "$1"
-    #  gunzip -c "archives/$1" > tmp/tmp.tar; bspatch tmp/tmp.tar "sync/${1%.gz}" "sync/$3"; gzip "sync/${1%.gz}" ; rm -f tmp/tmp.tar
-    #fi
+    if test "$2" = "--patch";then
+      set "$(echo $1 | __collum 1 "_")" "$2" "$1"
+      gunzip -c "archives/$1" > tmp/tmp.tar; bspatch tmp/tmp.tar "sync/${1%.gz}" "sync/$3"; gzip "sync/${1%.gz}" ; rm -f tmp/tmp.tar
+    fi
     if ! test "$(__ARCHIVE_DATE "sync/$1")" = "$FILE_DATE";then
       printf "  EE There is a difference in the server.dat and the real age of the archive,\n  The archive is missing files or your server.dat is corrupt.\n  moving the archive to quarantine for inspection\n"
       mv "sync/$1" quarantine/"$(basename $1)"".""$(mktemp -u XXXXXXXX)"
-      #DIFF-PATCH-VERSION
-      #if test -f "sync/$3";then mv "sync/$3" quarantine/"$(basename $3)"".""$(mktemp -u XXXXXXXX)";fi
+      if test -f "sync/$3";then mv "sync/$3" quarantine/"$(basename $3)"".""$(mktemp -u XXXXXXXX)";fi
       return 1
     fi
     if test "$1" = "$UPD_NAME";then mv "sync/$1" quarantine;return 0;fi
@@ -71,12 +69,10 @@ __DOWNLOAD(){
     fi
     if __TEST_AND_UNPACK_ARCHIVE "sync/$1" $OPTIONS;then
       mv "sync/$1" $TARGET
-      #DIFF-PATCH-VERSION
-      #rm -f archives/$1_D*
-      #if test -f "sync/$3";then mv "sync/$3" archives/;fi
+      rm -f archives/$1_D*
+      if test -f "sync/$3";then mv "sync/$3" archives/;fi
     else
-      #DIFF-PATCH-VERSION
-      #if test -f "sync/$3";then mv "sync/$3" quarantine/"$(basename $3)"".""$(mktemp -u XXXXXXXX)";fi
+      if test -f "sync/$3";then mv "sync/$3" quarantine/"$(basename $3)"".""$(mktemp -u XXXXXXXX)";fi
       return 1
     fi
   fi
@@ -103,7 +99,7 @@ __SYNC_ALL(){
             LOCAL_DATE=$(ag --no-numbers --no-filename  "^$1 " archives/server.dat | head -n 1 | __collum 2) ;
             if ./check-dates.sh "$2" "$LOCAL_DATE" > /dev/null 2>&1;then
               if test "$LOCAL_DATE" = "${3#D}" && test "$GK_DIFF_MODE" = "yes" && ! test "$FILE" = "$UPD_NAME" && ! test "$FILE" = "$VERIFICATION_STREAM.tar.gz";then
-                  __DOWNLOAD "$1" #DIFF-PATCH-VERSION if ! __DOWNLOAD "$1_$3" --patch;then __DOWNLOAD "$1";fi
+                  if ! __DOWNLOAD "$1_$3" --patch;then __DOWNLOAD "$1";fi
                 else
                   __DOWNLOAD "$1"
               fi
