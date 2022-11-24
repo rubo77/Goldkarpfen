@@ -3,9 +3,6 @@
 if ! test -f $(basename $0);then echo "  EE run this script in its folder";exit;fi
 if test -f ./sync-from-nodes.pid && ps --pid $(cat sync-from-nodes.pid) > /dev/null;then echo "  EE sync-from-nodes.pid exists";exit;fi
 echo $$ > sync-from-nodes.pid
-. ./update-provider.inc.sh
-. ./include.sh
-if test -f ./whitelist.dat;then LIST_MODE=""; LIST_RGXP="whitelist.dat";else LIST_MODE="-v"; LIST_RGXP="blacklist.dat";fi
 
 __CHECK_FOR_UPD(){
   __INIT_FILES
@@ -32,12 +29,6 @@ __UPD_NOTIFY(){
   if test "$VERSION_ARCHIVES" -gt "$VERSION_LOCAL";then echo "  II NEW GOLDKARPFEN : 2.1.$VERSION_ARCHIVES -> UPDATE WITH [r][U] " | ag ".";fi
 }
 
-trap 'echo "  ## pls wait ...";__CHECK_FOR_UPD;__UPD_NOTIFY; rm -f tmp/server.dat tmp/filtered_server.dat sync-from-nodes.pid; trap - EXIT; exit' EXIT INT HUP TERM QUIT
-
-if which bspatch > /dev/null 2>&1;then GK_DIFF_MODE="yes";fi
-touch -a blacklist.dat
-touch -a archives/server.dat
-
 __DOWNLOAD(){
   if test -z $UPDATE_ONLY;then
     if test $(ag --no-numbers --no-filename -v "^(\b$UPD_NAME_REGEXP\b|\b$VERIFICATION_STREAM.tar.gz\b)" archives/server.dat | wc -l) -gt 58;then
@@ -60,15 +51,15 @@ __DOWNLOAD(){
     fi
     if test "$1" = "$UPD_NAME";then mv "sync/$1" quarantine;return 0;fi
     if grep $(basename "${1%.tar.gz}") cache/sane_files || test "$1" = "$VERIFICATION_STREAM.tar.gz";then
-       TARGET="archives/" ; OPTIONS=
+       T_TARGET="archives/" ; OPTIONS=
     elif test -f "archives/$1";then
-       TARGET="archives/" ; OPTIONS="--no-unpack"
+       T_TARGET="archives/" ; OPTIONS="--no-unpack"
     else
        echo "  II NEW ARCHIVE - first unpack needs to be done manually"
-       TARGET="quarantine/" ; OPTIONS="--no-unpack"
+       T_TARGET="quarantine/" ; OPTIONS="--no-unpack"
     fi
     if __TEST_AND_UNPACK_ARCHIVE "sync/$1" $OPTIONS;then
-      mv "sync/$1" $TARGET
+      mv "sync/$1" $T_TARGET
       rm -f archives/$1_D*
       if test -f "sync/$3";then mv "sync/$3" archives/;fi
     else
@@ -122,17 +113,28 @@ __SYNC_ALL(){
   done
 }
 
+for T_ARG in $@;do
+  if test "$T_ARG" = "--loop";then T_LOOP="yes"; shift
+  elif test "$T_ARG" = "--less-verbose";then LESS_VERBOSE="yes"; shift
+  elif echo "$T_ARG" | ag "^--pause=[0-9]*$" > /dev/null;then T_PAUSE="$(printf "%i" ${T_ARG#--pause=})"; shift
+  else echo "usage : ./sync-from-nodes.sh [--less-verbose] [--loop] [--pause=seconds] # seconds>599";exit;fi
+  if test -z $T_PAUSE || test $T_PAUSE -lt 600;then T_PAUSE=3600;fi
+done
+
+. ./update-provider.inc.sh
+. ./include.sh
+if test -f ./whitelist.dat;then LIST_MODE=""; LIST_RGXP="whitelist.dat";else LIST_MODE="-v"; LIST_RGXP="blacklist.dat";fi
+if which bspatch > /dev/null 2>&1;then GK_DIFF_MODE="yes";fi
+touch -a blacklist.dat archives/server.dat ; mkdir -p cache/last_prune archives plugins quarantine sync bkp tmp
+trap 'echo "  ## pls wait ...";__CHECK_FOR_UPD;__UPD_NOTIFY; rm -f tmp/server.dat tmp/filtered_server.dat sync-from-nodes.pid; trap - EXIT; exit' EXIT INT HUP TERM QUIT
 ./update-archive-date.sh
-if test "$1" = "--loop";then
-  shift
-  if test "$1" = "--less-verbose";then LESS_VERBOSE="yes";shift;fi
-  if test -z $1;then PAUSE=3600;else PAUSE="$1";shift;fi
+
+if test "$T_LOOP" = "yes";then
   while true;do
     __SYNC_ALL
-    echo "  ## idle for $PAUSE - exit with ^C (-> ONCE <-)"
-    sleep $PAUSE
+    echo "  ## idle for $T_PAUSE - exit with ^C (-> ONCE <-)"
+    sleep $T_PAUSE
   done
 else
-  if test "$1" = "--less-verbose";then LESS_VERBOSE="yes";shift;fi
   __SYNC_ALL
 fi
