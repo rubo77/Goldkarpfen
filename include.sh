@@ -56,7 +56,7 @@ __ARCHIVE_DATE(){
 __TEST_ARCHIVE_CONTENT(){
   if ! test $(tar -tvf "$1" | ag " $(basename $1 | __collum 1 ".").itp$| $(basename $1 | __collum 1 ".").itp.sha512sum$| $(basename $1 | __collum 1 ".").itp.sha512sum.sig$" | wc -l) = 3;then
     >&2 echo "  EE $1 does not contain the required file set - moved to quarantine for inspection"
-    mv "$1" quarantine/"$(basename $1)"".""$(mktemp -u XXXXXXXX)"
+    mv "$1" quarantine/"GARBAGE_$(basename $1).$(mktemp -u XXXXXXXX)"
     return 1
   fi
 }
@@ -88,7 +88,7 @@ __TEST_AND_UNPACK_ARCHIVE(){
   if ! test "$T_BUF" = "$(date --utc +%y-%m-%d -d $(TZ="UTC" ls -l --time-style="long-iso"  $2 | __collum 6))";then
     echo "  EE $1 time stamp is not valid - moved to quarantine for inspection"
     rm "$2.sha512sum" "$2.sha512sum.sig" "$2"
-    mv "$1" quarantine/"$(basename $1)"".""$(mktemp -u XXXXXXXX)"
+    mv "$1" quarantine/"GARBAGE_$(basename $1).$(mktemp -u XXXXXXXX)"
     return 1
   fi
   if ./itp-check.sh "$2" "$2"".sha512sum" && ./check-sign.sh "$2" > /dev/null 2>&1;then
@@ -102,7 +102,7 @@ __TEST_AND_UNPACK_ARCHIVE(){
   else
     echo "  EE $1 no valid signature or/and itp-check failed - moved to quarantine for inspection"
     rm "$2.sha512sum" "$2.sha512sum.sig" "$2"
-    mv "$1" quarantine/"$(basename $1)"".""$(mktemp -u XXXXXXXX)"
+    mv "$1" quarantine/"GARBAGE_$(basename $1).$(mktemp -u XXXXXXXX)"
     return 1
   fi
 }

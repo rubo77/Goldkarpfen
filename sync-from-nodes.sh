@@ -45,8 +45,8 @@ __DOWNLOAD(){
     fi
     if ! test "$(__ARCHIVE_DATE "sync/$1")" = "$FILE_DATE";then
       printf "  EE There is a difference in the server.dat and the real age of the archive,\n  The archive is missing files or your server.dat is corrupt.\n  moving the archive to quarantine for inspection\n"
-      mv "sync/$1" quarantine/"$(basename $1)"".""$(mktemp -u XXXXXXXX)"
-      if test -f "sync/$3";then mv "sync/$3" quarantine/"$(basename $3)"".""$(mktemp -u XXXXXXXX)";fi
+      mv "sync/$1" quarantine/"GARBAGE_$(basename $1).$(mktemp -u XXXXXXXX)"
+      if test -f "sync/$3";then mv "sync/$3" quarantine/"GARBAGE_$(basename $3).$(mktemp -u XXXXXXXX)";fi
       return 1
     fi
     if test "$1" = "$UPD_NAME";then mv "sync/$1" quarantine;return 0;fi
@@ -63,7 +63,7 @@ __DOWNLOAD(){
       rm -f archives/$1_D*
       if test -f "sync/$3";then mv "sync/$3" archives/;fi
     else
-      if test -f "sync/$3";then mv "sync/$3" quarantine/"$(basename $3)"".""$(mktemp -u XXXXXXXX)";fi
+      if test -f "sync/$3";then mv "sync/$3" quarantine/"GARBAGE_$(basename $3).$(mktemp -u XXXXXXXX)";fi
       return 1
     fi
   fi
