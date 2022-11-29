@@ -1,13 +1,13 @@
 #!/bin/sh
 #GPL-3 - See LICENSE file for copyright and license details.
-if ! test -f $(basename $0);then echo "  EE run this script in its folder.";exit;fi
+if ! test -f $(basename "$0");then echo "  EE run this script in its folder.";exit;fi
 . ../include.sh
 . ../update-provider.inc.sh
 
 __SYNC(){
   rm ../VERSION*
   mkdir -p ../DOC ../plugins
-  cd Goldkarpfen
+  cd Goldkarpfen || exit 1
   for T_FILE in DOC/address_migration.txt DOC/ITP-DEFINITION itp-check.sh Goldkarpfen.sh include.sh keys.sh sign.sh check-sign.sh check-dates.sh new-account.sh prune-month.sh plugins/migration-warning.sh plugins/nodes.sh plugins/plugin.sh plugins/update.sh sync-from-nodes.sh update-archive-date.sh start-hidden-service.py start-services.sh stop-hidden-service.py stop-services.sh help-en.dat check-dependencies.sh LICENSE README update-provider.inc.sh .Goldkarpfen.start.sh .Goldkarpfen.exit.sh;do
     if ! cmp "$T_FILE" "../../$T_FILE" > /dev/null 2>&1;then
       echo -n "  ## updating" ; echo " $T_FILE"
@@ -20,7 +20,7 @@ __SYNC(){
 
 if test "$1" = "--first-run";then
   VERSION_ARCHIVES=$(tar -tf ../archives/"$UPD_NAME"| ag "VERSION" |  __collum 3 ".")
-  VERSION_LOCAL=$(ls ../VERSION-* | tail -n 1);VERSION_LOCAL=$(printf "%i" ${VERSION_LOCAL#../VERSION-2.1.})
+  VERSION_LOCAL=$(ls ../VERSION-* | tail -n 1);VERSION_LOCAL=$(printf "%i" "${VERSION_LOCAL#../VERSION-2.1.}")
   if test -z "$VERSION_ARCHIVES";then exit 1;fi
   echo "  II tarball version: "$DATE_ARCHIVES"  "$VERSION_ARCHIVES
   echo "  II local version  : "$DATE_LOCAL"  "$VERSION_LOCAL
@@ -41,7 +41,7 @@ if test "$1" = "--first-run";then
     exit 1
   fi
 else
-  VERSION_LOCAL=$(ls ../VERSION-* | tail -n 1);VERSION_LOCAL=$(printf "%i" ${VERSION_LOCAL#../VERSION-2.1.})
+  VERSION_LOCAL=$(ls ../VERSION-* | tail -n 1);VERSION_LOCAL=$(printf "%i" "${VERSION_LOCAL#../VERSION-2.1.}")
   __SYNC
   #CONFIG MIGRATION
   cd ..

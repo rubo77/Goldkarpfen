@@ -1,6 +1,6 @@
 #!/bin/sh
 #GPL-3 - See LICENSE file for copyright and license details.
-if ! test -f $(basename $0);then echo "  EE run this script in its folder";exit;fi
+if ! test -f $(basename "$0");then echo "  EE run this script in its folder";exit;fi
 if test -f ./sync-from-nodes.pid && ps --pid $(cat sync-from-nodes.pid) > /dev/null;then echo "  EE sync-from-nodes.pid exists";exit;fi
 echo $$ > sync-from-nodes.pid
 
@@ -25,12 +25,12 @@ __CHECK_FOR_UPD(){
 
 __UPD_NOTIFY(){
   VERSION_ARCHIVES=$(printf "%i" "$(tar -tf archives/"$UPD_NAME" 2> /dev/null | ag "VERSION" | __collum 3 ".")")
-  VERSION_LOCAL=$(ls VERSION-* | tail -n 1);VERSION_LOCAL=$(printf "%i" ${VERSION_LOCAL#VERSION-2.1.})
+  VERSION_LOCAL=$(ls VERSION-* | tail -n 1);VERSION_LOCAL=$(printf "%i" "${VERSION_LOCAL#VERSION-2.1.}")
   if test "$VERSION_ARCHIVES" -gt "$VERSION_LOCAL";then echo "  II NEW GOLDKARPFEN : 2.1.$VERSION_ARCHIVES -> UPDATE WITH [r][U] " | ag ".";fi
 }
 
 __DOWNLOAD(){
-  if test -z $UPDATE_ONLY;then
+  if test -z "$UPDATE_ONLY";then
     if test $(ag --no-numbers --no-filename -v "^(\b$UPD_NAME_REGEXP\b|\b$VERIFICATION_STREAM.tar.gz\b)" archives/server.dat | wc -l) -gt 58;then
       UPDATE_ONLY="y"; echo "  II archive-file-num-cap reached - UPDATE_ONLY mode" | ag "."
       if test "$2" = "--new";then return;fi
@@ -40,13 +40,13 @@ __DOWNLOAD(){
   T_CMD=$(__DOWNLOAD_COMMAND "$URL" "$1" || echo "__error_getting_dl_cmd;")
   if $T_CMD -o "sync/$1" --max-filesize 318K;then
     if test "$2" = "--patch";then
-      set "$(echo $1 | __collum 1 "_")" "$2" "$1"
+      set "$(echo "$1" | __collum 1 "_")" "$2" "$1"
       gunzip -c "archives/$1" > tmp/tmp.tar; bspatch tmp/tmp.tar "sync/${1%.gz}" "sync/$3"; gzip "sync/${1%.gz}" ; rm -f tmp/tmp.tar
     fi
     if ! test "$(__ARCHIVE_DATE "sync/$1")" = "$FILE_DATE";then
       printf "  EE There is a difference in the server.dat and the real age of the archive,\n  The archive is missing files or your server.dat is corrupt.\n  moving the archive to quarantine for inspection\n"
-      mv "sync/$1" quarantine/"GARBAGE_$(basename $1).$(mktemp -u XXXXXXXX)"
-      if test -f "sync/$3";then mv "sync/$3" quarantine/"GARBAGE_$(basename $3).$(mktemp -u XXXXXXXX)";fi
+      mv "sync/$1" quarantine/"GARBAGE_$(basename "$1").$(mktemp -u XXXXXXXX)"
+      if test -f "sync/$3";then mv "sync/$3" quarantine/"GARBAGE_$(basename "$3").$(mktemp -u XXXXXXXX)";fi
       return 1
     fi
     if test "$1" = "$UPD_NAME";then mv "sync/$1" quarantine;return 0;fi
@@ -59,11 +59,11 @@ __DOWNLOAD(){
        T_TARGET="quarantine/" ; OPTIONS="--no-unpack"
     fi
     if __TEST_AND_UNPACK_ARCHIVE "sync/$1" $OPTIONS;then
-      mv "sync/$1" $T_TARGET
+      mv "sync/$1" "$T_TARGET"
       rm -f archives/$1_D*
       if test -f "sync/$3";then mv "sync/$3" archives/;fi
     else
-      if test -f "sync/$3";then mv "sync/$3" quarantine/"GARBAGE_$(basename $3).$(mktemp -u XXXXXXXX)";fi
+      if test -f "sync/$3";then mv "sync/$3" quarantine/"GARBAGE_$(basename "$3").$(mktemp -u XXXXXXXX)";fi
       return 1
     fi
   fi
@@ -79,12 +79,12 @@ __SYNC_ALL(){
     T_CMD=$(__DOWNLOAD_COMMAND "$URL" "server.dat" || echo "__error_getting_dl_cmd;")
     if $T_CMD -o tmp/server.dat --max-filesize 6K;then
       if file -b --mime-type tmp/server.dat | sed 's|/.*||' | ag -v "text";then echo "  EE fatal: server.dat is not a textfile";return 1;fi
-      grep $LIST_MODE -f $LIST_RGXP < tmp/server.dat | ag "^[0-9A-Za-z_]{1,12}-[0-9A-Za-z]{34}\.itp\.tar\.gz \d\d-\d\d-\d\d( D\d\d-\d\d-\d\d$|$)|^$UPD_NAME_REGEXP \d\d-\d\d-\d\d$" | sort -R > tmp/filtered_server.dat
+      grep $LIST_MODE -f "$LIST_RGXP" < tmp/server.dat | ag "^[0-9A-Za-z_]{1,12}-[0-9A-Za-z]{34}\.itp\.tar\.gz \d\d-\d\d-\d\d( D\d\d-\d\d-\d\d$|$)|^$UPD_NAME_REGEXP \d\d-\d\d-\d\d$" | sort -R > tmp/filtered_server.dat
       CH_LINE=$(grep -n "^$URL" nodes.dat | head -n 1 | __collum 1 ":")
       sed -i "$CH_LINE c$URL last_success:$(date +"%y-%m-%d")" nodes.dat
       while IFS= read -r LINE; do
         #FILE DATE DIFF-DATE
-        set $LINE ; FILE_DATE="$2"
+        set $LINE ; FILE_DATE=$2
         if ./check-dates.sh "$2" > /dev/null;then
           if ag "^$1 " archives/server.dat > /dev/null && ! test -f "quarantine/$1";then
             LOCAL_DATE=$(ag --no-numbers --no-filename  "^$1 " archives/server.dat | head -n 1 | __collum 2) ;
@@ -102,7 +102,7 @@ __SYNC_ALL(){
               if ! test "$LESS_VERBOSE" = "yes";then echo "  II $1 is quarantined - skipping download" | ag -v "^$UPD_NAME_REGEXP";fi
             elif test "$1" = "$UPD_NAME" || test "$1" = "$VERIFICATION_STREAM.tar.gz";then
               __DOWNLOAD "$1"
-            elif test -z $UPDATE_ONLY;then
+            elif test -z "$UPDATE_ONLY";then
               __DOWNLOAD "$1" --new
             fi
           fi
@@ -118,7 +118,7 @@ for T_ARG in $@;do
   elif test "$T_ARG" = "--less-verbose";then LESS_VERBOSE="yes"; shift
   elif echo "$T_ARG" | ag "^--pause=[0-9]*$" > /dev/null;then T_PAUSE="$(printf "%i" ${T_ARG#--pause=})"; shift
   else echo "usage : ./sync-from-nodes.sh [--less-verbose] [--loop] [--pause=seconds] # seconds>599";exit;fi
-  if test -z $T_PAUSE || test $T_PAUSE -lt 600;then T_PAUSE=3600;fi
+  if test -z "$T_PAUSE" || test "$T_PAUSE" -lt 600;then T_PAUSE=3600;fi
 done
 
 . ./update-provider.inc.sh
@@ -133,7 +133,7 @@ if test "$T_LOOP" = "yes";then
   while true;do
     __SYNC_ALL
     echo "  ## idle for $T_PAUSE - exit with ^C (-> ONCE <-)"
-    sleep $T_PAUSE
+    sleep "$T_PAUSE"
   done
 else
   __SYNC_ALL

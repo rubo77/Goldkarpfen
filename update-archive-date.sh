@@ -1,7 +1,7 @@
 #!/bin/sh
 #GPL-3 - See LICENSE file for copyright and license details.
-if ! test -f $(basename $0);then echo "  EE run this script in its folder";exit;fi
-cd archives
+if ! test -f $(basename "$0");then echo "  EE run this script in its folder";exit;fi
+cd archives || exit
 trap "rm -f ../tmp/server.dat.tmp; trap - EXIT; exit" EXIT INT HUP TERM QUIT
 . ../update-provider.inc.sh
 

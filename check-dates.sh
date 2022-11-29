@@ -14,14 +14,14 @@ else
   year2=$(echo "$2" | awk -F "-" '{printf "%d\n",$1;}')
 fi
 
-if test $this_year -eq 0;then
+if test "$this_year" -eq 0;then
   this_year=90
   year1=$((year1 - 10))
   year2=$((year2 - 10))
-  if test $year1 -lt -1;then
+  if test "$year1" -lt -1;then
     year1=$((year1 + 100))
   fi
-  if test $year2 -lt -1;then
+  if test "$year2" -lt -1;then
     year2=$((year2 + 100))
   fi
 fi

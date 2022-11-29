@@ -1,6 +1,6 @@
 #!/bin/sh
 #GPL-3 - See LICENSE file for copyright and license details.
-if ! test -f $(basename $0);then echo "  EE run this script in its folder";exit;fi
+if ! test -f $(basename "$0");then echo "  EE run this script in its folder";exit;fi
 . ./include.sh
 T_BUF="0"
 FIRST=$(( ${1#0}  +1 )); LAST=$(date --utc +"%m")

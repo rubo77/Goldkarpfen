@@ -11,7 +11,7 @@ split() {
 
 __collum(){
   arg1=$1
-  if test $# -gt 1;then old_ifs=$IFS; IFS="$2";fi
+  if test $# -gt 1;then old_ifs=$IFS; IFS=$2;fi
   while read T_LINE; do
     set -- $T_LINE
     for I in $(split "$arg1" "-");do
@@ -54,18 +54,18 @@ __ARCHIVE_DATE(){
 }
 
 __TEST_ARCHIVE_CONTENT(){
-  if ! test $(tar -tvf "$1" | ag " $(basename $1 | __collum 1 ".").itp$| $(basename $1 | __collum 1 ".").itp.sha512sum$| $(basename $1 | __collum 1 ".").itp.sha512sum.sig$" | wc -l) = 3;then
+  if ! test $(tar -tvf "$1" | ag " $(basename "$1" | __collum 1 ".").itp$| $(basename "$1" | __collum 1 ".").itp.sha512sum$| $(basename "$1" | __collum 1 ".").itp.sha512sum.sig$" | wc -l) = 3;then
     >&2 echo "  EE $1 does not contain the required file set - moved to quarantine for inspection"
-    mv "$1" quarantine/"GARBAGE_$(basename $1).$(mktemp -u XXXXXXXX)"
+    mv "$1" quarantine/"GARBAGE_$(basename "$1").$(mktemp -u XXXXXXXX)"
     return 1
   fi
 }
 
 __TEST_ARCHIVE_DATE(){
-  T_BUF1=$(__ARCHIVE_DATE $1)
+  T_BUF1=$(__ARCHIVE_DATE "$1")
   if ! ./check-dates.sh "$T_BUF1";then return 1;fi
   if ! test -z "$2";then
-    T_BUF2=$(__ARCHIVE_DATE $2)
+    T_BUF2=$(__ARCHIVE_DATE "$2")
   else
     T_BUF="itp-files/$(basename "$1" |sed 's/\.tar\.gz$//').sha512sum"
     if test -f "$T_BUF";then
@@ -80,18 +80,18 @@ __TEST_ARCHIVE_DATE(){
 }
 
 __TEST_AND_UNPACK_ARCHIVE(){
-  if ! __TEST_ARCHIVE_CONTENT $1;then return 1;fi
+  if ! __TEST_ARCHIVE_CONTENT "$1";then return 1;fi
   tar xfv "$1" -C tmp/ > /dev/null
   # FILENAME TMP_FILENAME OPTION_NO_UNPACK
   set "$1" "tmp/$(basename "${1%.tar.gz}")" "$2"
-  T_BUF=$(tail -n 1 $2 | ag "^#LICENSE:CC0 \d\d-\d\d-\d\d$" | awk '{print $2}')
+  T_BUF=$(tail -n 1 "$2" | ag "^#LICENSE:CC0 \d\d-\d\d-\d\d$" | awk '{print $2}')
   if ! test "$T_BUF" = "$(date --utc +%y-%m-%d -d $(TZ="UTC" ls -l --time-style="long-iso"  $2 | __collum 6))";then
     echo "  EE $1 time stamp is not valid - moved to quarantine for inspection"
     rm "$2.sha512sum" "$2.sha512sum.sig" "$2"
-    mv "$1" quarantine/"GARBAGE_$(basename $1).$(mktemp -u XXXXXXXX)"
+    mv "$1" quarantine/"GARBAGE_$(basename "$1").$(mktemp -u XXXXXXXX)"
     return 1
   fi
-  if ./itp-check.sh "$2" "$2"".sha512sum" && ./check-sign.sh "$2" > /dev/null 2>&1;then
+  if ./itp-check.sh "$2" "$2.sha512sum" && ./check-sign.sh "$2" > /dev/null 2>&1;then
     if ! test "$3" = "--no-unpack";then
       mv "$2.sha512sum" itp-files
       mv "$2.sha512sum.sig" itp-files
@@ -102,7 +102,7 @@ __TEST_AND_UNPACK_ARCHIVE(){
   else
     echo "  EE $1 no valid signature or/and itp-check failed - moved to quarantine for inspection"
     rm "$2.sha512sum" "$2.sha512sum.sig" "$2"
-    mv "$1" quarantine/"GARBAGE_$(basename $1).$(mktemp -u XXXXXXXX)"
+    mv "$1" quarantine/"GARBAGE_$(basename "$1").$(mktemp -u XXXXXXXX)"
     return 1
   fi
 }
@@ -120,7 +120,7 @@ __PRUNE_ARCHIVES(){
   mkdir -p quarantine/old-archives
   while IFS= read -r T_LINE; do
     set $T_LINE
-    if ! ./check-dates.sh $2;then
+    if ! ./check-dates.sh "$2";then
       echo "  EE archives/$1 is too old - moved to quarantine/old-archives" | ag "."
       mv "archives/$1" "quarantine/old-archives/$2-$1"
       if test -f "archives/$1_$3"; then mv "archives/$1_$3" "quarantine/old-archives/$2-$1_$3";fi
@@ -164,7 +164,7 @@ __INIT_FILES(){
         if ! ag "^$T_FILE$" cache/sane_files > /dev/null; then echo "$T_FILE" >> cache/sane_files;fi
         T_BUF=$(basename "$T_FILE")
         if ! ag "$T_BUF" cache/aliases > /dev/null;then echo $(echo "$T_BUF"| __collum 1 "-")" $T_BUF" >> cache/aliases;fi
-        cp $T_FILE".sha512sum" cache
+        cp "$T_FILE.sha512sum" cache
       else
         T_BUF=$(basename "$T_FILE")
         sed -i "/$T_BUF/d" cache/sane_files cache/aliases

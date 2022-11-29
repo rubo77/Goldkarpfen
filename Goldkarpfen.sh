@@ -1,6 +1,6 @@
 #!/bin/sh
 #GPL-3 - See LICENSE file for copyright and license details.
-if ! test -f $(basename $0);then echo "  EE run this script in its folder";exit;fi
+if ! test -f $(basename "$0");then echo "  EE run this script in its folder";exit;fi
 GK_PATH=$(pwd)
 
 #help
@@ -53,18 +53,18 @@ __CONFIRM_EXIT(){
 }
 
 __CHECK_INPUT(){
-  ag --no-numbers --no-color -v "^#" $1 | tr '\n' ' ' | sed -e 's/\\/\&bsol;/g' -e 's/ *$//' > "$1-stripped"
+  ag --no-numbers --no-color -v "^#" "$1" | tr '\n' ' ' | sed -e 's/\\/\&bsol;/g' -e 's/ *$//' > "$1-stripped"
   mv "$1-stripped" "$1"
   if test $(wc -c < "$1") = 0;then echo "  EE input has 0 chars";return 1;fi
-  if test $(wc -c < "$1") -gt $2;then echo "  EE input has more than $2 chars";return 1;fi
+  if test $(wc -c < "$1") -gt "$2";then echo "  EE input has more than $2 chars";return 1;fi
   if test "$3" = "--post";then
     if ag "^\d\d\.\d\d:\d @" "$1" > /dev/null;then echo "  EE input is formated like a comment";return 1;fi
   fi
 }
 
 __COMMENT(){
-  if test -z $GK_JM;then echo "  EE no post selected";return;fi
-  if ! date -d "20-$(echo $GK_JM | sed -e 's/\./-/' -e 's/:.*//')" > /dev/null;then echo "  EE invalid date - this may be just technical data";return 1;fi
+  if test -z "$GK_JM";then echo "  EE no post selected";return;fi
+  if ! date -d "20-$(echo "$GK_JM" | sed -e 's/\./-/' -e 's/:.*//')" > /dev/null;then echo "  EE invalid date - this may be just technical data";return 1;fi
   echo
   sed -n -e "$GK_LN p" "$ITPFILE" -e 's/\&bsol;/\\/g'
   printf "\n  ?? comment this post?  [c]-continue [a]-abort >"
@@ -75,7 +75,7 @@ __COMMENT(){
   # PASTE_LINE TODAY POST_NUMBER
   set "$1" "$2" "$(ag --no-numbers --no-color -B 1 "^#COMMENTS_END" "$OWN_STREAM" | ag "^$2" | sed 's/:/ /' | __collum 2)"
   if test -z "$3";then set "$1" "$2" 1; else set "$1" "$2" $(( $3 + 1 ));fi
-  if test $3 -gt 9;then echo "  EE you can only post 9 comments a day";return;fi
+  if test "$3" -gt 9;then echo "  EE you can only post 9 comments a day";return;fi
   echo "" > tmp/text; echo "#maximum: 971 chars ; lines with # in the beginnig get ignored ; newlines will replaced with spaces." >> tmp/text
   $EDITOR tmp/text
   if ! __CHECK_INPUT tmp/text 971;then echo "  EE input error";rm -f tmp/text;return;fi
@@ -98,15 +98,15 @@ __SEARCH(){
   # FUZZY_RESULT LINE
   set "$1" "$(grep -n "^$1 " "$ITPFILE" | head -n 1 | __collum 1 ":")"
   if test -z "$2";then return;fi
-  GK_JM="$1"
-  GK_LN="$2"
+  GK_JM=$1
+  GK_LN=$2
 }
 
 __VIEW(){
   # BEGIN_LINE END_LINE TERM_COLLUMS
   set "$(( $(ag "^#POSTS_BEGIN" "$ITPFILE"| __collum 1 ":") + 1 ))" "$(( $(ag "^#POSTS_END" "$ITPFILE"| __collum 1 ":") - 1 ))"
-  if test $2 = 3;then echo "  II empty";return;fi
-  if test -z $GK_LN;then
+  if test "$2" = 3;then echo "  II empty";return;fi
+  if test -z "$GK_LN";then
     T_COUNTER=$2
   else
     T_COUNTER=$GK_LN
@@ -115,31 +115,31 @@ __VIEW(){
   T_BUF=1
   while true;do
     if ! test $T_BUF = 0;then
-      T_BUF1=$(sed -n "$T_COUNTER p" $ITPFILE)
-      T_BUF2=$(echo $T_BUF1 | __collum 1)
+      T_BUF1=$(sed -n "$T_COUNTER p" "$ITPFILE")
+      T_BUF2=$(echo "$T_BUF1" | __collum 1)
       echo "* $T_BUF1" | sed 's/\&bsol;/\\/g' | fold -w $GK_COLS -s
       ag --no-numbers --no-heading "^\d\d\.\d\d:\d $T_BUF2 @$GK_ID" itp-files/*.itp | sort -k2 -n -t ":" |
       while IFS= read -r LLL;do
-        T_BUF1=$(echo $LLL | __collum 2 "/" | __collum 1 ":" | __collum 1 "." | __collum 2 "-")
-        T_BUF2=$(echo $LLL | __collum 2 ":" )
-        echo $LLL | sed -e "s/^.*@.................................../$T_BUF2 \[$(ag --no-color --no-numbers $T_BUF1 cache/aliases | __collum 1)\] /" -e 's/\&bsol;/\\/g' | fold -w $GK_COLS -s | sed 's/^/    /'
+        T_BUF1=$(echo "$LLL" | __collum 2 "/" | __collum 1 ":" | __collum 1 "." | __collum 2 "-")
+        T_BUF2=$(echo "$LLL" | __collum 2 ":" )
+        echo "$LLL" | sed -e "s/^.*@.................................../$T_BUF2 \[$(ag --no-color --no-numbers $T_BUF1 cache/aliases | __collum 1)\] /" -e 's/\&bsol;/\\/g' | fold -w $GK_COLS -s | sed 's/^/    /'
       done
-      if test $T_COUNTER = $1;then printf "^^^^^";fi
-      if test $T_COUNTER = $2;then printf "_____";fi
+      if test "$T_COUNTER" = "$1";then printf "^^^^^";fi
+      if test "$T_COUNTER" = "$2";then printf "_____";fi
       T_BUF=0
     fi
-    GK_JM="$T_BUF2"
-    GK_LN="$T_COUNTER"
+    GK_JM=$T_BUF2
+    GK_LN=$T_COUNTER
     $GK_READ_CMD T_CHAR ;printf "\r"
     case "$T_CHAR" in
       "") echo ;;
       n)
-        if test $T_COUNTER -lt $2;then
+        if test "$T_COUNTER" -lt "$2";then
           T_COUNTER=$(( T_COUNTER + 1 ));T_BUF=1
         fi
       ;;
       p)
-        if test $T_COUNTER -gt $1;then
+        if test "$T_COUNTER" -gt "$1";then
           T_COUNTER=$(( T_COUNTER - 1 ));T_BUF=1
         fi
       ;;
@@ -175,7 +175,7 @@ __POST(){
   # PASTE_LINE TODAY POST_NUMBER
   set "$1" "$2" "$(ag --no-numbers --no-color -B 1 "^#POSTS_END" "$OWN_STREAM" | ag "^$2" | sed 's/:/ /' | __collum 2)"
   if test -z "$3";then set "$1" "$2" 1; else set "$1" "$2" $(( $3 + 1 ));fi
-  if test $3 -gt 9;then echo "  EE you can only post 9 posts a day";return;fi
+  if test "$3" -gt 9;then echo "  EE you can only post 9 posts a day";return;fi
   echo "" > tmp/text; echo "#maximum: 1007 chars ; lines with # in the beginnig get ignored ; newlines will replaced with spaces." >> tmp/text
   $EDITOR tmp/text
   if ! __CHECK_INPUT tmp/text 1007 --post;then echo "  EE input error";rm -f tmp/text;return;fi
@@ -185,7 +185,7 @@ __POST(){
   echo
   sed -i ""$1"i "$2":$3 $(sed -n '1p' tmp/text)" $OWN_STREAM
   rm -f tmp/text
-  GK_JM="$2"":"$3 ;GK_LN=$1
+  GK_JM="$2:$3" ;GK_LN=$1
   __OWN_SHA_SUM_UPDATE
 }
 
@@ -230,7 +230,7 @@ __UNPACK(){
   fi
   printf "  ## unpacking...\n"
   if ! __TEST_AND_UNPACK_ARCHIVE "$1";then ./update-archive-date.sh $(basename "$1");return;fi
-  if echo $1 | ag '^quarantine/' > /dev/null;then
+  if echo "$1" | ag '^quarantine/' > /dev/null;then
     echo "  II first unpack of this itp-stream - review it first and then move it out of quarantine with [m]"
   fi
   __INIT_FILES
@@ -245,7 +245,7 @@ __MOVE_OUT_OF_QUARANTINE (){
 
 __DELETE_FROM_QUARANTINE (){
   printf "\n  ## removing $1\n"
-  if test "$(basename $ITPFILE)" = "$(basename ${1%.tar.gz})";then ITPFILE=$OWN_STREAM; __INIT_GLOBALS;fi
+  if test "$(basename "$ITPFILE")" = "$(basename "${1%.tar.gz}")";then ITPFILE=$OWN_STREAM; __INIT_GLOBALS;fi
   rm -f "$1" "itp-files/"$(basename "$1" | __collum 1 "." ).itp
   __INIT_FILES
   echo -n "  ?? add this stream to your blacklist? (y/n) >"
@@ -281,7 +281,7 @@ __EDIT(){
     echo "  II you haven’t changed anything"
   else
     mv "tmp/$OWN_ALIAS-$OWN_ADDR.itp.clean" "tmp/$OWN_ALIAS-$OWN_ADDR.itp"
-    cd tmp; sha512sum "$OWN_ALIAS-$OWN_ADDR.itp" > "$OWN_ALIAS-$OWN_ADDR.itp.sha512sum";cd ..
+    cd tmp || exit; sha512sum "$OWN_ALIAS-$OWN_ADDR.itp" > "$OWN_ALIAS-$OWN_ADDR.itp.sha512sum";cd ..
     if ./itp-check.sh "tmp/$OWN_ALIAS-$OWN_ADDR.itp" "tmp/$OWN_ALIAS-$OWN_ADDR.itp.sha512sum";then
       cp "tmp/$OWN_ALIAS-$OWN_ADDR.itp" itp-files
       __OWN_SHA_SUM_UPDATE
@@ -338,12 +338,12 @@ __PLUGINS(){
   T_BUF1=0
   for T_LINE in $USER_PLUGINS_MENU;do
     T_BUF1=$(( T_BUF1 + 1 ))
-    T_BUF2=$(echo $T_LINE | __collum 1 "-")
+    T_BUF2=$(echo "$T_LINE" | __collum 1 "-")
     if test "$T_BUF2" = "["$T_CHAR"]";then
-      eval $(echo $T_LINE | __collum 2 ":"); T_CHAR='';break
+      eval $(echo "$T_LINE" | __collum 2 ":"); T_CHAR='';break
     fi
   done
-  if ! test -z $T_CHAR;then echo "  EE wrong key";fi
+  if ! test -z "$T_CHAR";then echo "  EE wrong key";fi
 }
 
 __REBUILD_ALIASES(){
@@ -361,10 +361,10 @@ __REBUILD_ALIASES(){
 
 __OWN_SHA_SUM_UPDATE(){
   echo "  ## generating new checksum"
-  cd itp-files ; sha512sum "$OWN_ALIAS-$OWN_ADDR.itp" > "$OWN_ALIAS-$OWN_ADDR.itp.sha512sum" ; cd ..
+  cd itp-files || exit; sha512sum "$OWN_ALIAS-$OWN_ADDR.itp" > "$OWN_ALIAS-$OWN_ADDR.itp.sha512sum" ; cd ..
   printf "  ## signing: "
   if ./sign.sh "$OWN_STREAM".sha512sum && ./check-sign.sh "$OWN_STREAM" 2> /dev/null && ./itp-check.sh "$OWN_STREAM" "$OWN_SUM";then
-    cp $OWN_SUM cache/ ; cp $OWN_STREAM* bkp
+    cp "$OWN_SUM" cache/ ; cp "$OWN_STREAM"* bkp
   else
     echo "  EE signing failed and/or itp-check failed - restoring backup (last change - that caused the error - is lost)"
     cp bkp/"$OWN_ALIAS-$OWN_ADDR.itp" itp-files/ ; cp bkp/"$OWN_ALIAS-$OWN_ADDR.itp.sha512sum" itp-files/ ; cp bkp/"$OWN_ALIAS-$OWN_ADDR.itp.sha512sum.sig" itp-files/
@@ -396,7 +396,7 @@ USER_PLUGINS_MENU="[q]-return_to_main:__USER_RETURN"
 if find plugins -name '*\.sh' | ag '\.sh$' > /dev/null;then
   echo -n "  ## loading plugins: "
   for T_FILE in $(ag -f -g "\.sh$" plugins/);do
-    if . ./"$T_FILE" 2>&1 > /dev/null;then echo -n "$(basename ${T_FILE%.sh}) ";fi
+    if . ./"$T_FILE" 2>&1 > /dev/null;then echo -n "$(basename "${T_FILE%.sh}") ";fi
   done
   echo
 fi
@@ -421,7 +421,7 @@ if ! test -f cache/aliases;then
   echo "  ## creating alias file"
   while IFS= read -r T_FILE; do
     T_BUF=$(basename "$T_FILE"| __collum 1 "-" )
-    echo "$T_BUF "$(basename $T_FILE) >> cache/aliases
+    echo "$T_BUF "$(basename "$T_FILE") >> cache/aliases
   done < cache/sane_files
   __TEST_ALIAS_FILE cache/aliases
 fi

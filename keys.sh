@@ -1,12 +1,12 @@
 #!/bin/sh
 # This is free and unencumbered software released into the public domain.
 # parts from grondilu https://bitcointalk.org/index.php?topic=10970.msg156708#msg156708, adapted to work with posix shell
-if ! test -f $(basename $0);then echo "  EE run this script in its folder";exit;fi
+if ! test -f $(basename "$0");then echo "  EE run this script in its folder";exit;fi
 mkdir -p .keys
 if test -z "$1" && test -f .keys/pub.pem;then >&2 echo "  EE there are already keys, which implies that you have an active account already";exit 1;fi
 
 encode_58() {
-    T_BUF="$1"
+    T_BUF=$1
     set 1 2 3 4 5 6 7 8 9 A B C D E F G H J K L M N P Q R S T U V W X Y Z a b c d e f g h i j k m n o p q r s t u v w x y z
     echo -n "$T_BUF" | sed -e 's/^\(\(00\)*\).*/\1/' -e 's/00/1/g' | tr -d '\n'
     dc -e "16i $(echo $T_BUF | tr '[:lower:]' '[:upper:]') [3A ~r d0<x]dsxx +f" |
