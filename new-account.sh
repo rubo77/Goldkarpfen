@@ -14,7 +14,7 @@ if ./keys.sh;then
     rm .keys/pub_hash .keys/pub.pem .keys/priv.pem
     exit 1
   fi
-  FILENAME="itp-files/$BUF""-"$ADDRESS".itp"
+  FILENAME="itp-files/$BUF-$ADDRESS.itp"
   echo "#ITP" > "$FILENAME"
   echo "#PEM_PUBKEY $PUBKEY" >> "$FILENAME"
   echo "#POSTS_BEGIN" >> "$FILENAME"
@@ -28,7 +28,7 @@ if ./keys.sh;then
   echo "$(basename "$FILENAME")" >> Goldkarpfen.config
   echo "# SERVER_PORT" >> Goldkarpfen.config
   echo "8087" >> Goldkarpfen.config
-  echo "$BUF""-""$ADDRESS".itp > blacklist.dat
+  echo "$BUF-$ADDRESS.itp" > blacklist.dat
   echo "Ok"
 else
   echo "  II use an extra folder for every account"

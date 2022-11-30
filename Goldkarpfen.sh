@@ -47,7 +47,7 @@ __CONFIRM_EXIT(){
   $GK_READ_CMD T_CONFIRM
   if test "$T_CONFIRM" != "y";then
     printf "\n  II exit aborted\n"
-    T_CHAR="";T_CONFIRM=""
+    T_CHAR=;T_CONFIRM=
     return 1
   fi
 }
@@ -98,8 +98,7 @@ __SEARCH(){
   # FUZZY_RESULT LINE
   set "$1" "$(grep -n "^$1 " "$ITPFILE" | head -n 1 | __collum 1 ":")"
   if test -z "$2";then return;fi
-  GK_JM=$1
-  GK_LN=$2
+  GK_JM=$1; GK_LN=$2
 }
 
 __VIEW(){
@@ -128,8 +127,7 @@ __VIEW(){
       if test "$T_COUNTER" = "$2";then printf "_____";fi
       T_BUF=0
     fi
-    GK_JM=$T_BUF2
-    GK_LN=$T_COUNTER
+    GK_JM=$T_BUF2; GK_LN=$T_COUNTER
     $GK_READ_CMD T_CHAR ;printf "\r"
     case "$T_CHAR" in
       "") echo ;;
@@ -165,7 +163,7 @@ __SELECT_STREAM(){
   set "$(__collum 1 < ./cache/aliases | pipe_if_not_empty $GK_FZF_CMD)"
   if test -z "$1" || ! ag "^$1" ./cache/aliases > /dev/null;then echo "  II empty";return;fi
   ITPFILE="itp-files/"$(ag --nonumbers --nocolor "^$1 " cache/aliases | head -n 1 | __collum 2)
-  GK_JM=""; GK_LN=""
+  GK_JM=; GK_LN=
   __INIT_GLOBALS
 }
 
@@ -185,7 +183,7 @@ __POST(){
   echo
   sed -i ""$1"i "$2":$3 $(sed -n '1p' tmp/text)" $OWN_STREAM
   rm -f tmp/text
-  GK_JM="$2:$3" ;GK_LN=$1
+  GK_JM="$2:$3"; GK_LN=$1
   __OWN_SHA_SUM_UPDATE
 }
 
@@ -273,7 +271,7 @@ __EDIT(){
   echo "  II editing your own stream be careful - be CAREFUL!"
   echo -n "  ?? [c]-continue [a]-abort >"
   $GK_READ_CMD T_CONFIRM; if test "$T_CONFIRM" != "c";then printf "\n  II aborted\n";return;fi
-  GK_JM=""; GK_LN=""
+  GK_JM=; GK_LN=
   sed 's/\&bsol;/\\/g' "$OWN_STREAM" > "tmp/$OWN_ALIAS-$OWN_ADDR.itp"
   $EDITOR tmp/"$OWN_ALIAS"-"$OWN_ADDR"."itp"; echo
   sed 's/\\/\&bsol;/g' "tmp/$OWN_ALIAS-$OWN_ADDR.itp" > tmp/"$OWN_ALIAS"-"$OWN_ADDR"."itp"."clean"
@@ -369,7 +367,7 @@ __OWN_SHA_SUM_UPDATE(){
     echo "  EE signing failed and/or itp-check failed - restoring backup (last change - that caused the error - is lost)"
     cp bkp/"$OWN_ALIAS-$OWN_ADDR.itp" itp-files/ ; cp bkp/"$OWN_ALIAS-$OWN_ADDR.itp.sha512sum" itp-files/ ; cp bkp/"$OWN_ALIAS-$OWN_ADDR.itp.sha512sum.sig" itp-files/
     __INIT_FILES
-    GK_JM="" ;GK_LN=""
+    GK_JM=; GK_LN=
     return 1
   fi
 }
@@ -382,7 +380,7 @@ echo "  ## Goldkarfpen $(cat VERSION*) "$(ls VERSION*)
 . ./.Goldkarpfen.start.sh
 
 #set some globals
-GK_JM=""; GK_LN=""
+GK_JM=; GK_LN=
 if which fzy > /dev/null 2>&1;then GK_FZF_CMD="fzy";else GK_FZF_CMD="fzf";fi
 
 #create dirs
@@ -414,7 +412,7 @@ fi
 if ! test -f cache/aliases;then
   if test -f cache/sane_files;then rm cache/sane_files;fi
   for T_FILE in itp-files/*.itp;do
-    if ./itp-check.sh "$T_FILE" "$T_FILE"".sha512sum";then
+    if ./itp-check.sh "$T_FILE" "$T_FILE.sha512sum";then
       echo "$T_FILE" >> cache/sane_files
     fi
   done

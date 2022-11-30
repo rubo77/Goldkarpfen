@@ -5,7 +5,7 @@ OWN_STREAM="itp-files/$(sed -n '2 p' Goldkarpfen.config)"
 OWN_ALIAS=$(basename "$OWN_STREAM" | sed 's/-.*$//')
 OWN_ADDR=$(basename "$OWN_STREAM" | sed 's/^.*-//' | sed 's/\.itp$//')
 ITPFILE="$OWN_STREAM"
-OWN_SUM="$OWN_STREAM"".sha512sum"
+OWN_SUM="$OWN_STREAM.sha512sum"
 #SERVER_PORT
 set "$(sed -n '4 p' Goldkarpfen.config)"
 

@@ -56,7 +56,7 @@ __ARCHIVE_DATE(){
 __TEST_ARCHIVE_CONTENT(){
   if ! test $(tar -tvf "$1" | ag " $(basename "$1" | __collum 1 ".").itp$| $(basename "$1" | __collum 1 ".").itp.sha512sum$| $(basename "$1" | __collum 1 ".").itp.sha512sum.sig$" | wc -l) = 3;then
     >&2 echo "  EE $1 does not contain the required file set - moved to quarantine for inspection"
-    mv "$1" quarantine/"GARBAGE_$(basename "$1").$(mktemp -u XXXXXXXX)"
+    mv "$1" "$(mktemp -p quarantine "GARBAGE_$(basename "$1").XXXXXXXX")"
     return 1
   fi
 }
@@ -81,14 +81,15 @@ __TEST_ARCHIVE_DATE(){
 
 __TEST_AND_UNPACK_ARCHIVE(){
   if ! __TEST_ARCHIVE_CONTENT "$1";then return 1;fi
-  tar xfv "$1" -C tmp/ > /dev/null
+  tar -xf "$1" -C tmp/ > /dev/null
   # FILENAME TMP_FILENAME OPTION_NO_UNPACK
-  set "$1" "tmp/$(basename "${1%.tar.gz}")" "$2"
+  set "$1" "tmp/$(basename "${1%.gz}")" "$2"
+  set "$1" "${2%.tar}" "$3"
   T_BUF=$(tail -n 1 "$2" | ag "^#LICENSE:CC0 \d\d-\d\d-\d\d$" | awk '{print $2}')
   if ! test "$T_BUF" = "$(date --utc +%y-%m-%d -d $(TZ="UTC" ls -l --time-style="long-iso"  $2 | __collum 6))";then
     echo "  EE $1 time stamp is not valid - moved to quarantine for inspection"
     rm "$2.sha512sum" "$2.sha512sum.sig" "$2"
-    mv "$1" quarantine/"GARBAGE_$(basename "$1").$(mktemp -u XXXXXXXX)"
+    mv "$1" "$(mktemp -p quarantine "GARBAGE_$(basename "$1").XXXXXXXX")"
     return 1
   fi
   if ./itp-check.sh "$2" "$2.sha512sum" && ./check-sign.sh "$2" > /dev/null 2>&1;then
@@ -102,7 +103,7 @@ __TEST_AND_UNPACK_ARCHIVE(){
   else
     echo "  EE $1 no valid signature or/and itp-check failed - moved to quarantine for inspection"
     rm "$2.sha512sum" "$2.sha512sum.sig" "$2"
-    mv "$1" quarantine/"GARBAGE_$(basename "$1").$(mktemp -u XXXXXXXX)"
+    mv "$1" "$(mktemp -p quarantine "GARBAGE_$(basename "$1").XXXXXXXX")"
     return 1
   fi
 }
@@ -146,7 +147,7 @@ __INIT_FILES(){
   for T_FILE in itp-files/*.itp;do
     # CACHE_SUM_FILE
     set "cache/"$(basename "$T_FILE")".sha512sum"
-    if ! test -f "$T_FILE"".sha512sum";then echo "  EE $T_FILE has no SUM_FILE - fix this first";exit;fi
+    if ! test -f "$T_FILE.sha512sum";then echo "  EE $T_FILE has no SUM_FILE - fix this first";exit;fi
     if ! test -f "$1" || test $(sha512sum "$T_FILE" | __collum 1) != $(__collum 1 < "$1");then
       echo "  ## sanity_check $T_FILE"
       if ! ./check-sign.sh "$T_FILE" > /dev/null 2>&1;then
@@ -154,7 +155,7 @@ __INIT_FILES(){
         printf "  II this should normally not happen, as the signatures get checked before\n  II is this your own file ? you find the backup files in bkp/\n"
         exit
       fi
-      if ./itp-check.sh "$T_FILE" "$T_FILE"".sha512sum";then
+      if ./itp-check.sh "$T_FILE" "$T_FILE.sha512sum";then
         if ! test -f "$1";then
           if ! ag $(basename "$T_FILE") cache/aliases > /dev/null 2>&1;then
             T_BUF=$(basename "$T_FILE" | __collum 1 "-" )

@@ -13,7 +13,7 @@ __UPDATE_DATE(){
   fi
   if test -z "$BUF";then
     >&2 echo "  EE $1 does not contain an itp file - moved to quarantine"
-    mv $1 ../quarantine/"GARBAGE_$1.$(mktemp -u XXXXXXXX)"
+    mv "$1" "$(mktemp -p ../quarantine "GARBAGE_$1.XXXXXXXX")"
     return
   fi
   DATE=$(date --utc +"%y-%m-%d" -d $BUF)

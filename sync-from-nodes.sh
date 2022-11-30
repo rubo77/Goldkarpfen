@@ -40,17 +40,17 @@ __DOWNLOAD(){
   T_CMD=$(__DOWNLOAD_COMMAND "$URL" "$1" || echo "__error_getting_dl_cmd;")
   if $T_CMD -o "sync/$1" --max-filesize 318K;then
     if test "$2" = "--patch";then
-      set "$(echo "$1" | __collum 1 "_")" "$2" "$1"
-      gunzip -c "archives/$1" > tmp/tmp.tar; bspatch tmp/tmp.tar "sync/${1%.gz}" "sync/$3"; gzip "sync/${1%.gz}" ; rm -f tmp/tmp.tar
+      set "$(echo "$1" | __collum 1 ".").itp.tar" "$2" "$1"
+      gunzip -c "archives/$1.gz" > tmp/tmp.tar; bspatch tmp/tmp.tar "sync/$1" "sync/$3"; rm -f tmp/tmp.tar
     fi
     if ! test "$(__ARCHIVE_DATE "sync/$1")" = "$FILE_DATE";then
       printf "  EE There is a difference in the server.dat and the real age of the archive,\n  The archive is missing files or your server.dat is corrupt.\n  moving the archive to quarantine for inspection\n"
-      mv "sync/$1" quarantine/"GARBAGE_$(basename "$1").$(mktemp -u XXXXXXXX)"
-      if test -f "sync/$3";then mv "sync/$3" quarantine/"GARBAGE_$(basename "$3").$(mktemp -u XXXXXXXX)";fi
+      if test -f "sync/$3";then mv "sync/$3" "$(mktemp -p quarantine "GARBAGE_$(basename "$3").XXXXXXXX")";else
+      mv "sync/$1" "$(mktemp -p quarantine "GARBAGE_$(basename "$1").XXXXXXXX")";fi
       return 1
     fi
     if test "$1" = "$UPD_NAME";then mv "sync/$1" quarantine;return 0;fi
-    if grep $(basename "${1%.tar.gz}") cache/sane_files || test "$1" = "$VERIFICATION_STREAM.tar.gz";then
+    if ag "${1%.tar.gz}|${1%.tar}" cache/sane_files > /dev/null || test "$1" = "$VERIFICATION_STREAM.tar.gz";then
        T_TARGET="archives/" ; OPTIONS=
     elif test -f "archives/$1";then
        T_TARGET="archives/" ; OPTIONS="--no-unpack"
@@ -59,11 +59,12 @@ __DOWNLOAD(){
        T_TARGET="quarantine/" ; OPTIONS="--no-unpack"
     fi
     if __TEST_AND_UNPACK_ARCHIVE "sync/$1" $OPTIONS;then
+      if test "$2" = "--patch";then
+        gzip "sync/$1" ; set "$1.gz" "$2" "$3" ; rm -f "archives/$1.gz_D"* ; mv "sync/$3" archives/
+      fi
       mv "sync/$1" "$T_TARGET"
-      rm -f archives/$1_D*
-      if test -f "sync/$3";then mv "sync/$3" archives/;fi
     else
-      if test -f "sync/$3";then mv "sync/$3" quarantine/"GARBAGE_$(basename "$3").$(mktemp -u XXXXXXXX)";fi
+      if test -f "sync/$3";then mv "sync/$3" "$(mktemp -p quarantine "GARBAGE_$(basename "$3").XXXXXXXX")";fi
       return 1
     fi
   fi
@@ -123,10 +124,10 @@ done
 
 . ./update-provider.inc.sh
 . ./include.sh
-if test -f ./whitelist.dat;then LIST_MODE=""; LIST_RGXP="whitelist.dat";else LIST_MODE="-v"; LIST_RGXP="blacklist.dat";fi
+if test -f ./whitelist.dat;then LIST_MODE=; LIST_RGXP="whitelist.dat";else LIST_MODE="-v"; LIST_RGXP="blacklist.dat";fi
 if which bspatch > /dev/null 2>&1;then GK_DIFF_MODE="yes";fi
 touch -a blacklist.dat archives/server.dat ; mkdir -p cache/last_prune archives plugins quarantine sync bkp tmp
-trap 'echo "  ## pls wait ...";__CHECK_FOR_UPD;__UPD_NOTIFY; rm -f tmp/server.dat tmp/filtered_server.dat sync-from-nodes.pid; trap - EXIT; exit' EXIT INT HUP TERM QUIT
+trap 'echo "  ## pls wait ...";__CHECK_FOR_UPD;__UPD_NOTIFY; rm -f tmp/tmp.tar tmp/server.dat tmp/filtered_server.dat sync-from-nodes.pid; trap - EXIT; exit' EXIT INT HUP TERM QUIT
 ./update-archive-date.sh
 
 if test "$T_LOOP" = "yes";then
