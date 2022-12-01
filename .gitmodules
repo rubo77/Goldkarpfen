@@ -1,3 +1,4 @@
-[submodule "Goldkarpfen-plugins"]
-	path = plugins
-	url = https://gitlab.com/rubo77/Goldkarpfen-plugins.git/
+#[submodule "Goldkarpfen-plugins"]
+#	path = plugins
+#	url = https://gitlab.com/rubo77/Goldkarpfen-plugins.git/
+
