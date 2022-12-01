@@ -24,8 +24,6 @@ if ! basename "$FILENAME" | ag '^[0-9A-Za-z_]{1,12}-[0-9A-Za-z]{34}.itp$' > /dev
 fi
 
 ###format tests
-RE_PREFIX='^([0][0-9]|[1][0-2])\.([0][1-9]|[1-2][0-9]|[3][0-1]):[1-9]\s.*'
-
 BUF1="$(ag --no-numbers "^#" "$FILENAME" | sed 's/\s.*$//' | tr -d '\n')"
 if ! test "$BUF1" = "#ITP#PEM_PUBKEY#POSTS_BEGIN#POSTS_END#COMMENTS_BEGIN#COMMENTS_END#LICENSE:CC0";then
   >&2 echo "  EE $FILENAME contains not the valid lines in order"
@@ -33,8 +31,7 @@ if ! test "$BUF1" = "#ITP#PEM_PUBKEY#POSTS_BEGIN#POSTS_END#COMMENTS_BEGIN#COMMEN
 fi
 
 for TAG in "#POSTS_BEGIN" "#POSTS_END" "#COMMENTS_BEGIN" "#COMMENTS_END";do
-  BUF=$(ag --no-color --no-numbers "^$TAG" "$FILENAME")
-  if test "$BUF" != "$TAG";then
+  if ! ag --no-color --no-numbers "^$TAG$" "$FILENAME" > /dev/null;then
     >&2 echo "  EE $TAG line contains extra characters"
     exit 1
   fi
@@ -45,8 +42,8 @@ if ! tail -n 1 "$FILENAME" | ag "^#LICENSE:CC0$" > /dev/null && ! tail -n 1 "$FI
   exit 1
 fi
 
-if ag '^.{1024}.*' "$FILENAME";then
-  >&2 echo "  EE $FILENAME contains lines longer than 1024"
+if ag '^.{1024}.*|\\' "$FILENAME";then
+  >&2 echo "  EE $FILENAME contains lines longer than 1024 or a backslash"
   exit 1
 fi
 
@@ -62,7 +59,7 @@ if test "$BUF1" -gt 2;then
   exit 1
 fi
 
-if ag --no-color --no-numbers -v "^#" "$FILENAME" | ag -v $RE_PREFIX ;then
+if ag --no-color --no-numbers -v "^#" "$FILENAME" | ag -v '^([0][0-9]|[1][0-2])\.([0][1-9]|[1-2][0-9]|[3][0-1]):[1-9]\s.*' ;then
   >&2 echo "  EE $FILENAME contains unformatted lines"
   exit 1
 fi
@@ -75,32 +72,35 @@ if [ "$BUF1" != "$BUF2" ];then
   exit 1
 fi
 
+BUF_COMMENTS="$(sed -n -e '/^#COMMENTS_BEGIN/,$p' "$FILENAME" | ag -o '^([0][0-9]|[1][0-2])\.([0][1-9]|[1-2][0-9]|[3][0-1]):[1-9]' | tr '\n' '\\' | sed 's/\\/\\n/g')"
+BUF_POSTS="$(sed '/^#POSTS_END/q' "$FILENAME" | ag -o '^([0][0-9]|[1][0-2])\.([0][1-9]|[1-2][0-9]|[3][0-1]):[1-9]' | tr '\n' '\\' | sed 's/\\/\\n/g')"
+
 ###prune test
-BUF1=$(sed '/^#POSTS_END/q' "$FILENAME" | ag $RE_PREFIX | sed 's/\..*$//' | uniq | sort -k1 -n | uniq | wc -l)
-BUF2=$(sed '/^#POSTS_END/q' "$FILENAME" | ag $RE_PREFIX | sed 's/\..*$//' | uniq | sort -k1 -n | wc -l)
+BUF1=$(printf "$BUF_POSTS" | sed 's/\..*$//' | uniq | sort -k1 -n | uniq | wc -l)
+BUF2=$(printf "$BUF_POSTS" | sed 's/\..*$//' | uniq | sort -k1 -n | wc -l)
 if [ "$BUF1" != "$BUF2" ];then
   >&2 echo "  EE $FILENAME is not itp-prune conform or is ordered corruptly"
   exit 1
 fi
 
-BUF1=$(sed -n -e '/^#COMMENTS_BEGIN/,$p' "$FILENAME" | ag $RE_PREFIX | sed 's/\..*$//' | uniq | sort -k1 -n | uniq | wc -l)
-BUF2=$(sed -n -e '/^#COMMENTS_BEGIN/,$p' "$FILENAME" | ag $RE_PREFIX | sed 's/\..*$//' | uniq | sort -k1 -n | wc -l)
+BUF1=$(printf "$BUF_COMMENTS" | sed 's/\..*$//' | uniq | sort -k1 -n | uniq | wc -l)
+BUF2=$(printf "$BUF_COMMENTS" | sed 's/\..*$//' | uniq | sort -k1 -n | wc -l)
 if [ "$BUF1" != "$BUF2" ];then
   >&2 echo "  EE $FILENAME is not itp-prune conform or is ordered corruptly"
   exit 1
 fi
 
 ###double entry test
-BUF1=$(sed '/^#POSTS_END/q' "$FILENAME" | ag $RE_PREFIX | sed 's/\s.*$//' | sort -k1 -n | uniq | wc -l)
-BUF2=$(sed '/^#POSTS_END/q' "$FILENAME" | ag $RE_PREFIX | sed 's/\s.*$//' | wc -l)
+BUF1=$(printf "$BUF_POSTS" | sort -k1 -n | uniq | wc -l)
+BUF2=$(printf "$BUF_POSTS" | wc -l)
 if [ "$BUF1" != "$BUF2" ];then
   >&2 echo "  EE $FILENAME contains double entries"
   exit 1
 fi
 
 ###double entry test
-BUF1=$(sed -n -e '/^#COMMENTS_BEGIN/,$p' "$FILENAME" | ag $RE_PREFIX | sed 's/\s.*$//' | sort -k1 -n | uniq | wc -l)
-BUF2=$(sed -n -e '/^#COMMENTS_BEGIN/,$p' "$FILENAME" | ag $RE_PREFIX | sed 's/\s.*$//' | wc -l)
+BUF1=$(printf "$BUF_COMMENTS" | sort -k1 -n | uniq | wc -l)
+BUF2=$(printf "$BUF_COMMENTS" | wc -l)
 if [ "$BUF1" != "$BUF2" ];then
   >&2 echo "  EE $FILENAME contains double entries"
   exit 1
@@ -108,8 +108,8 @@ fi
 
 ###entry order test
 for MONTH in $(sed '/^#POSTS_END/q' "$FILENAME" | ag -v '^#' | sed 's/\..*//' | uniq); do
-  BUF1="$(sed '/^#POSTS_END/q' "$FILENAME" | ag "^$MONTH.\d\d:\d\s.*" | sed 's/\s.*$//'  | sort -k1 -n )"
-  BUF2="$(sed '/^#POSTS_END/q' "$FILENAME" | ag "^$MONTH.\d\d:\d\s.*" | sed 's/\s.*$//')"
+  BUF1="$(printf "$BUF_POSTS" | ag "^$MONTH\.\d\d:\d" | sort -k1 -n )"
+  BUF2="$(printf "$BUF_POSTS" | ag "^$MONTH\.\d\d:\d" )"
   if ! test "$BUF1" = "$BUF2" > /dev/null;then
     >&2 echo "  EE $FILENAME posts are not in order"
     exit 1
@@ -117,8 +117,8 @@ for MONTH in $(sed '/^#POSTS_END/q' "$FILENAME" | ag -v '^#' | sed 's/\..*//' | 
 done
 
 for MONTH in $(sed -n -e '/^#COMMENTS_BEGIN/,$p' "$FILENAME" | ag -v '^#' | sed 's/\..*//' | uniq); do
-  BUF1="$(sed -n -e '/^#COMMENTS_BEGIN/,$p' "$FILENAME" | ag "^$MONTH.\d\d:\d\s.*" | sed 's/\s.*$//' | sort -k1 -n | tr "\n" " ")"
-  BUF2="$(sed -n -e '/^#COMMENTS_BEGIN/,$p' "$FILENAME" | ag "^$MONTH.\d\d:\d\s.*" | sed 's/\s.*$//' | tr "\n" " ")"
+  BUF1="$(printf "$BUF_COMMENTS" | ag "^$MONTH\.\d\d:\d" | sort -k1 -n | tr "\n" " ")"
+  BUF2="$(printf "$BUF_COMMENTS" | ag "^$MONTH\.\d\d:\d" | tr "\n" " ")"
   if ! test "$BUF1" = "$BUF2" > /dev/null;then
     >&2 echo "  EE $FILENAME comments are not in order"
     exit 1
