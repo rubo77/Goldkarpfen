@@ -52,7 +52,7 @@ __DOWNLOAD(){
     if test "$1" = "$UPD_NAME";then mv "sync/$1" quarantine;return 0;fi
     if ag "${1%.tar.gz}|${1%.tar}" cache/sane_files > /dev/null || test "$1" = "$VERIFICATION_STREAM.tar.gz";then
        T_TARGET="archives/" ; OPTIONS=
-    elif test -f "archives/$1";then
+    elif test -f "archives/${1%.gz}.gz";then
        T_TARGET="archives/" ; OPTIONS="--no-unpack"
     else
        echo "  II NEW ARCHIVE - first unpack needs to be done manually"
@@ -60,7 +60,7 @@ __DOWNLOAD(){
     fi
     if __TEST_AND_UNPACK_ARCHIVE "sync/$1" $OPTIONS;then
       if test "$2" = "--patch";then
-        gzip "sync/$1" ; set "$1.gz" "$2" "$3" ; rm -f "archives/$1.gz_D"* ; mv "sync/$3" archives/
+        gzip "sync/$1" ; set "$1.gz" "$2" "$3" ; rm -f "archives/$1_D"* ; mv "sync/$3" archives/
       fi
       mv "sync/$1" "$T_TARGET"
     else
@@ -78,11 +78,11 @@ __SYNC_ALL(){
     URL=$(echo "$NODE" | __collum 1)
     printf "\e[7m"$URL/server.dat"\e[0m\n"
     T_CMD=$(__DOWNLOAD_COMMAND "$URL" "server.dat" || echo "__error_getting_dl_cmd;")
-    if $T_CMD -o tmp/server.dat --max-filesize 6K;then
-      if file -b --mime-type tmp/server.dat | sed 's|/.*||' | ag -v "text";then echo "  EE fatal: server.dat is not a textfile";return 1;fi
-      grep $LIST_MODE -f "$LIST_RGXP" < tmp/server.dat | ag "^[0-9A-Za-z_]{1,12}-[0-9A-Za-z]{34}\.itp\.tar\.gz \d\d-\d\d-\d\d( D\d\d-\d\d-\d\d$|$)|^$UPD_NAME_REGEXP \d\d-\d\d-\d\d$" | sort -R > tmp/filtered_server.dat
+    SERVER_DAT="$($T_CMD --max-filesize 6K | ag "^[0-9A-Za-z_]{1,12}-[0-9A-Za-z]{34}\.itp\.tar\.gz \d\d-\d\d-\d\d( D\d\d-\d\d-\d\d$|$)|^$UPD_NAME_REGEXP \d\d-\d\d-\d\d$" | grep $LIST_MODE -f "$LIST_RGXP" | sort -R | tr '\n' '\\' | sed 's/%/%%/g' | sed 's/\\/\\n/g')"
+    if ! test -z "$SERVER_DAT";then
       CH_LINE=$(grep -n "^$URL" nodes.dat | head -n 1 | __collum 1 ":")
       sed -i "$CH_LINE c$URL last_success:$(date +"%y-%m-%d")" nodes.dat
+      printf "$SERVER_DAT" |
       while IFS= read -r LINE; do
         #FILE DATE DIFF-DATE
         set $LINE ; FILE_DATE=$2
@@ -108,7 +108,7 @@ __SYNC_ALL(){
             fi
           fi
         fi
-      done < tmp/filtered_server.dat
+      done
       __CHECK_FOR_UPD
     fi
   done
@@ -127,7 +127,7 @@ done
 if test -f ./whitelist.dat;then LIST_MODE=; LIST_RGXP="whitelist.dat";else LIST_MODE="-v"; LIST_RGXP="blacklist.dat";fi
 if which bspatch > /dev/null 2>&1;then GK_DIFF_MODE="yes";fi
 touch -a blacklist.dat archives/server.dat ; mkdir -p cache/last_prune archives plugins quarantine sync bkp tmp
-trap 'echo "  ## pls wait ...";__CHECK_FOR_UPD;__UPD_NOTIFY; rm -f tmp/tmp.tar tmp/server.dat tmp/filtered_server.dat sync-from-nodes.pid; trap - EXIT; exit' EXIT INT HUP TERM QUIT
+trap 'echo "  ## pls wait ...";__CHECK_FOR_UPD;__UPD_NOTIFY; rm -f tmp/tmp.tar sync-from-nodes.pid; trap - EXIT; exit' EXIT INT HUP TERM QUIT
 ./update-archive-date.sh
 
 if test "$T_LOOP" = "yes";then

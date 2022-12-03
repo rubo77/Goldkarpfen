@@ -197,7 +197,7 @@ __ARCHIVE(){
   echo "  ## archiving"
   if tar cfv "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar" --mtime="$(date +'%Y-%m-%d %H:00')" -C itp-files "$OWN_ALIAS-$OWN_ADDR.itp.sha512sum" "$OWN_ALIAS-$OWN_ADDR.itp" "$OWN_ALIAS-$OWN_ADDR.itp.sha512sum.sig" --utc --numeric-owner;then
     if test -f "archives/$OWN_ALIAS-$OWN_ADDR.itp.tar.gz";then
-      if test -f "bkp/$OWN_ALIAS-$OWN_ADDR.itp.tar" && test "$GK_DIFF_MODE" = "yes" > /dev/null 2>&1;then
+      if test -f "bkp/$OWN_ALIAS-$OWN_ADDR.itp.tar" && test "$GK_DIFF_MODE" = "yes";then
         set "$(__ARCHIVE_DATE "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar")" "$(__ARCHIVE_DATE "bkp/$OWN_ALIAS-$OWN_ADDR.itp.tar")"
         if ! test "$1" = "$2";then
           echo "  II generating diff from $2"
@@ -236,7 +236,7 @@ __UNPACK(){
 
 __MOVE_OUT_OF_QUARANTINE (){
   printf "\n  ## moving $1\n"
-  mv "$1" archives
+  rm -f "archives/$(basename $1)_"* ; mv "$1" archives
   ./update-archive-date.sh $(basename "$1" )
   __INIT_FILES
 }
