@@ -1,4 +1,4 @@
-#V0.20
+#V0.21
 
 ### ABOUT (design goal)
   Goldkarpfen was esp. designed for the christian cyber community to provide a
@@ -69,6 +69,19 @@ tar -xvf Goldkarpfen-latest.tar.gz
   - copy your itp-files {.itp .itp.sha512sum .itp.sha512sum.sig}
   - copy archives/*.tar.gz
   - start Goldkarpfen and unpack your favorite archives
+
+### MANUALLY ADDING DATA FILES
+  itp-files:
+  - exit Goldkarpfen
+cp alias-_key_addr_.itp itp-files/
+cp alias-_key_addr_.itp itp-files.sha512sum itp-files/
+cp alias-_key_addr_.itp itp-files.sha512sum.sig itp-files/
+  - start Goldkarpfen
+
+  archives: (works from a running Goldkarpfen)
+cp alias-_key_addr_.itp.tar.gz quarantine/
+  - (optionally) unpack the archive with [u]-unpack
+  - use [m]-quarantine to move it into archives
 
 ### MIXED NODES
   As you know, you can choose to host your node via tor or i2p (or both - adjust
