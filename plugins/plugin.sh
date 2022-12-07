@@ -1,7 +1,7 @@
 #GPL-3 - See LICENSE file for copyright and license details.
 USER_PLUGINS_MENU="[P]-plugin:__USER_PLUGIN $USER_PLUGINS_MENU"
 __USER_PLUGIN(){
-  mkdir -p downloads
+  mkdir -p downloads || exit
   # URL FILENAME-LINK
   set "$(sed -n "1p" $ITPFILE | sed -e "s/^.*<url1=//" -e "s/>.*//")" "$(ag --no-numbers "<plugin=.*>" $ITPFILE | sed -e "s/^.*<.*=//" -e "s/>/ /" | pipe_if_not_empty $GK_FZF_CMD)"
   if test -z "$1";then echo "  II the stream has no url1 tag";return;fi
@@ -14,7 +14,7 @@ __USER_PLUGIN(){
   fi
   echo "  ## downloading" $2
   T_CMD=$(__DOWNLOAD_COMMAND "$1" "$2" || echo "__error_getting_dl_cmd;")
-  if $T_CMD -o downloads/"$(basename $2)";then
+  $T_CMD -o downloads/"$(basename $2)" || return
     if file -b --mime-type downloads/"$(basename $2)" | sed 's|/.*||' | ag -v "text";then echo "  EE fatal: $(basename $2) is not a textfile";return 1;fi
     if ! test "$3" = "$(sed -n '3p' downloads/$(basename $2))";then echo "  EE verification-stream mismatch: (posted itp-file and plugin itp-file are different) - abort";return 1; fi
     cd downloads || exit
@@ -30,7 +30,7 @@ __USER_PLUGIN(){
     echo  -n "  ?? install this plugin? (y/n) >"
     $GK_READ_CMD T_BUF
     if test "$T_BUF" != "y";then echo;return;fi
-    printf "\n  ## moving $2 to plugins\n"; mv downloads/"$(basename $2)" plugins/
+    printf "\n  ## moving $2 to plugins\n"; mv downloads/"$(basename $2)" plugins/ || return
     echo "  II plugin will be usable after restart" | ag "."
     echo -n "  ?? share-host this file? (y/n) >"
     $GK_READ_CMD T_BUF; if test "$T_BUF" != "y";then echo;return;fi
@@ -38,9 +38,8 @@ __USER_PLUGIN(){
       printf "\n  ?? file exists - overwrite? (Y/n) >"
       $GK_READ_CMD T_CONFIRM; if test "$T_CONFIRM" != "Y";then printf "\n  II aborted\n";return;else echo;fi
     fi
-    mkdir -p archives/share
-    echo "  II copying $(basename $2) to archives/share"; cp plugins/"$(basename $2)" archives/share
+    mkdir -p archives/share || exit
+    echo "  II copying $(basename $2) to archives/share"; cp plugins/"$(basename $2)" archives/share || return
     echo "  II add a post (or edit an existing one) with:"
     printf "  \e[7m<plugin=share/$(basename $2)> $(sed -n '3p' archives/share/$(basename $2)) $(sed -n '2p' archives/share/$(basename $2))\e[0m\n"
-  fi
 }

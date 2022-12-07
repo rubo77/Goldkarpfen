@@ -10,7 +10,7 @@ __USER_ADD(){
       echo "  ?? are you sure to add $T_BUF to nodes.dat (y/n) >"
       $GK_READ_CMD T_CONFIRM
       if test "$T_CONFIRM" != "y";then return;fi
-      echo $T_BUF >> nodes.dat
+      echo $T_BUF >> nodes.dat || exit
     fi
   else
     echo "  II this itp file has no url tag"
@@ -36,7 +36,7 @@ if echo "$GK_MODE" | ag "tor|i2p" > /dev/null;then
       printf "  ?? are you sure to add this tag to your itp-header? <url1=$T_BUF> (y/n) >"
       $GK_READ_CMD T_CONFIRM
       if test "$T_CONFIRM" != "y";then return;fi
-      echo; sed -i "1s%^#ITP%#ITP <url1=$T_BUF>%" $OWN_STREAM
+      echo; sed -i "1s%^#ITP%#ITP <url1=$T_BUF>%" "$OWN_STREAM" || exit
       __OWN_SHA_SUM_UPDATE
     fi
     return
@@ -48,5 +48,5 @@ __USER_SYNC_ALL(){
   printf "  II it may be more convenient to open another terminal and use: ./sync-from-nodes.sh --loop\n  ?? proceed? (y/n) >"
   $GK_READ_CMD T_BUF; echo
   if test "$T_BUF" != "y";then return;fi
-  if test -f my-sync-from-nodes.sh;then ./my-sync-from-nodes.sh;else ./sync-from-nodes.sh;fi
+  if test -f my-sync-from-nodes.sh;then ./my-sync-from-nodes.sh || exit;else ./sync-from-nodes.sh || exit;fi
 }

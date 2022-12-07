@@ -63,7 +63,7 @@ __TEST_ARCHIVE_CONTENT(){
 
 __TEST_ARCHIVE_DATE(){
   T_BUF1=$(__ARCHIVE_DATE "$1")
-  if ! ./check-dates.sh "$T_BUF1";then return 1;fi
+  ./check-dates.sh "$T_BUF1" || return 1
   if ! test -z "$2";then
     T_BUF2=$(__ARCHIVE_DATE "$2")
   else
@@ -76,34 +76,32 @@ __TEST_ARCHIVE_DATE(){
   fi
   echo "  II tarball: $T_BUF1"
   echo "  II local  : $T_BUF2"
-  if ! ./check-dates.sh "$T_BUF1" "$T_BUF2";then return 1;fi
+  ./check-dates.sh "$T_BUF1" "$T_BUF2" || return 1
 }
 
 __TEST_AND_UNPACK_ARCHIVE(){
-  if ! __TEST_ARCHIVE_CONTENT "$1";then return 1;fi
-  tar -xf "$1" -C tmp/ > /dev/null
+  __TEST_ARCHIVE_CONTENT "$1" || return 1
+  tar -xf "$1" -C tmp/ > /dev/null || return 1
   # FILENAME TMP_FILENAME OPTION_NO_UNPACK
   set "$1" "tmp/$(basename "${1%.gz}")" "$2"
   set "$1" "${2%.tar}" "$3"
   T_BUF=$(tail -n 1 "$2" | ag "^#LICENSE:CC0 \d\d-\d\d-\d\d$" | awk '{print $2}')
   if ! test "$T_BUF" = "$(date --utc +%y-%m-%d -d $(TZ="UTC" ls -l --time-style="long-iso"  $2 | __collum 6))";then
     echo "  EE $1 time stamp is not valid - moved to quarantine for inspection"
-    rm "$2.sha512sum" "$2.sha512sum.sig" "$2"
-    mv "$1" "$(mktemp -p quarantine "GARBAGE_$(basename "$1").XXXXXXXX")"
+    rm -f "$2.sha512sum" "$2.sha512sum.sig" "$2"
+    mv "$1" "$(mktemp -p quarantine "GARBAGE_$(basename "$1").XXXXXXXX")" || exit
     return 1
   fi
   if ./itp-check.sh "$2" "$2.sha512sum" && ./check-sign.sh "$2" > /dev/null 2>&1;then
     if ! test "$3" = "--no-unpack";then
-      mv "$2.sha512sum" itp-files
-      mv "$2.sha512sum.sig" itp-files
-      mv "$2" itp-files
+      mv "$2.sha512sum" itp-files && mv "$2.sha512sum.sig" itp-files && mv "$2" itp-files || exit
     else
-      rm "$2" "$2.sha512sum" "$2.sha512sum.sig"
+      rm -f "$2" "$2.sha512sum" "$2.sha512sum.sig"
     fi
   else
     echo "  EE $1 no valid signature or/and itp-check failed - moved to quarantine for inspection"
-    rm "$2.sha512sum" "$2.sha512sum.sig" "$2"
-    mv "$1" "$(mktemp -p quarantine "GARBAGE_$(basename "$1").XXXXXXXX")"
+    rm -f "$2.sha512sum" "$2.sha512sum.sig" "$2"
+    mv "$1" "$(mktemp -p quarantine "GARBAGE_$(basename "$1").XXXXXXXX")" || exit
     return 1
   fi
 }
@@ -118,17 +116,17 @@ __PRUNE_ARCHIVES(){
   set "$(__collum 2 < archives/server.dat | sort -t "-" -k1n -k2n -k3n | head -n 1)"
   if test -z "$1" || ./check-dates.sh "$1";then return;fi
   printf "\n  II OLD ARCHIVES NEED PRUNING!\n"
-  mkdir -p quarantine/old-archives
+  mkdir -p quarantine/old-archives || exit
   while IFS= read -r T_LINE; do
     set $T_LINE
     if ! ./check-dates.sh "$2";then
       echo "  EE archives/$1 is too old - moved to quarantine/old-archives" | ag "."
-      mv "archives/$1" "quarantine/old-archives/$2-$1"
+      mv "archives/$1" "quarantine/old-archives/$2-$1" || exit
       if test -f "archives/$1_$3"; then mv "archives/$1_$3" "quarantine/old-archives/$2-$1_$3";fi
-      sed -i "/$T_LINE/d" archives/server.dat
+      sed -i "/$T_LINE/d" archives/server.dat || exit
     fi
   done < archives/server.dat
-  ./update-archive-date.sh
+  ./update-archive-date.sh || exit
 }
 
 __REMOVE_IF_MISSING(){
@@ -137,7 +135,7 @@ __REMOVE_IF_MISSING(){
       echo "  II $T_FILE is missing but in the sane list - removing cached files" | ag "."
       BN=$(basename "$T_FILE")
       rm -f "$T_FILE.sha512sum" "$T_FILE.sha512sum.sig" "cache/$BN.sha512sum"
-      sed -i "/$BN/d" cache/sane_files cache/aliases
+      sed -i "/$BN/d" cache/sane_files cache/aliases || exit
     fi
   done < cache/sane_files
 }
@@ -159,16 +157,16 @@ __INIT_FILES(){
         if ! test -f "$1";then
           if ! ag $(basename "$T_FILE") cache/aliases > /dev/null 2>&1;then
             T_BUF=$(basename "$T_FILE" | __collum 1 "-" )
-            echo "$T_BUF "$(basename "$T_FILE") >> cache/aliases
+            echo "$T_BUF "$(basename "$T_FILE") >> cache/aliases || exit
           fi
         fi
         if ! ag "^$T_FILE$" cache/sane_files > /dev/null; then echo "$T_FILE" >> cache/sane_files;fi
         T_BUF=$(basename "$T_FILE")
         if ! ag "$T_BUF" cache/aliases > /dev/null;then echo $(echo "$T_BUF"| __collum 1 "-")" $T_BUF" >> cache/aliases;fi
-        cp "$T_FILE.sha512sum" cache
+        cp "$T_FILE.sha512sum" cache || exit
       else
         T_BUF=$(basename "$T_FILE")
-        sed -i "/$T_BUF/d" cache/sane_files cache/aliases
+        sed -i "/$T_BUF/d" cache/sane_files cache/aliases || exit
         echo "  EE $T_FILE is not itp-conform: remove it from ./itp-files/"
       fi
     fi

@@ -1,7 +1,7 @@
 #!/bin/sh
 #GPL-3 - See LICENSE file for copyright and license details.
-if ! test -f $(basename "$0");then echo "  EE run this script in its folder";exit;fi
-mkdir -p tmp bkp
+if ! test -f $(basename "$0");then echo "  EE run this script in its folder";exit 1;fi
+mkdir -p tmp bkp || exit 1
 if ./keys.sh;then
   PUBKEY=$(grep -v "^-----" < .keys/pub.pem|tr -d "\n")
   ADDRESS=$(cat .keys/pub_hash)
@@ -14,6 +14,7 @@ if ./keys.sh;then
     rm .keys/pub_hash .keys/pub.pem .keys/priv.pem
     exit 1
   fi
+  set -e
   FILENAME="itp-files/$BUF-$ADDRESS.itp"
   echo "#ITP" > "$FILENAME"
   echo "#PEM_PUBKEY $PUBKEY" >> "$FILENAME"

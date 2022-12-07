@@ -5,9 +5,8 @@ __USER_UPDATE(){
   echo "  ## FIRST RUN"
   if ./sync_runtime_files.sh --first-run;then
     echo "  ## SECOND RUN"
-    ./sync_runtime_files.sh
-    echo
-    echo "  II restart your Goldkarpfen now " | ag "."
+    if ./sync_runtime_files.sh;then echo "  II restart your Goldkarpfen now " | ag "."
+    else echo "  EE fatal error : it is recommended to exit Goldkarpfen now!";fi
   else
     echo "  II you said no, or something went wrong"
   fi

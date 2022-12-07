@@ -1,8 +1,10 @@
 #!/bin/sh
 #GPL-3 - See LICENSE file for copyright and license details.
-if ! test -f $(basename "$0");then echo "  EE run this script in its folder";exit;fi
-trap "rm -f tmp/*.sigbin tmp/pub.pem; trap - EXIT; exit" EXIT INT HUP TERM QUIT
+if ! test -f $(basename "$0");then echo "  EE run this script in its folder";exit 1;fi
+set -e
 
+trap "rm -f tmp/*.sigbin tmp/pub.pem; trap - EXIT; exit 0" INT HUP TERM QUIT
+trap "rm -f tmp/*.sigbin tmp/pub.pem; trap - EXIT; exit" EXIT
 FILE=$1; SUM="$1.sha512sum"; SIG="$1.sha512sum.sig"
 
 if file -b --mime-type "$SIG" | sed 's|/.*||' | ag -v "text"; then
@@ -22,6 +24,4 @@ if ! test "$(printf "%34s\n" "$(basename "${FILE%.itp}" | sed "s/^.*-//" | sed '
 fi
 
 openssl enc -base64 -d -in "$SIG" -out tmp/$(basename "$SIG").sigbin
-if ! openssl dgst -sha256 -verify tmp/pub.pem -signature tmp/$(basename "$SIG").sigbin "$SUM";then
-  exit 1;
-fi
+openssl dgst -sha256 -verify tmp/pub.pem -signature tmp/$(basename "$SIG").sigbin "$SUM"

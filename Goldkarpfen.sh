@@ -1,6 +1,6 @@
 #!/bin/sh
 #GPL-3 - See LICENSE file for copyright and license details.
-if ! test -f $(basename "$0");then echo "  EE run this script in its folder";exit;fi
+if ! test -f $(basename "$0");then echo "  EE run this script in its folder";exit 1;fi
 GK_PATH=$(pwd)
 
 #help
@@ -13,7 +13,7 @@ fi
 echo "  ## startup ..."
 GK_MODE="ERROR"
 if test -f my-check-dependencies.sh;then GK_MODE=$(./my-check-dependencies.sh | tail -n 1);else GK_MODE=$(./check-dependencies.sh | tail -n 1);fi
-if test "$GK_MODE" = "ERROR";then exit 1;fi
+if test "$GK_MODE" = "ERROR";then exit;fi
 if which bsdiff > /dev/null 2>&1; then GK_DIFF_MODE="yes";else echo "  II install bsdiff to enable diff-mode";fi
 
 #new account?
@@ -36,7 +36,7 @@ trap "cd $GK_PATH;if __CONFIRM_EXIT; then . ./.Goldkarpfen.exit.sh; trap - EXIT;
 trap "cd $GK_PATH;. ./.Goldkarpfen.exit.sh; trap - EXIT; exit" EXIT HUP TERM QUIT
 
 #source include
-. ./include.sh
+. ./include.sh || exit
 
 USER_HOOK_START="return"; USER_HOOK_ARCHIVE_START="return"
 
@@ -53,8 +53,7 @@ __CONFIRM_EXIT(){
 }
 
 __CHECK_INPUT(){
-  ag --no-numbers --no-color -v "^#" "$1" | tr '\n' ' ' | sed -e 's/\\/\&bsol;/g' -e 's/ *$//' > "$1-stripped"
-  mv "$1-stripped" "$1"
+  ag --no-numbers --no-color -v "^#" "$1" | tr '\n' ' ' | sed -e 's/\\/\&bsol;/g' -e 's/ *$//' > "$1-stripped" && mv "$1-stripped" "$1" || return 1
   if test $(wc -c < "$1") = 0;then echo "  EE input has 0 chars";return 1;fi
   if test $(wc -c < "$1") -gt "$2";then echo "  EE input has more than $2 chars";return 1;fi
   if test "$3" = "--post";then
@@ -181,7 +180,7 @@ __POST(){
   echo -n "  ?? add this post? [c]-continue [a]-abort >"
   $GK_READ_CMD T_CONFIRM;if test "$T_CONFIRM" != "c";then printf "\n  II aborted\n";rm -f tmp/text;return;fi
   echo
-  sed -i ""$1"i "$2":$3 $(sed -n '1p' tmp/text)" $OWN_STREAM
+  sed -i ""$1"i "$2":$3 $(sed -n '1p' tmp/text)" "$OWN_STREAM"
   rm -f tmp/text
   GK_JM="$2:$3"; GK_LN=$1
   __OWN_SHA_SUM_UPDATE
@@ -193,30 +192,28 @@ __ARCHIVE(){
     echo "  II you haven’t changed anything - abort"; return
   fi
   sed -i "s/^#LICENSE:CC0.*$/#LICENSE:CC0 $(date --utc '+%y-%m-%d')/" "$OWN_STREAM"
-  if ! __OWN_SHA_SUM_UPDATE;then return;fi
+  __OWN_SHA_SUM_UPDATE || return
   echo "  ## archiving"
-  if tar cfv "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar" --mtime="$(date +'%Y-%m-%d %H:00')" -C itp-files "$OWN_ALIAS-$OWN_ADDR.itp.sha512sum" "$OWN_ALIAS-$OWN_ADDR.itp" "$OWN_ALIAS-$OWN_ADDR.itp.sha512sum.sig" --utc --numeric-owner;then
-    if test -f "archives/$OWN_ALIAS-$OWN_ADDR.itp.tar.gz";then
-      if test -f "bkp/$OWN_ALIAS-$OWN_ADDR.itp.tar" && test "$GK_DIFF_MODE" = "yes";then
-        set "$(__ARCHIVE_DATE "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar")" "$(__ARCHIVE_DATE "bkp/$OWN_ALIAS-$OWN_ADDR.itp.tar")"
-        if ! test "$1" = "$2";then
-          echo "  II generating diff from $2"
-          bsdiff "bkp/$OWN_ALIAS-$OWN_ADDR.itp.tar" "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar" "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar.gz_D$2"
-        fi
-      fi
-      rm -f "bkp/__$OWN_ALIAS-$OWN_ADDR.itp.tar"; cp "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar" bkp/
-      set "$(__ARCHIVE_DATE "archives/$OWN_ALIAS-$OWN_ADDR.itp.tar.gz")" "$(__ARCHIVE_DATE "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar")" "$2"
-      if test "$1" = "$2";then
-        mv "bkp/$OWN_ALIAS-$OWN_ADDR.itp.tar" "bkp/__$OWN_ALIAS-$OWN_ADDR.itp.tar"; echo "  II rearchived - diff for $1 blocked"
+  tar cfv "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar" --mtime="$(date +'%Y-%m-%d %H:00')" -C itp-files "$OWN_ALIAS-$OWN_ADDR.itp.sha512sum" "$OWN_ALIAS-$OWN_ADDR.itp" "$OWN_ALIAS-$OWN_ADDR.itp.sha512sum.sig" --utc --numeric-owner || return
+  if test -f "archives/$OWN_ALIAS-$OWN_ADDR.itp.tar.gz";then
+    if test -f "bkp/$OWN_ALIAS-$OWN_ADDR.itp.tar" && test "$GK_DIFF_MODE" = "yes";then
+      set "$(__ARCHIVE_DATE "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar")" "$(__ARCHIVE_DATE "bkp/$OWN_ALIAS-$OWN_ADDR.itp.tar")"
+      if ! test "$1" = "$2";then
+        echo "  II generating diff from $2"
+        bsdiff "bkp/$OWN_ALIAS-$OWN_ADDR.itp.tar" "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar" "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar.gz_D$2"
       fi
     fi
-    gzip "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar"
-    rm -f "archives/$OWN_ALIAS-$OWN_ADDR.itp.tar.gz_D"*
-    if test -f "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar.gz_D$3";then mv "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar.gz_D$3" archives;fi
-    mv "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar.gz" archives
+    rm -f "bkp/__$OWN_ALIAS-$OWN_ADDR.itp.tar" && cp "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar" bkp/ || exit
+    set "$(__ARCHIVE_DATE "archives/$OWN_ALIAS-$OWN_ADDR.itp.tar.gz")" "$(__ARCHIVE_DATE "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar")" "$2"
+    if test "$1" = "$2";then
+      mv "bkp/$OWN_ALIAS-$OWN_ADDR.itp.tar" "bkp/__$OWN_ALIAS-$OWN_ADDR.itp.tar" && echo "  II rearchived - diff for $1 blocked" || exit
+    fi
   fi
-  ./update-archive-date.sh "$OWN_ALIAS-$OWN_ADDR.itp.tar.gz"
-  if test "$(du "archives/$OWN_ALIAS-$OWN_ADDR.itp.tar.gz" | __collum 1)" -gt "318";then echo "  II WARNING: your archive exeeds the size limit of 318kB " | ag ".";fi
+  gzip "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar" && mv "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar.gz" archives || return
+  rm -f "archives/$OWN_ALIAS-$OWN_ADDR.itp.tar.gz_D"*
+  if test -f "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar.gz_D$3";then mv "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar.gz_D$3" archives || exit;fi
+  ./update-archive-date.sh "$OWN_ALIAS-$OWN_ADDR.itp.tar.gz" || exit
+  test "$(du "archives/$OWN_ALIAS-$OWN_ADDR.itp.tar.gz" | __collum 1)" -lt "318" || echo "  II WARNING: your archive exeeds the size limit of 318kB " | ag "."
 }
 
 __UNPACK(){
@@ -227,7 +224,7 @@ __UNPACK(){
     $GK_READ_CMD T_CONFIRM;if test "$T_CONFIRM" != "Y";then printf "\n  II aborted\n";return;else echo;fi
   fi
   printf "  ## unpacking...\n"
-  if ! __TEST_AND_UNPACK_ARCHIVE "$1";then ./update-archive-date.sh $(basename "$1");return;fi
+  if ! __TEST_AND_UNPACK_ARCHIVE "$1";then ./update-archive-date.sh "$(basename "$1")" || exit;return;fi
   if echo "$1" | ag '^quarantine/' > /dev/null;then
     echo "  II first unpack of this itp-stream - review it first and then move it out of quarantine with [m]"
   fi
@@ -236,8 +233,8 @@ __UNPACK(){
 
 __MOVE_OUT_OF_QUARANTINE (){
   printf "\n  ## moving $1\n"
-  rm -f "archives/$(basename $1)_"* ; mv "$1" archives
-  ./update-archive-date.sh $(basename "$1" )
+  rm -f "archives/$(basename $1)_"* && mv "$1" archives || exit
+  ./update-archive-date.sh "$(basename "$1")" || exit
   __INIT_FILES
 }
 
@@ -248,8 +245,7 @@ __DELETE_FROM_QUARANTINE (){
   __INIT_FILES
   echo -n "  ?? add this stream to your blacklist? (y/n) >"
   $GK_READ_CMD T_CONFIRM;if test "$T_CONFIRM" != "y";then printf "\n  II blacklisting skipped\n";return;fi
-  echo $(basename "$1") >> blacklist.dat
-  sort <  blacklist.dat | uniq > tmp/blacklist.dat ; mv tmp/blacklist.dat ./blacklist.dat
+  echo $(basename "$1") >> blacklist.dat && sort <  blacklist.dat | uniq > tmp/blacklist.dat && mv tmp/blacklist.dat ./blacklist.dat || exit
 }
 
 __QUARANTINE(){
@@ -272,17 +268,15 @@ __EDIT(){
   echo -n "  ?? [c]-continue [a]-abort >"
   $GK_READ_CMD T_CONFIRM; if test "$T_CONFIRM" != "c";then printf "\n  II aborted\n";return;fi
   GK_JM=; GK_LN=
-  sed 's/\&bsol;/\\/g' "$OWN_STREAM" > "tmp/$OWN_ALIAS-$OWN_ADDR.itp"
+  sed 's/\&bsol;/\\/g' "$OWN_STREAM" > "tmp/$OWN_ALIAS-$OWN_ADDR.itp" || return
   $EDITOR tmp/"$OWN_ALIAS"-"$OWN_ADDR"."itp"; echo
-  sed 's/\\/\&bsol;/g' "tmp/$OWN_ALIAS-$OWN_ADDR.itp" > tmp/"$OWN_ALIAS"-"$OWN_ADDR"."itp"."clean"
-  if cmp "tmp/$OWN_ALIAS-$OWN_ADDR.itp.clean"  "$OWN_STREAM" > /dev/null 2>&1;then
+  sed -i 's/\\/\&bsol;/g' "tmp/$OWN_ALIAS-$OWN_ADDR.itp" || return
+  if cmp "tmp/$OWN_ALIAS-$OWN_ADDR.itp"  "$OWN_STREAM" > /dev/null 2>&1;then
     echo "  II you haven’t changed anything"
   else
-    mv "tmp/$OWN_ALIAS-$OWN_ADDR.itp.clean" "tmp/$OWN_ALIAS-$OWN_ADDR.itp"
-    cd tmp || exit; sha512sum "$OWN_ALIAS-$OWN_ADDR.itp" > "$OWN_ALIAS-$OWN_ADDR.itp.sha512sum";cd ..
+    cd tmp && sha512sum "$OWN_ALIAS-$OWN_ADDR.itp" > "$OWN_ALIAS-$OWN_ADDR.itp.sha512sum" && cd .. || exit
     if ./itp-check.sh "tmp/$OWN_ALIAS-$OWN_ADDR.itp" "tmp/$OWN_ALIAS-$OWN_ADDR.itp.sha512sum";then
-      cp "tmp/$OWN_ALIAS-$OWN_ADDR.itp" itp-files
-      __OWN_SHA_SUM_UPDATE
+      mv "tmp/$OWN_ALIAS-$OWN_ADDR.itp" itp-files || exit ; __OWN_SHA_SUM_UPDATE
     else
       echo "  EE file is not itp conform - abort"
     fi
@@ -295,7 +289,7 @@ __REPAIRS(){
   $GK_READ_CMD T_CHAR
   echo
   case "$T_CHAR" in
-    x) __REBUILD_ALL ;;
+    x) rm -f cache/*.sha512sum ; __INIT_FILES ; ITPFILE=$OWN_STREAM ; __INIT_GLOBALS ;;
     y) __REBUILD_ALIASES ;;
     q) return ;;
     *) echo "  EE wrong key";return ;;
@@ -310,12 +304,6 @@ __INIT_GLOBALS(){
   fi
   GK_ID=$(echo "$ITPFILE" | __collum 1 "." | __collum 3 "-")
   GK_ALIAS=$(ag --nonumbers --nocolor "$(basename "$ITPFILE")" cache/aliases | __collum 1 )
-}
-
-__REBUILD_ALL(){
-  rm -f cache/*.sha512sum
-  __INIT_FILES
-  ITPFILE=$OWN_STREAM;__INIT_GLOBALS
 }
 
 __HOOK_START(){
@@ -348,24 +336,24 @@ __REBUILD_ALIASES(){
   if __TEST_ALIAS_FILE cache/aliases > /dev/null;then echo "  II you have no double aliases, you should abort here";fi
   echo -n "  ?? [c]-continue [a]-abort >"
   $GK_READ_CMD T_CONFIRM; if ! test "$T_CONFIRM" = "c";then printf "\n  II aborted\n";return;fi
-  cp cache/aliases tmp/aliases
+  cp cache/aliases tmp/aliases || exit
   $EDITOR tmp/aliases
   if ! __TEST_ALIAS_FILE tmp/aliases > /dev/null;then echo "  EE your file still contains doublettes - abort";rm tmp/aliases;return 1;fi
   if __collum 1 < tmp/aliases | grep -v -E '^[0-9A-Za-z_]{1,12}$';then echo "  EE alias contains not allowed characters or is too long (12 max)";rm tmp/aliases;return 1;fi
-  mv tmp/aliases cache/
+  mv tmp/aliases cache/ || exit
   printf "\n  II alias file ok\n"
   ITPFILE=$OWN_STREAM;__INIT_GLOBALS
 }
 
 __OWN_SHA_SUM_UPDATE(){
   echo "  ## generating new checksum"
-  cd itp-files || exit; sha512sum "$OWN_ALIAS-$OWN_ADDR.itp" > "$OWN_ALIAS-$OWN_ADDR.itp.sha512sum" ; cd ..
+  cd itp-files && sha512sum "$OWN_ALIAS-$OWN_ADDR.itp" > "$OWN_ALIAS-$OWN_ADDR.itp.sha512sum" && cd .. || exit
   printf "  ## signing: "
   if ./sign.sh "$OWN_STREAM".sha512sum && ./check-sign.sh "$OWN_STREAM" 2> /dev/null && ./itp-check.sh "$OWN_STREAM" "$OWN_SUM";then
-    cp "$OWN_SUM" cache/ ; cp "$OWN_STREAM"* bkp
+    cp "$OWN_SUM" cache/ && cp "$OWN_STREAM"* bkp || exit
   else
     echo "  EE signing failed and/or itp-check failed - restoring backup (last change - that caused the error - is lost)"
-    cp bkp/"$OWN_ALIAS-$OWN_ADDR.itp" itp-files/ ; cp bkp/"$OWN_ALIAS-$OWN_ADDR.itp.sha512sum" itp-files/ ; cp bkp/"$OWN_ALIAS-$OWN_ADDR.itp.sha512sum.sig" itp-files/
+    cp bkp/"$OWN_ALIAS-$OWN_ADDR.itp" itp-files/ && cp bkp/"$OWN_ALIAS-$OWN_ADDR.itp.sha512sum" itp-files/ && cp bkp/"$OWN_ALIAS-$OWN_ADDR.itp.sha512sum.sig" itp-files/ || exit
     __INIT_FILES
     GK_JM=; GK_LN=
     return 1
@@ -373,20 +361,19 @@ __OWN_SHA_SUM_UPDATE(){
 }
 
 ### MAIN starts here
-if ! ag -f -g "\.itp$" itp-files/ > /dev/null;then echo "  EE no itp file in itp-files"; exit 1;fi
 echo "  ## Goldkarfpen $(cat VERSION*) "$(ls VERSION*)
 
 #source start script
-. ./.Goldkarpfen.start.sh
+. ./.Goldkarpfen.start.sh || exit
 
 #set some globals
 GK_JM=; GK_LN=
 if which fzy > /dev/null 2>&1;then GK_FZF_CMD="fzy";else GK_FZF_CMD="fzf";fi
 
 #create dirs
-mkdir -p cache/last_prune archives plugins quarantine sync bkp
+mkdir -p cache/last_prune archives plugins quarantine sync bkp || exit
 
-./update-archive-date.sh
+./update-archive-date.sh || exit
 
 USER_PLUGINS_MENU="[q]-return_to_main:__USER_RETURN"
 
@@ -404,7 +391,7 @@ if ! test -f cache/last_prune/last_prune;then date --utc +"%m" > cache/last_prun
 if test $(cat cache/last_prune/last_prune) != $(date --utc +"%m");then
   echo "  II pruning $OWN_STREAM"
   if ./prune-month.sh $(cat cache/last_prune/last_prune) "$OWN_STREAM";then
-    if __OWN_SHA_SUM_UPDATE;then date --utc +"%m" > cache/last_prune/last_prune;fi
+    if __OWN_SHA_SUM_UPDATE;then date --utc +"%m" > cache/last_prune/last_prune || exit;fi
   fi
 fi
 
@@ -413,13 +400,13 @@ if ! test -f cache/aliases;then
   if test -f cache/sane_files;then rm cache/sane_files;fi
   for T_FILE in itp-files/*.itp;do
     if ./itp-check.sh "$T_FILE" "$T_FILE.sha512sum";then
-      echo "$T_FILE" >> cache/sane_files
+      echo "$T_FILE" >> cache/sane_files || exit
     fi
   done
   echo "  ## creating alias file"
   while IFS= read -r T_FILE; do
     T_BUF=$(basename "$T_FILE"| __collum 1 "-" )
-    echo "$T_BUF "$(basename "$T_FILE") >> cache/aliases
+    echo "$T_BUF "$(basename "$T_FILE") >> cache/aliases || exit
   done < cache/sane_files
   __TEST_ALIAS_FILE cache/aliases
 fi
@@ -428,10 +415,10 @@ fi
 if ! test -f cache/sane_files;then
   for T_FILE in itp-files/*.itp;do
     if ./itp-check.sh "$T_FILE" "$T_FILE.sha512sum";then
-      echo "$T_FILE" >> cache/sane_files
+      echo "$T_FILE" >> cache/sane_files || exit
     else
       T_BUF=$(basename "$T_FILE")
-      sed -i "/$T_BUF/d" cache/aliases
+      sed -i "/$T_BUF/d" cache/aliases || exit
     fi
   done
 fi

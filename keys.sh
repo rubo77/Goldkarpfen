@@ -1,8 +1,8 @@
 #!/bin/sh
 # This is free and unencumbered software released into the public domain.
 # parts from grondilu https://bitcointalk.org/index.php?topic=10970.msg156708#msg156708, adapted to work with posix shell
-if ! test -f $(basename "$0");then echo "  EE run this script in its folder";exit;fi
-mkdir -p .keys
+if ! test -f $(basename "$0");then echo "  EE run this script in its folder";exit 1;fi
+mkdir -p .keys || exit 1
 if test -z "$1" && test -f .keys/pub.pem;then >&2 echo "  EE there are already keys, which implies that you have an active account already";exit 1;fi
 
 encode_58() {
