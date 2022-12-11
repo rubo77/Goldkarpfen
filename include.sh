@@ -56,37 +56,19 @@ __ARCHIVE_DATE(){
 __TEST_ARCHIVE_CONTENT(){
   if ! test $(tar -tvf "$1" | ag " $(basename "$1" | __collum 1 ".").itp$| $(basename "$1" | __collum 1 ".").itp.sha512sum$| $(basename "$1" | __collum 1 ".").itp.sha512sum.sig$" | wc -l) = 3;then
     >&2 echo "  EE $1 does not contain the required file set - moved to quarantine for inspection"
-    mv "$1" "$(mktemp -p quarantine "GARBAGE_$(basename "$1").XXXXXXXX")"
+    mv "$1" "$(mktemp -p quarantine "GARBAGE_$(basename "$1").XXXXXXXX")" || exit
     return 1
   fi
-}
-
-__TEST_ARCHIVE_DATE(){
-  T_BUF1=$(__ARCHIVE_DATE "$1")
-  ./check-dates.sh "$T_BUF1" || return 1
-  if ! test -z "$2";then
-    T_BUF2=$(__ARCHIVE_DATE "$2")
-  else
-    T_BUF="itp-files/$(basename "$1" |sed 's/\.tar\.gz$//').sha512sum"
-    if test -f "$T_BUF";then
-      T_BUF2=$(TZ=UTC ls --full-time --time-style="+%y-%m-%d" "$T_BUF" | __collum 6)
-    else
-      return 0
-    fi
-  fi
-  echo "  II tarball: $T_BUF1"
-  echo "  II local  : $T_BUF2"
-  ./check-dates.sh "$T_BUF1" "$T_BUF2" || return 1
 }
 
 __TEST_AND_UNPACK_ARCHIVE(){
   __TEST_ARCHIVE_CONTENT "$1" || return 1
   tar -xf "$1" -C tmp/ > /dev/null || return 1
   # FILENAME TMP_FILENAME OPTION_NO_UNPACK
-  set "$1" "tmp/$(basename "${1%.gz}")" "$2"
-  set "$1" "${2%.tar}" "$3"
-  T_BUF=$(tail -n 1 "$2" | ag "^#LICENSE:CC0 \d\d-\d\d-\d\d$" | awk '{print $2}')
-  if ! test "$T_BUF" = "$(date --utc +%y-%m-%d -d $(TZ="UTC" ls -l --time-style="long-iso"  $2 | __collum 6))";then
+  set -- "$1" "tmp/$(basename "${1%.gz}")" "$2"
+  set -- "$1" "${2%.tar}" "$3"
+  T_BUF=$(tail -n 1 "$2" | ag "^#LICENSE:CC0 \d\d-\d\d-\d\d$" | __collum 2)
+  if ! test "$T_BUF" = "$(date --utc +%y-%m-%d -d $(TZ="UTC" ls -l --time-style="long-iso"  "$2" | __collum 6))";then
     echo "  EE $1 time stamp is not valid - moved to quarantine for inspection"
     rm -f "$2.sha512sum" "$2.sha512sum.sig" "$2"
     mv "$1" "$(mktemp -p quarantine "GARBAGE_$(basename "$1").XXXXXXXX")" || exit
@@ -113,12 +95,12 @@ __TEST_ALIAS_FILE(){
 }
 
 __PRUNE_ARCHIVES(){
-  set "$(__collum 2 < archives/server.dat | sort -t "-" -k1n -k2n -k3n | head -n 1)"
+  set -- "$(__collum 2 < archives/server.dat | sort -t "-" -k1n -k2n -k3n | head -n 1)"
   if test -z "$1" || ./check-dates.sh "$1";then return;fi
   printf "\n  II OLD ARCHIVES NEED PRUNING!\n"
   mkdir -p quarantine/old-archives || exit
   while IFS= read -r T_LINE; do
-    set $T_LINE
+    set -- $T_LINE
     if ! ./check-dates.sh "$2";then
       echo "  EE archives/$1 is too old - moved to quarantine/old-archives" | ag "."
       mv "archives/$1" "quarantine/old-archives/$2-$1" || exit
@@ -144,16 +126,19 @@ __INIT_FILES(){
   __REMOVE_IF_MISSING
   for T_FILE in itp-files/*.itp;do
     # CACHE_SUM_FILE
-    set "cache/"$(basename "$T_FILE")".sha512sum"
+    set -- "cache/"$(basename "$T_FILE")".sha512sum"
     if ! test -f "$T_FILE.sha512sum";then echo "  EE $T_FILE has no SUM_FILE - fix this first";exit;fi
     if ! test -f "$1" || test $(sha512sum "$T_FILE" | __collum 1) != $(__collum 1 < "$1");then
       echo "  ## sanity_check $T_FILE"
       if ! ./check-sign.sh "$T_FILE" > /dev/null 2>&1;then
         echo "  EE $T_FILE signature ERROR" | ag "."
         printf "  II this should normally not happen, as the signatures get checked before\n  II is this your own file ? you find the backup files in bkp/\n"
-        exit
-      fi
-      if ./itp-check.sh "$T_FILE" "$T_FILE.sha512sum";then
+        if test "$T_FILE" = "$OWN_STREAM";then exit
+        else
+          for T_BUF in "$T_FILE" "$T_FILE.sha512sum" "$T_FILE.sha512sum.sig";do mv "$T_BUF" "$(mktemp -p quarantine "GARBAGE_$(basename "$T_BUF").XXXXXXXX")" || exit;done
+          __REMOVE_IF_MISSING;
+        fi
+      elif ./itp-check.sh "$T_FILE" "$T_FILE.sha512sum";then
         if ! test -f "$1";then
           if ! ag $(basename "$T_FILE") cache/aliases > /dev/null 2>&1;then
             T_BUF=$(basename "$T_FILE" | __collum 1 "-" )

@@ -3,11 +3,11 @@ USER_PLUGINS_MENU="[P]-plugin:__USER_PLUGIN $USER_PLUGINS_MENU"
 __USER_PLUGIN(){
   mkdir -p downloads || exit
   # URL FILENAME-LINK
-  set "$(sed -n "1p" $ITPFILE | sed -e "s/^.*<url1=//" -e "s/>.*//")" "$(ag --no-numbers "<plugin=.*>" $ITPFILE | sed -e "s/^.*<.*=//" -e "s/>/ /" | pipe_if_not_empty $GK_FZF_CMD)"
+  set -- "$(sed -n "1p" $ITPFILE | sed -e "s/^.*<url1=//" -e "s/>.*//")" "$(ag --no-numbers "<plugin=.*>" $ITPFILE | sed -e "s/^.*<.*=//" -e "s/>/ /" | pipe_if_not_empty $GK_FZF_CMD)"
   if test -z "$1";then echo "  II the stream has no url1 tag";return;fi
   if test -z "$2";then echo "  II empty";return;fi
   # URL FILENAME VSTREAM
-  set "$1" "$(echo $2 | __collum 1)" "$(echo $2 | __collum 2)"
+  set -- "$1" "$(echo $2 | __collum 1)" "$(echo $2 | __collum 2)"
   if test -f downloads/"$(basename $2)";then
     echo -n "  ?? file exists - overwrite? (Y/n) >"
     $GK_READ_CMD T_CONFIRM; if test "$T_CONFIRM" != "Y";then printf "\n  II aborted";return;else echo;fi

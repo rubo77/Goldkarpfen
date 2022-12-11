@@ -70,10 +70,10 @@ __COMMENT(){
   $GK_READ_CMD T_CONFIRM;if test "$T_CONFIRM" != "c";then printf "\n  II aborted\n";return;fi
   echo
   # PASTE_LINE TODAY
-  set "$(ag "^#COMMENTS_END" "$OWN_STREAM"| __collum 1 ":")" "$(date --utc "+%m.%d")"
+  set -- "$(ag "^#COMMENTS_END" "$OWN_STREAM"| __collum 1 ":")" "$(date --utc "+%m.%d")"
   # PASTE_LINE TODAY POST_NUMBER
-  set "$1" "$2" "$(ag --no-numbers --no-color -B 1 "^#COMMENTS_END" "$OWN_STREAM" | ag "^$2" | sed 's/:/ /' | __collum 2)"
-  if test -z "$3";then set "$1" "$2" 1; else set "$1" "$2" $(( $3 + 1 ));fi
+  set -- "$1" "$2" "$(ag --no-numbers --no-color -B 1 "^#COMMENTS_END" "$OWN_STREAM" | ag "^$2" | sed 's/:/ /' | __collum 2)"
+  if test -z "$3";then set -- "$1" "$2" 1; else set -- "$1" "$2" $(( $3 + 1 ));fi
   if test "$3" -gt 9;then echo "  EE you can only post 9 comments a day";return;fi
   echo "" > tmp/text; echo "#maximum: 971 chars ; lines with # in the beginnig get ignored ; newlines will replaced with spaces." >> tmp/text
   $EDITOR tmp/text
@@ -86,23 +86,23 @@ __COMMENT(){
 __SEARCH(){
   if test "$1" = "--comments";then
     # FUZZY_RESULT
-    set "$( ag --no-numbers --no-filename "^\d\d\.\d\d:\d \d\d\.\d\d:\d @$GK_ID" itp-files/*.itp | sort -k1 -n -t ":" | sed -e 's/ @.................................. / /' -e 's/\&bsol;/\\/g' | pipe_if_not_empty $GK_FZF_CMD | __collum 2)"
+    set -- "$( ag --no-numbers --no-filename "^\d\d\.\d\d:\d \d\d\.\d\d:\d @$GK_ID" itp-files/*.itp | sort -k1 -n -t ":" | sed -e 's/ @.................................. / /' -e 's/\&bsol;/\\/g' | pipe_if_not_empty $GK_FZF_CMD | __collum 2)"
   else
     # POST_BEGIN POST_END
-    set "$(( $(ag "^#POSTS_BEGIN" "$ITPFILE"| __collum 1 ":") + 1 ))" "$(( $(ag "^#POSTS_END" "$ITPFILE"| __collum 1 ":") - 1 ))"
+    set -- "$(( $(ag "^#POSTS_BEGIN" "$ITPFILE"| __collum 1 ":") + 1 ))" "$(( $(ag "^#POSTS_END" "$ITPFILE"| __collum 1 ":") - 1 ))"
     # FUZZY_RESULT POST_BEGIN POST_END
-    set "$(sed -n -e "$1 , $2 p" "$ITPFILE" -e 's/\&bsol;/\\/g' | ag "^\d\d.\d\d:\d " | pipe_if_not_empty $GK_FZF_CMD | __collum 1)" "$1" "$2"
+    set -- "$(sed -n -e "$1 , $2 p" "$ITPFILE" -e 's/\&bsol;/\\/g' | ag "^\d\d.\d\d:\d " | pipe_if_not_empty $GK_FZF_CMD | __collum 1)" "$1" "$2"
   fi
   if test -z "$1";then return;fi
   # FUZZY_RESULT LINE
-  set "$1" "$(grep -n "^$1 " "$ITPFILE" | head -n 1 | __collum 1 ":")"
+  set -- "$1" "$(grep -n "^$1 " "$ITPFILE" | head -n 1 | __collum 1 ":")"
   if test -z "$2";then return;fi
   GK_JM=$1; GK_LN=$2
 }
 
 __VIEW(){
   # BEGIN_LINE END_LINE TERM_COLLUMS
-  set "$(( $(ag "^#POSTS_BEGIN" "$ITPFILE"| __collum 1 ":") + 1 ))" "$(( $(ag "^#POSTS_END" "$ITPFILE"| __collum 1 ":") - 1 ))"
+  set -- "$(( $(ag "^#POSTS_BEGIN" "$ITPFILE"| __collum 1 ":") + 1 ))" "$(( $(ag "^#POSTS_END" "$ITPFILE"| __collum 1 ":") - 1 ))"
   if test "$2" = 3;then echo "  II empty";return;fi
   if test -z "$GK_LN";then
     T_COUNTER=$2
@@ -115,12 +115,12 @@ __VIEW(){
     if ! test $T_BUF = 0;then
       T_BUF1=$(sed -n "$T_COUNTER p" "$ITPFILE")
       T_BUF2=$(echo "$T_BUF1" | __collum 1)
-      echo "* $T_BUF1" | sed 's/\&bsol;/\\/g' | fold -w $GK_COLS -s
+      echo "* $T_BUF1" | sed 's/\&bsol;/\\/g' | fold -w "$GK_COLS" -s
       ag --no-numbers --no-heading "^\d\d\.\d\d:\d $T_BUF2 @$GK_ID" itp-files/*.itp | sort -k2 -n -t ":" |
       while IFS= read -r LLL;do
         T_BUF1=$(echo "$LLL" | __collum 2 "/" | __collum 1 ":" | __collum 1 "." | __collum 2 "-")
         T_BUF2=$(echo "$LLL" | __collum 2 ":" )
-        echo "$LLL" | sed -e "s/^.*@.................................../$T_BUF2 \[$(ag --no-color --no-numbers $T_BUF1 cache/aliases | __collum 1)\] /" -e 's/\&bsol;/\\/g' | fold -w $GK_COLS -s | sed 's/^/    /'
+        echo "$LLL" | sed -e "s/^.*@.................................../$T_BUF2 \[$(ag --no-color --no-numbers $T_BUF1 cache/aliases | __collum 1)\] /" -e 's/\&bsol;/\\/g' | fold -w "$GK_COLS" -s | sed 's/^/    /'
       done
       if test "$T_COUNTER" = "$1";then printf "^^^^^";fi
       if test "$T_COUNTER" = "$2";then printf "_____";fi
@@ -159,7 +159,7 @@ __VIEW(){
 
 __SELECT_STREAM(){
   if ! test -s ./cache/aliases;then printf "  EE you have no files to choose from - this can happen if you have non-conform itp files\n  II try rebuilding your aliases and rebuild all [y][y] [x][x]\n";return;fi
-  set "$(__collum 1 < ./cache/aliases | pipe_if_not_empty $GK_FZF_CMD)"
+  set -- "$(__collum 1 < ./cache/aliases | pipe_if_not_empty $GK_FZF_CMD)"
   if test -z "$1" || ! ag "^$1" ./cache/aliases > /dev/null;then echo "  II empty";return;fi
   ITPFILE="itp-files/"$(ag --nonumbers --nocolor "^$1 " cache/aliases | head -n 1 | __collum 2)
   GK_JM=; GK_LN=
@@ -168,10 +168,10 @@ __SELECT_STREAM(){
 
 __POST(){
   # PASTE_LINE TODAY
-  set "$(ag "^#POSTS_END" "$OWN_STREAM" | __collum 1 ":")" "$(date --utc "+%m.%d")"
+  set -- "$(ag "^#POSTS_END" "$OWN_STREAM" | __collum 1 ":")" "$(date --utc "+%m.%d")"
   # PASTE_LINE TODAY POST_NUMBER
-  set "$1" "$2" "$(ag --no-numbers --no-color -B 1 "^#POSTS_END" "$OWN_STREAM" | ag "^$2" | sed 's/:/ /' | __collum 2)"
-  if test -z "$3";then set "$1" "$2" 1; else set "$1" "$2" $(( $3 + 1 ));fi
+  set -- "$1" "$2" "$(ag --no-numbers --no-color -B 1 "^#POSTS_END" "$OWN_STREAM" | ag "^$2" | sed 's/:/ /' | __collum 2)"
+  if test -z "$3";then set -- "$1" "$2" 1; else set -- "$1" "$2" $(( $3 + 1 ));fi
   if test "$3" -gt 9;then echo "  EE you can only post 9 posts a day";return;fi
   echo "" > tmp/text; echo "#maximum: 1007 chars ; lines with # in the beginnig get ignored ; newlines will replaced with spaces." >> tmp/text
   $EDITOR tmp/text
@@ -197,14 +197,14 @@ __ARCHIVE(){
   tar cfv "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar" --mtime="$(date +'%Y-%m-%d %H:00')" -C itp-files "$OWN_ALIAS-$OWN_ADDR.itp.sha512sum" "$OWN_ALIAS-$OWN_ADDR.itp" "$OWN_ALIAS-$OWN_ADDR.itp.sha512sum.sig" --utc --numeric-owner || return
   if test -f "archives/$OWN_ALIAS-$OWN_ADDR.itp.tar.gz";then
     if test -f "bkp/$OWN_ALIAS-$OWN_ADDR.itp.tar" && test "$GK_DIFF_MODE" = "yes";then
-      set "$(__ARCHIVE_DATE "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar")" "$(__ARCHIVE_DATE "bkp/$OWN_ALIAS-$OWN_ADDR.itp.tar")"
+      set -- "$(__ARCHIVE_DATE "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar")" "$(__ARCHIVE_DATE "bkp/$OWN_ALIAS-$OWN_ADDR.itp.tar")"
       if ! test "$1" = "$2";then
         echo "  II generating diff from $2"
         bsdiff "bkp/$OWN_ALIAS-$OWN_ADDR.itp.tar" "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar" "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar.gz_D$2"
       fi
     fi
     rm -f "bkp/__$OWN_ALIAS-$OWN_ADDR.itp.tar" && cp "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar" bkp/ || exit
-    set "$(__ARCHIVE_DATE "archives/$OWN_ALIAS-$OWN_ADDR.itp.tar.gz")" "$(__ARCHIVE_DATE "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar")" "$2"
+    set -- "$(__ARCHIVE_DATE "archives/$OWN_ALIAS-$OWN_ADDR.itp.tar.gz")" "$(__ARCHIVE_DATE "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar")" "$2"
     if test "$1" = "$2";then
       mv "bkp/$OWN_ALIAS-$OWN_ADDR.itp.tar" "bkp/__$OWN_ALIAS-$OWN_ADDR.itp.tar" && echo "  II rearchived - diff for $1 blocked" || exit
     fi
@@ -216,8 +216,22 @@ __ARCHIVE(){
   test "$(du "archives/$OWN_ALIAS-$OWN_ADDR.itp.tar.gz" | __collum 1)" -lt "318" || echo "  II WARNING: your archive exeeds the size limit of 318kB " | ag "."
 }
 
+__TEST_ARCHIVE_DATE(){
+  T_BUF1=$(__ARCHIVE_DATE "$1")
+  ./check-dates.sh "$T_BUF1" || return 1
+  T_BUF="itp-files/$(set -- "$(basename "$1")" ; echo "${1%.tar.gz}").sha512sum"
+  if test -f "$T_BUF";then
+    T_BUF2=$(TZ=UTC ls --full-time --time-style="+%y-%m-%d" "$T_BUF" | __collum 6)
+  else
+    return 0
+  fi
+  echo "  II tarball: $T_BUF1"
+  echo "  II local  : $T_BUF2"
+  ./check-dates.sh "$T_BUF1" "$T_BUF2" || return 1
+}
+
 __UNPACK(){
-  set "$(ag -f -g "\.itp\.tar\.gz$" quarantine/ archives/ | pipe_if_not_empty $GK_FZF_CMD )"
+  set -- "$(ag -f -g "\.itp\.tar\.gz$" quarantine/ archives/ | pipe_if_not_empty $GK_FZF_CMD )"
   if test -z "$1" || ! test -f "$1";then echo "  II empty";return;fi
   if ! __TEST_ARCHIVE_DATE "$1";then
     echo -n "  ?? force unpack? (Y/n) >"
@@ -249,7 +263,7 @@ __DELETE_FROM_QUARANTINE (){
 }
 
 __QUARANTINE(){
-  set "$(ag --depth 0 -f -g '[0-9A-Za-z_]{1,12}-[0-9A-Za-z]{34}\.itp\.tar\.gz$' quarantine/ | pipe_if_not_empty $GK_FZF_CMD)"
+  set -- "$(ag --depth 0 -f -g '[0-9A-Za-z_]{1,12}-[0-9A-Za-z]{34}\.itp\.tar\.gz$' quarantine/ | pipe_if_not_empty $GK_FZF_CMD)"
   if test -z "$1" || ! test -f "$1";then echo "  II empty";return;fi
   echo "$1"
   printf "  \e[4mMM SUBMENU: quarantine\e[0m  [m]-move-into-archives [d]-delete-from-q [q]-abort >"
@@ -318,7 +332,7 @@ __USER_RETURN(){
 
 __PLUGINS(){
   printf "  \e[4mMM SUBMENU: plugins\e[0m\n"
-  printf "$USER_PLUGINS_MENU >" | sed 's/\b:__[A-Za-z_]*\b//g' | fold -s -w $GK_COLS
+  printf "$USER_PLUGINS_MENU >" | sed 's/\b:__[A-Za-z_]*\b//g' | fold -s -w "$GK_COLS"
   $GK_READ_CMD T_CHAR
   echo
   T_BUF1=0
@@ -445,7 +459,7 @@ while true;do
     x) __REPAIRS ;;
     y) __REPAIRS ;;
     h)
-      echo; fold -w $GK_COLS -s < help-en.dat | sed 's/^/   /' | more;echo
+      echo; fold -w "$GK_COLS" -s < help-en.dat | sed 's/^/   /' | more;echo
       echo -n "   $(cat VERSION*) ";ls VERSION*
     ;;
     !) __EDIT ;;

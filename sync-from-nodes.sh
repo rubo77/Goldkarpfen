@@ -39,13 +39,14 @@ __DOWNLOAD(){
   T_CMD=$(__DOWNLOAD_COMMAND "$URL" "$1" || echo "__error_getting_dl_cmd;")
   if $T_CMD -o "sync/$1" --max-filesize 318K;then
     if test "$2" = "--patch";then
-      set "$(echo "$1" | __collum 1 ".").itp.tar" "$2" "$1"
+      set -- "$(echo "$1" | __collum 1 ".").itp.tar" "$2" "$1"
       gunzip -c "archives/$1.gz" > tmp/tmp.tar; bspatch tmp/tmp.tar "sync/$1" "sync/$3"; rm -f tmp/tmp.tar
     fi
     if ! test "$(__ARCHIVE_DATE "sync/$1")" = "$FILE_DATE";then
-      printf "  EE There is a difference in the server.dat and the real age of the archive,\n  The archive is missing files or your server.dat is corrupt.\n  moving the archive to quarantine for inspection\n"
-      if test -f "sync/$3";then mv "sync/$3" "$(mktemp -p quarantine "GARBAGE_$(basename "$3").XXXXXXXX")" || exit 1;else
-      mv "sync/$1" "$(mktemp -p quarantine "GARBAGE_$(basename "$1").XXXXXXXX")" || exit 1;fi
+      if test "$2" = "--patch";then rm -f "sync/$3" "sync/$1" || exit 1;else
+        printf "  EE There is a difference in the server.dat and the real age of the archive,\n  The archive is missing files or your server.dat is corrupt.\n  moving the archive to quarantine for inspection\n"
+        mv "sync/$1" "$(mktemp -p quarantine "GARBAGE_$(basename "$1").XXXXXXXX")" || exit 1
+      fi
       return 1
     fi
     if test "$1" = "$UPD_NAME";then mv "sync/$1" quarantine || exit 1;return 0;fi
@@ -58,12 +59,11 @@ __DOWNLOAD(){
        T_TARGET="quarantine/" ; OPTIONS="--no-unpack"
     fi
     if __TEST_AND_UNPACK_ARCHIVE "sync/$1" $OPTIONS;then
-      if test "$2" = "--patch";then
-        gzip "sync/$1" ; set "$1.gz" "$2" "$3" ; rm -f "archives/$1_D"* ; mv "sync/$3" archives/
-      fi
+      if test "$2" = "--patch";then gzip "sync/$1" ; set -- "$1.gz" "$2" "$3" ; rm -f "archives/$1_D"* ; mv "sync/$3" archives/;else
+      rm -f "archives/$1_D"*;fi
       mv "sync/$1" "$T_TARGET" || exit 1
     else
-      if test -f "sync/$3";then mv "sync/$3" "$(mktemp -p quarantine "GARBAGE_$(basename "$3").XXXXXXXX")" || exit 1;fi
+      if test -f "sync/$3";then rm -f "sync/$3" || exit 1;fi
       return 1
     fi
   fi
@@ -84,27 +84,21 @@ __SYNC_ALL(){
       printf "$SERVER_DAT" |
       while IFS= read -r LINE; do
         #FILE DATE DIFF-DATE
-        set $LINE ; FILE_DATE=$2
+        set -- $LINE ; FILE_DATE=$2
         if ./check-dates.sh "$2" > /dev/null;then
-          if ag "^$1 " archives/server.dat > /dev/null && ! test -f "quarantine/$1";then
+          if ! test "$1" = "$VERIFICATION_STREAM.tar.gz" && test -f "quarantine/$1" || test "$(ls "quarantine/GARBAGE_$1."???????? 2> /dev/null | wc -l)" -gt 2;then
+            echo "  II $1 is quarantined (or 3X GARBAGE) - skipping download" | ag -v "^$UPD_NAME_REGEXP"
+          elif ag "^$1 " archives/server.dat > /dev/null || test "$1" = "$UPD_NAME" || test "$1" = "$VERIFICATION_STREAM.tar.gz";then
             LOCAL_DATE=$(ag --no-numbers --no-filename  "^$1 " archives/server.dat | head -n 1 | __collum 2) ;
             if ./check-dates.sh "$2" "$LOCAL_DATE" > /dev/null 2>&1;then
-              if test "$LOCAL_DATE" = "${3#D}" && test "$GK_DIFF_MODE" = "yes" && ! test "$FILE" = "$UPD_NAME" && ! test "$FILE" = "$VERIFICATION_STREAM.tar.gz";then
+              if test "$LOCAL_DATE" = "${3#D}" && test "$GK_DIFF_MODE" = "yes" && ! test "$1" = "$UPD_NAME" && ! test "$1" = "$VERIFICATION_STREAM.tar.gz";then
                   if ! __DOWNLOAD "$1_$3" --patch;then __DOWNLOAD "$1";fi
                 else
                   __DOWNLOAD "$1"
               fi
-            elif ! test "$LESS_VERBOSE" = "yes";then
-              echo "  II no new version for $1"
-            fi
+            elif ! test "$LESS_VERBOSE" = "yes";then echo "  II no new version for $1";fi
           else
-            if test -f "quarantine/$1";then
-              if ! test "$LESS_VERBOSE" = "yes";then echo "  II $1 is quarantined - skipping download" | ag -v "^$UPD_NAME_REGEXP";fi
-            elif test "$1" = "$UPD_NAME" || test "$1" = "$VERIFICATION_STREAM.tar.gz";then
-              __DOWNLOAD "$1"
-            elif test -z "$UPDATE_ONLY";then
-              __DOWNLOAD "$1" --new
-            fi
+            if test -z "$UPDATE_ONLY";then __DOWNLOAD "$1" --new;fi
           fi
         fi
       done

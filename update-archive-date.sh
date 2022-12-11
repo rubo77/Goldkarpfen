@@ -2,8 +2,6 @@
 #GPL-3 - See LICENSE file for copyright and license details.
 if ! test -f $(basename "$0");then echo "  EE run this script in its folder";exit 1;fi
 cd archives && touch -a ./server.dat && . ../update-provider.inc.sh || exit 1
-trap "rm -f ../tmp/server.dat.tmp; trap - EXIT; exit 0" INT HUP TERM QUIT
-trap "rm -f ../tmp/server.dat.tmp; trap - EXIT; exit" EXIT
 __UPDATE_DATE(){
   if echo "$1" | ag --no-color "^[0-9A-Za-z_]{1,12}-[0-9A-Za-z]{34}\.itp\.tar\.gz$|^$UPD_NAME_REGEXP$" > /dev/null;then
     BUF=$(date --utc "+%y-%m-%d" -d $(tar -tvf "$1" --utc | head -n 1 | awk '{print $4}'))
@@ -22,11 +20,11 @@ __UPDATE_DATE(){
 }
 
 if test -z "$1";then
-  echo -n "" > ../tmp/server.dat.tmp || exit 1
   for FILE in *.tar.gz;do
-    __UPDATE_DATE "$FILE" >> ../tmp/server.dat.tmp || exit 1
+    T_BUF="$(__UPDATE_DATE "$FILE")"
+    if ! test -z "$T_BUF";then SERVER_DAT="$SERVER_DAT$T_BUF\n";fi
   done
-  if ! cmp ../tmp/server.dat.tmp ../archives/server.dat > /dev/null 2>&1;then mv ../tmp/server.dat.tmp ../archives/server.dat || exit 1;fi
+  if ! test "$SERVER_DAT" = "$(cat ../archives/server.dat | tr '\n' '\\' | sed 's/%/%%/g' | sed 's/\\/\\n/g')";then printf "$SERVER_DAT" > ../archives/server.dat || exit 1;fi
 else
   sed -i "/^$1/d" ./server.dat || exit 1
   if test -f "$1";then __UPDATE_DATE "$1" >> ./server.dat || exit 1;fi

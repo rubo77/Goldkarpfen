@@ -1,18 +1,23 @@
 HOW TO MIGRATE:
-Stop Goldkarpfen; open a terminal an go into your Goldkarpfen folder
+  stop Goldkarpfen; open a terminal an go into your Goldkarpfen folder :
 
-  cd itp-files
-  cp $OWN_ALIAS-$T_BUF1.itp $OWN_ALIAS-$T_BUF2.itp
-  sha512sum $OWN_ALIAS-$T_BUF2.itp > $OWN_ALIAS-$T_BUF2.itp.sha512sum
-  cd ..
-  ./sign.sh itp-files/$OWN_ALIAS-$T_BUF2.sha512sum
+cd itp-files
+cp OWN_ALIAS-old_KEY_ADDR.itp OWN_ALIAS-new_KEY_ADDR.itp
+sha512sum OWN_ALIAS-old_KEY_ADDR.itp > OWN_ALIAS-new_KEY_ADDR.itp.sha512sum
+cd ..
+./sign.sh itp-files/OWN_ALIAS-new_KEY_ADDR.itp.sha512sum
+./check-sign.sh itp-files/OWN_ALIAS-new_KEY_ADDR.itp
 
-Start Goldkarpfen and edit [!] your old itp-file and remove all posts and comments; after that add a post with: "delete this itp-channel and blacklist it."
-Stop Goldkarpfen and edit your Goldkarpfen.config and change the second line to: $OWN_ALIAS-$T_BUF2.itp
+  remove old itp-file and archives :
 
-If you are using tor: rename your tor-service dir
+rm itp-files/OWN_ALIAS-old_KEY_ADDR.itp
+rm archives/OWN_ALIAS-old_KEY_ADDR.itp*
+rm bkp/*OWN_ALIAS-old_KEY_ADDR.itp*
 
-  sudo mv /var/lib/tor/$T_BUF1 /var/lib/tor/$T_BUF2
+edit your Goldkarpfen.config and change the second line to: OWN_ALIAS-new_KEY_ADDR.itp
 
-Start Goldkarpfen and archive your new itp-stream and don’t forget to adapt your aliases.
-Seed your 'marked-for-deletion-stream' for some time and then delete it.
+  If you are using tor: rename your tor-service dir
+
+sudo mv /var/lib/tor/old_KEY_ADDR /var/lib/tor/new_KEY_ADDR
+
+start Goldkarpfen and archive ([a]-archive/release) your new itp-stream.
