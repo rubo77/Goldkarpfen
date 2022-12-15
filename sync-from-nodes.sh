@@ -35,37 +35,36 @@ __DOWNLOAD(){
       if test "$2" = "--new";then return;fi
     fi
   fi
-  printf "\e[7m"$1"\e[0m\n"
+  echo "$(tput rev)$1$(tput sgr0)"
   T_CMD=$(__DOWNLOAD_COMMAND "$URL" "$1" || echo "__error_getting_dl_cmd;")
-  if $T_CMD -o "sync/$1" --max-filesize 318K;then
-    if test "$2" = "--patch";then
-      set -- "$(echo "$1" | __collum 1 ".").itp.tar" "$2" "$1"
-      gunzip -c "archives/$1.gz" > tmp/tmp.tar; bspatch tmp/tmp.tar "sync/$1" "sync/$3"; rm -f tmp/tmp.tar
+  $T_CMD -o "sync/$1" --max-filesize 318K || return 1
+  if test "$2" = "--patch";then
+    set -- "$(echo "$1" | __collum 1 ".").itp.tar" "$2" "$1"
+    gunzip -c "archives/$1.gz" > tmp/tmp.tar; bspatch tmp/tmp.tar "sync/$1" "sync/$3"; rm -f tmp/tmp.tar
+  fi
+  if ! test "$(__ARCHIVE_DATE "sync/$1")" = "$FILE_DATE";then
+    if test "$2" = "--patch";then rm -f "sync/$3" "sync/$1" || exit 1;else
+      printf "  EE There is a difference in the server.dat and the real age of the archive,\n  The archive is missing files or your server.dat is corrupt.\n  moving the archive to quarantine for inspection\n"
+      mv "sync/$1" "$(mktemp -p quarantine "GARBAGE_$(basename "$1").XXXXXXXX")" || exit 1
     fi
-    if ! test "$(__ARCHIVE_DATE "sync/$1")" = "$FILE_DATE";then
-      if test "$2" = "--patch";then rm -f "sync/$3" "sync/$1" || exit 1;else
-        printf "  EE There is a difference in the server.dat and the real age of the archive,\n  The archive is missing files or your server.dat is corrupt.\n  moving the archive to quarantine for inspection\n"
-        mv "sync/$1" "$(mktemp -p quarantine "GARBAGE_$(basename "$1").XXXXXXXX")" || exit 1
-      fi
-      return 1
-    fi
-    if test "$1" = "$UPD_NAME";then mv "sync/$1" quarantine || exit 1;return 0;fi
-    if ag "${1%.tar.gz}|${1%.tar}" cache/sane_files > /dev/null || test "$1" = "$VERIFICATION_STREAM.tar.gz";then
-       T_TARGET="archives/" ; OPTIONS=
-    elif test -f "archives/${1%.gz}.gz";then
-       T_TARGET="archives/" ; OPTIONS="--no-unpack"
-    else
-       echo "  II NEW ARCHIVE - first unpack needs to be done manually"
-       T_TARGET="quarantine/" ; OPTIONS="--no-unpack"
-    fi
-    if __TEST_AND_UNPACK_ARCHIVE "sync/$1" $OPTIONS;then
-      if test "$2" = "--patch";then gzip "sync/$1" ; set -- "$1.gz" "$2" "$3" ; rm -f "archives/$1_D"* ; mv "sync/$3" archives/;else
-      rm -f "archives/$1_D"*;fi
-      mv "sync/$1" "$T_TARGET" || exit 1
-    else
-      if test -f "sync/$3";then rm -f "sync/$3" || exit 1;fi
-      return 1
-    fi
+    return 1
+  fi
+  if test "$1" = "$UPD_NAME";then mv "sync/$1" quarantine || exit 1;return 0;fi
+  if ag "${1%.tar.gz}|${1%.tar}" cache/sane_files > /dev/null || test "$1" = "$VERIFICATION_STREAM.tar.gz";then
+     T_TARGET="archives/" ; OPTIONS=
+  elif test -f "archives/${1%.gz}.gz";then
+     T_TARGET="archives/" ; OPTIONS="--no-unpack"
+  else
+     echo "  II NEW ARCHIVE - first unpack needs to be done manually"
+     T_TARGET="quarantine/" ; OPTIONS="--no-unpack"
+  fi
+  if __TEST_AND_UNPACK_ARCHIVE "sync/$1" $OPTIONS;then
+    if test "$2" = "--patch";then gzip "sync/$1" ; set -- "$1.gz" "$2" "$3" ; rm -f "archives/$1_D"* ; mv "sync/$3" archives/;else
+    rm -f "archives/$1_D"*;fi
+    mv "sync/$1" "$T_TARGET" || exit 1
+  else
+    if test -f "sync/$3";then rm -f "sync/$3" || exit 1;fi
+    return 1
   fi
   ./update-archive-date.sh "$1" || exit 1
 }
@@ -75,7 +74,7 @@ __SYNC_ALL(){
   while IFS= read -r NODE; do
     if test -z "$NODE";then echo "  II got empty line - break";break;fi
     URL=$(echo "$NODE" | __collum 1)
-    printf "\e[7m"$URL/server.dat"\e[0m\n"
+    echo "$(tput rev)$URL/server.dat$(tput sgr0)"
     T_CMD=$(__DOWNLOAD_COMMAND "$URL" "server.dat" || echo "__error_getting_dl_cmd;")
     SERVER_DAT="$($T_CMD --max-filesize 6K | ag "^[0-9A-Za-z_]{1,12}-[0-9A-Za-z]{34}\.itp\.tar\.gz \d\d-\d\d-\d\d( D\d\d-\d\d-\d\d$|$)|^$UPD_NAME_REGEXP \d\d-\d\d-\d\d$" | grep $LIST_MODE -f "$LIST_RGXP" | sort -R | tr '\n' '\\' | sed 's/%/%%/g' | sed 's/\\/\\n/g')"
     if ! test -z "$SERVER_DAT";then

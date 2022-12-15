@@ -1,3 +1,5 @@
+#V0.4
+
 version <208 :
   (no bug - feature update)
   server.dat format has changed with activation of diff-patch-mode (227+)
@@ -24,3 +26,27 @@ version 233-235 :
     if not : exit GK ; delete the older ones (for each archive) manually ; restart
     (for the lazy : it is safe to delete all diff-files : exit GK ; rm archives/*.itp.tar.gz_D* ; restart)
   (fixed in 236+)
+
+version 238-239
+  (medium critical)
+  update-archive-date.sh will exit and not update server.dat if archives/ is empty
+  solution : update to 241+
+  (fixed in 241+)
+
+version 241
+  (medium critical)
+  update-archive-date.sh works not over remote ssh call
+  solution : update to 242+
+  (fixed in 242+)
+
+version 241-242
+  (uncritical)
+  SIGINT exit check cannot be abortet when ctrl-c was pressed in a sub-script
+  solution : update to 243+
+  (fixed in 243+)
+
+version 233-245
+  (uncritical)
+  gapped diff will be quarantined with a overly dramatic error message
+  solution : update to 245+ (NOTE: it is safe to remove all quarantined GARBAGE_diffs : rm quarantine/GARBAGE_*_D*)
+  (fixed in 245+)

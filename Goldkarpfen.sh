@@ -109,7 +109,7 @@ __VIEW(){
   else
     T_COUNTER=$GK_LN
   fi
-  printf "\n  \e[4mMM SUBMENU: viewer\e[0m  [t]-topic [/]-search_comments [n]-next [p]-previous [c]-comment [q]-exit_viewer\n"
+  printf "\n  $(tput bold)MM SUBMENU: viewer$(tput sgr0)  [t]-topic [/]-search_comments [n]-next [p]-previous [c]-comment [q]-exit_viewer\n"
   T_BUF=1
   while true;do
     if ! test $T_BUF = 0;then
@@ -150,7 +150,7 @@ __VIEW(){
       ;;
       c)
         __COMMENT;T_BUF=1
-        printf "\n  \e[4mMM SUBMENU: viewer\e[0m  [t]-topic [/]-search_comments [n]-next [p]-previous [c]-comment [q]-exit_viewer\n"
+        printf "\n  $(tput bold)MM SUBMENU: viewer$(tput sgr0)  [t]-topic [/]-search_comments [n]-next [p]-previous [c]-comment [q]-exit_viewer\n"
         ;;
       q) GK_LN=$T_COUNTER;break ;;
     esac
@@ -182,8 +182,7 @@ __POST(){
   echo
   sed -i ""$1"i "$2":$3 $(sed -n '1p' tmp/text)" "$OWN_STREAM"
   rm -f tmp/text
-  GK_JM="$2:$3"; GK_LN=$1
-  __OWN_SHA_SUM_UPDATE
+  if __OWN_SHA_SUM_UPDATE && test "$ITPFILE" = "$OWN_STREAM";then GK_JM="$2:$3"; GK_LN=$1;fi
 }
 
 __ARCHIVE(){
@@ -266,7 +265,7 @@ __QUARANTINE(){
   set -- "$(ag --depth 0 -f -g '[0-9A-Za-z_]{1,12}-[0-9A-Za-z]{34}\.itp\.tar\.gz$' quarantine/ | pipe_if_not_empty $GK_FZF_CMD)"
   if test -z "$1" || ! test -f "$1";then echo "  II empty";return;fi
   echo "$1"
-  printf "  \e[4mMM SUBMENU: quarantine\e[0m  [m]-move-into-archives [d]-delete-from-q [q]-abort >"
+  printf "  $(tput bold)MM SUBMENU: quarantine$(tput sgr0)  [m]-move-into-archives [d]-delete-from-q [q]-abort >"
   $GK_READ_CMD T_CHAR
   case "$T_CHAR" in
     m) __MOVE_OUT_OF_QUARANTINE "$1";;
@@ -299,7 +298,7 @@ __EDIT(){
 }
 
 __REPAIRS(){
-  printf "  \e[4mMM SUBMENU: repairs\e[0m  [x]-rebuild-all [y]-rebuild-aliases [q]-abort >"
+  printf "  $(tput bold)MM SUBMENU: repairs$(tput sgr0)  [x]-rebuild-all [y]-rebuild-aliases [q]-abort >"
   $GK_READ_CMD T_CHAR
   echo
   case "$T_CHAR" in
@@ -331,7 +330,7 @@ __USER_RETURN(){
 }
 
 __PLUGINS(){
-  printf "  \e[4mMM SUBMENU: plugins\e[0m\n"
+  printf "  $(tput bold)MM SUBMENU: plugins\e[0m\n"
   printf "$USER_PLUGINS_MENU >" | sed 's/\b:__[A-Za-z_]*\b//g' | fold -s -w "$GK_COLS"
   $GK_READ_CMD T_CHAR
   echo
@@ -446,7 +445,7 @@ __HOOK_START
 #main loop
 while true;do
   GK_COLS=$(( $(tput cols) - 5))
-  printf "\n[$GK_MODE] UTC:[$(date --utc "+%m.%d")] MY:\e[7m[$OWN_ALIAS]\e[0m SELECT:\e[7m[$GK_ALIAS]\e[0m$GK_JM\n[v]-view [p]-post [s]-select_stream [u]-unpack [m]-quarantine [a]-archive/release [r]-plugins [!]-edit [x/y]-repairs [h]-help [Q]-quit >" | fold -s -w $GK_COLS
+  printf "\n[$GK_MODE] UTC:[$(date --utc "+%m.%d")] MY:$(tput rev)[$OWN_ALIAS]$(tput sgr0) SELECT:$(tput rev)[$GK_ALIAS]$(tput sgr0)$GK_JM\n[v]-view [p]-post [s]-select_stream [u]-unpack [m]-quarantine [a]-archive/release [r]-plugins [!]-edit [x/y]-repairs [h]-help [Q]-quit >" | fold -s -w $GK_COLS
   $GK_READ_CMD T_CHAR
   echo
   case "$T_CHAR" in

@@ -41,5 +41,5 @@ __USER_PLUGIN(){
     mkdir -p archives/share || exit
     echo "  II copying $(basename $2) to archives/share"; cp plugins/"$(basename $2)" archives/share || return
     echo "  II add a post (or edit an existing one) with:"
-    printf "  \e[7m<plugin=share/$(basename $2)> $(sed -n '3p' archives/share/$(basename $2)) $(sed -n '2p' archives/share/$(basename $2))\e[0m\n"
+    echo "  $(tput rev)<plugin=share/$(basename $2)> $(sed -n '3p' archives/share/$(basename $2)) $(sed -n '2p' archives/share/$(basename $2))$(tput sgr0)"
 }
