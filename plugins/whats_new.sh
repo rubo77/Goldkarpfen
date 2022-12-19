@@ -1,5 +1,5 @@
 #GPL-3 - See LICENSE file for copyright and license details.
-#V0.12
+#V0.15
 #Goldkarpfen-1JULSJ5Nnba9So48zi21rpfTuZ3tqNRaFB.itp
 USER_PLUGINS_MENU="[w]-whats_new:__USER_WHATSNEW $USER_PLUGINS_MENU"
 __USER_WHATSNEW(){
@@ -11,16 +11,15 @@ __USER_WHATSNEW(){
   ag --noheading --nonumbers "^$T_BUF:\d " *.itp | ag -v "^.*:\d\d\.\d\d:\d \d\d\.\d\d:\d @" | grep -v '^$' |
   while IFS= read -r T_LINE;do
     # alias text
-    set "$(echo "$T_LINE" | __collum 1 '-')" "$(echo "$T_LINE" | sed 's/^.*itp://')"
-    printf "\e[7m[$1]\e[0m $(echo "$2" | sed 's/%/%%/g')" | fold -w "$GK_COLS" -s
-    echo
+    set -- "${T_LINE%%-*}" "${T_LINE##*itp:}"
+    echo "$(tput rev)[$1]$(tput sgr0) $2" | fold -w "$GK_COLS" -s
   done
   printf "##### COMMENTS #####\n"
   ag --noheading --nonumbers "^$T_BUF:\d \d\d\.\d\d:\d @" *.itp | grep -v '^$' |
   while IFS= read -r T_LINE;do
     # alias1 alias2
-    set "$(echo "$T_LINE" | __collum 1 '-')" "$(ag $(echo "$T_LINE" | sed 's/^.*[[:digit:]][[:digit:]]\.[[:digit:]][[:digit:]]:[[:digit:]] [[:digit:]][[:digit:]]\.[[:digit:]][[:digit:]]:[[:digit:]] @//' | __collum 1 ) ../cache/aliases | __collum 1)"
-    printf "$T_BUF [$1] -> \e[7m[$2]\e[0m $(echo "$T_LINE" | sed 's/^.*[[:digit:]][[:digit:]]\.[[:digit:]][[:digit:]]:[[:digit:]] [[:digit:]][[:digit:]]\.[[:digit:]][[:digit:]]:[[:digit:]] @.................................. //' | sed 's/%/%%/g')\n" | fold -w "$GK_COLS" -s
+    set -- "${T_LINE%%-*}" "$(ag "$(echo "${T_LINE#*@}" | __collum 1 )" ../cache/aliases | __collum 1)"
+    echo "$T_BUF [$1] -> $(tput rev)[$2]$(tput sgr0) ${T_LINE#*@?????????????????????????????????? }" | fold -w "$GK_COLS" -s
   done
   cd ..
 }

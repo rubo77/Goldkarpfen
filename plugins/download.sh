@@ -1,18 +1,18 @@
 #GPL-3 - See LICENSE file for copyright and license details.
-#V0.21
+#V0.23
 #Goldkarpfen-1JULSJ5Nnba9So48zi21rpfTuZ3tqNRaFB.itp
 USER_PLUGINS_MENU="[d]-download:__USER_DOWNLOAD $USER_PLUGINS_MENU"
 __USER_DOWNLOAD(){
   mkdir -p downloads || exit
   # URL DL_LINK
-  set "$(sed -n "1p" $ITPFILE | sed -e "s/^.*<url1=//" -e "s/>.*//")" "$(ag --no-numbers "<download=.*>" $ITPFILE | sed -e "s/^.*<.*=//" -e "s/>/ /" | pipe_if_not_empty $GK_FZF_CMD)"
+  set -- "$(sed -n "1p" $ITPFILE | sed -e "s/^.*<url1=//" -e "s/>.*//")" "$(ag --no-numbers "<download=.*>" $ITPFILE | sed -e "s/^.*<.*=//" -e "s/>/ /" | pipe_if_not_empty $GK_FZF_CMD)"
   if test -z "$2";then echo "  II empty";return;fi
-  set "$1" "$(echo $2 | awk '{print $1}')"
+  set -- "$1" "${2% *}"
   if echo "$2" | ag '^.*://' > /dev/null;then
     # FILENAME
-    set "$(echo "$2" | sed -e 's@^.*://@@' -e 's@/@ @' | awk '{print $2}')" "$2"
+    set -- "$(echo "$2" | sed -e 's@^.*://@@' -e 's@/@ @' | awk '{print $2}')" "$2"
     # URL FILENAME
-    set "${2%/$1}" "$1"
+    set -- "${2%/$1}" "$1"
   else
     if test -z "$1";then echo "  II the stream has no url1 tag"; return;fi
   fi
