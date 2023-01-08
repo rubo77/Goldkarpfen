@@ -8,7 +8,7 @@ tmux new-session -d
 tmux new-window \; split-window -h\; split-window -p 26 \;
 
 tmux send-keys -t 0 'bash Goldkarpfen.sh' enter
-tmux send-keys -t 1 'sleep 10; ./sync-from-nodes.sh --loop' enter
+tmux send-keys -t 1 'sleep 100; ./sync-from-nodes.sh --loop' enter
 tmux send-keys -t 2 'i2pd' enter
 tmux send-keys -t 0 '' enter
 
