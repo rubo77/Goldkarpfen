@@ -29,9 +29,9 @@ if test $((this_year - year1)) -gt 1;then
   >&2 echo "  EE date1 is older than 333 days"
   exit 1
 fi
-days_from_null_now=$(( $(date --utc -d "$now" "+%j") + 366 * this_year))
-days_from_null_1=$(( $(date --utc -d "$1" "+%j") + 366 * year1 ))
-days_from_null_2=$(( $(date --utc -d "$2" "+%j") + 366 * year2 ))
+days_from_null_now=$( echo "$(date --utc -d "$now" "+%j") + 366 * $this_year" | bc)
+days_from_null_1=$( echo "$(date --utc -d "$1" "+%j") + 366 * $year1" | bc )
+days_from_null_2=$( echo "$(date --utc -d "$2" "+%j") + 366 * $year2" | bc )
 if test $((days_from_null_now - days_from_null_1)) -gt 333;then
   >&2 echo "  EE date1 is older than 333 days"
   exit 1
