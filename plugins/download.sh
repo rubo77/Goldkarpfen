@@ -1,5 +1,5 @@
 #GPL-3 - See LICENSE file for copyright and license details.
-#V0.23
+#V0.24
 #Goldkarpfen-1JULSJ5Nnba9So48zi21rpfTuZ3tqNRaFB.itp
 USER_PLUGINS_MENU="[d]-download:__USER_DOWNLOAD $USER_PLUGINS_MENU"
 __USER_DOWNLOAD(){
@@ -7,7 +7,7 @@ __USER_DOWNLOAD(){
   # URL DL_LINK
   set -- "$(sed -n "1p" $ITPFILE | sed -e "s/^.*<url1=//" -e "s/>.*//")" "$(ag --no-numbers "<download=.*>" $ITPFILE | sed -e "s/^.*<.*=//" -e "s/>/ /" | pipe_if_not_empty $GK_FZF_CMD)"
   if test -z "$2";then echo "  II empty";return;fi
-  set -- "$1" "${2% *}"
+  set -- "$1" "${2%% *}"
   if echo "$2" | ag '^.*://' > /dev/null;then
     # FILENAME
     set -- "$(echo "$2" | sed -e 's@^.*://@@' -e 's@/@ @' | awk '{print $2}')" "$2"

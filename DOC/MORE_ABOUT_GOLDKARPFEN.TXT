@@ -1,11 +1,11 @@
-#V0.21
+#V0.25
 
 ### ABOUT (design goal)
-  Goldkarpfen was esp. designed for the christian cyber community to provide a
-  robust communication network, to secure a share hosting platform for the Holy
-  Bible and other important books. Naturally, this is libre software : anybody
-  can use it : for any publishing purpose - just like the printing press can be
-  used for any kind of book.
+  Goldkarpfen was designed to provide a robust communication network, to secure
+  a share hosting platform for important Information, that are important for
+                            humans
+  Besides other things it is network-framework for distributed
+  focus-search-engines (search engines with a limited set of data)
 
 ### SPECIAL DISTINGUISHING MARK
   Goldkarpfen is a p2p-share-hosted daily-routine blog like communication
@@ -58,8 +58,9 @@ bash Goldkarpfen.sh
   - copy Goldkarpfen-latest.tar.gz into update
 cd update
 tar -xvf Goldkarpfen-latest.tar.gz
-./sync_runtime_files.sh --first-run
+cp Goldkarpfen/update/sync_runtime_files.sh .
 ./sync_runtime_files.sh
+rm Goldkarpfen-latest.tar.gz
 
 ### MIGRATING TO A NEW INSTALLATION
   If you want to migrate your data to a fresh install you have to do:
@@ -205,6 +206,36 @@ Goldkarpfen-latest.tar.gz
   - move that tarball into your archives with your itp-file.tar.gz
   - tell your peers to change their update-provider.inc.sh accordingly
 
+### ABOUT DISTRIBUTED SEARCH ENGINES
+  CONCEPTION :
+  - 1 out of (X) nodes hosts a (http/gopher) search engine,
+    which holds a database of its archive (+ manually curated search entries);
+    usable via curl (like url?search=what1+what2) to be used from inside GK
+  - each search engine mirrors search data of (Y) search engines
+    (with minimal archive overlap) (=> database size Y*30MB)
+  - each client search request goes to (Z) random search engines
+    the results will be merged/sorted on the client side
+  - important data gets mirrored (share hosted by other nodes) by J% of the nodes
+  - X=60 ; Y=10-20 ; Z=5 and J>2 for important data would result in good
+    search results for important data
+
+  LEVEL 0 SEARCH ENGINE
+  a LVL0 search engine consist of:
+    the search engine with indexed data of:
+    + itp-streams with original content (blogs)
+    + direct downloads/plugins of important content in the context of the search 
+      engine hoster
+    + downlinks of important content in the context of the search engine hoster
+    + entries of LVL1 search_engines (LVL0 search engines should de-list 
+      search engines that does not meet the requirements for LVL1)
+
+  LEVEL 1 SEARCH ENGINE
+  a LVL1 search engine consist of:
+    the search engine with indexed data of:
+    + itp-streams of downlink collections
+
+  (NOTE : downlink example <url=https://gnu.org>)
+  
 ### ABOUT SECURITY
   You may be concerned about security, and rightfully so.
 
