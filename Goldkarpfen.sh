@@ -14,7 +14,7 @@ echo "  ## startup ..."
 GK_MODE="ERROR"
 if test -f my-check-dependencies.sh;then GK_MODE=$(./my-check-dependencies.sh | tail -n 1);else GK_MODE=$(./check-dependencies.sh | tail -n 1);fi
 if test "$GK_MODE" = "ERROR";then exit;fi
-if which bsdiff > /dev/null 2>&1; then GK_DIFF_MODE="yes";else echo "  II install bsdiff to enable diff-mode";fi
+if command -v bsdiff > /dev/null 2>&1; then GK_DIFF_MODE="yes";else echo "  II install bsdiff to enable diff-mode";fi
 
 #new account?
 if ! test -d .keys;then
@@ -37,6 +37,7 @@ trap "cd $GK_PATH;. ./.Goldkarpfen.exit.sh; trap - EXIT; exit" EXIT HUP TERM QUI
 
 #source include
 . ./include.sh || exit
+if test -f ./my-include.sh;then . ./my-include.sh || exit;fi
 
 USER_HOOK_START="return"; USER_HOOK_ARCHIVE_START="return"
 
@@ -381,7 +382,7 @@ echo "  ## Goldkarfpen $(cat VERSION*) "$(ls VERSION*)
 
 #set some globals
 GK_JM=; GK_LN=
-if which fzy > /dev/null 2>&1;then GK_FZF_CMD="fzy";else GK_FZF_CMD="fzf";fi
+if command -v fzy > /dev/null 2>&1;then GK_FZF_CMD="fzy";else GK_FZF_CMD="fzf";fi
 
 #create dirs
 mkdir -p cache/last_prune archives plugins quarantine sync bkp || exit

@@ -115,8 +115,9 @@ for T_ARG in $@;do
 done
 
 . ./update-provider.inc.sh && . ./include.sh || exit 1
+if test -f ./my-include.sh;then . ./my-include.sh || exit;fi
 if test -f ./whitelist.dat;then LIST_MODE=; LIST_RGXP="whitelist.dat";else LIST_MODE="-v"; LIST_RGXP="blacklist.dat";fi
-if which bspatch > /dev/null 2>&1;then GK_DIFF_MODE="yes";fi
+if command -v bspatch > /dev/null 2>&1;then GK_DIFF_MODE="yes";fi
 touch -a blacklist.dat && mkdir -p cache/last_prune archives plugins quarantine sync bkp tmp || exit 1
 trap 'echo "  ## pls wait ...";__CHECK_FOR_UPD;__UPD_NOTIFY; rm -f tmp/tmp.tar sync-from-nodes.pid; trap - EXIT; exit 0' INT HUP TERM QUIT
 trap 'echo "  ## pls wait ...";__CHECK_FOR_UPD;__UPD_NOTIFY; rm -f tmp/tmp.tar sync-from-nodes.pid; trap - EXIT; exit' EXIT
