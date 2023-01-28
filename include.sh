@@ -1,4 +1,11 @@
 #GPL-3 - See LICENSE file for copyright and license details.
+T_BUF=$(sed -n '6 p' Goldkarpfen.config)
+if test "$T_BUF" = "$(printf "%i" "$T_BUF")";then
+  GK_TOR_PORT="$T_BUF"
+else
+  GK_TOR_PORT="9050"
+fi
+
 split() {
     set -f
     old_ifs=$IFS
@@ -45,7 +52,7 @@ __DOWNLOAD_COMMAND () {
   elif echo "$1" | ag "(\b127.0.0.1\b|\blocalhost\b)" > /dev/null;then
     echo "curl --progress-bar -f $1""/""$THE_CHAR_OF_TERROR""$2"
   else
-    echo "curl --progress-bar -f --proxy socks5://127.0.0.1:9050 --socks5-hostname 127.0.0.1:9050 $1""/""$THE_CHAR_OF_TERROR""$2"
+    echo "curl --progress-bar -f --proxy socks5://127.0.0.1:$GK_TOR_PORT --socks5-hostname 127.0.0.1:$GK_TOR_PORT $1""/""$THE_CHAR_OF_TERROR""$2"
   fi
 }
 
