@@ -1,10 +1,10 @@
-#V0.25
+#V0.31
 
 ### ABOUT (design goal)
   Goldkarpfen was designed to provide a robust communication network, to secure
   a share hosting platform for important Information, that are important for
                             humans
-  Besides other things it is network-framework for distributed
+  Besides other things it is a network-framework for distributed
   focus-search-engines (search engines with a limited set of data)
 
 ### SPECIAL DISTINGUISHING MARK
@@ -15,6 +15,36 @@
   Publishing (archiving) ->ONCE<- a day is advised (publishing more than one time
   a day is not prohibited, because it will not cause any technical problems, but
   can lead to different daily version for different users)
+
+### GOLDKARPFEN FOR ANDROID
+#LIMITATIONS : none, download and hosting works with tor (tor-browser) and i2pd flawlessly
+#NOTE: ignore (for now) : "Cannot open netlink socket"-error, or comment out "if ss -tulpn ..." lines in my-check-dependencies.sh
+  - install termux (from Fdroid, or ...)
+  - upgrade : pkg upgrade
+  - install the dependencies : pkg install file fzy openssl-tool silversearcher-ag bc curl darkhttpd iproute2 vim tor ncurses-utils (i2pd)
+  - echo "export EDITOR=nano" >> .bashrc
+  - unpack Goldkarpfen-latest.tar.gz ; cd Goldkarpfen
+  - create an account : ./new-account.sh (copy SERVER_PORT and KEY_ADDR)
+  - add this to your /data/data/com.termux/files/usr/etc/tor/torrc (KEY_ADDR and SERVER_PORT from Goldkarpfen.config) :
+
+HiddenServiceDir /data/data/com.termux/files/usr/var/service/tor/KEY_ADDR/
+HiddenServicePort 80 127.0.0.1:SERVER_PORT
+
+  (- if you are using i2pd -> configure a tunnel in ~/.i2pd)
+  - copy start-services.sh to my-start-services.sh and stop-services.sh to my-stop-services.sh (important)
+  - start tor (i2pd): tor --quiet & (i2pd --daemon &)
+  - start Goldkarpfen : bash Goldkarpfen.sh
+
+#TODO for i2p : 
+#configure ip2d tunnel
+
+### GOLDKARPFEN FOR ANDROID (automated install)
+#WARNING : will change torrc file and ~/.profile , also : ABSOLUTELY NO WARRANTY!
+  - install termux
+
+pkg upgrade ; pkg install tor curl && tor --quiet &
+curl -f --progress-bar --proxy socks5://127.0.0.1:9050 --socks5-hostname 127.0.0.1:9050 http://rlnh2w5zjagfcbrf2kfazi3obl7agtd4g7flgpsvqaxnjrgbrihmsxyd.onion/share/gk-termux-installer.sh -o gk-termux-installer.sh
+sh gk-termux-installer.sh
 
 ### QUICK INSTALL FOR UBUNTU LIKE SYSTEMS
 ### NOTE: ABSOLUTELY NO WARRANTY!
@@ -223,10 +253,10 @@ Goldkarpfen-latest.tar.gz
   a LVL0 search engine consist of:
     the search engine with indexed data of:
     + itp-streams with original content (blogs)
-    + direct downloads/plugins of important content in the context of the search 
+    + direct downloads/plugins of important content in the context of the search
       engine hoster
     + downlinks of important content in the context of the search engine hoster
-    + entries of LVL1 search_engines (LVL0 search engines should de-list 
+    + entries of LVL1 search_engines (LVL0 search engines should de-list
       search engines that does not meet the requirements for LVL1)
 
   LEVEL 1 SEARCH ENGINE
@@ -235,7 +265,13 @@ Goldkarpfen-latest.tar.gz
     + itp-streams of downlink collections
 
   (NOTE : downlink example <url=https://gnu.org>)
-  
+
+### USAGE WITH TOR_BROWSER
+  - if you are using tor browser (port number 9150), add this to Goldkarpfen.config (line 5,6):
+
+# TOR_PORT
+9150
+
 ### ABOUT SECURITY
   You may be concerned about security, and rightfully so.
 
