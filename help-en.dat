@@ -19,10 +19,8 @@ DEFAULT PLUGINS
 [a]-add_stream_url     Add the url of the selected stream to your node list.
 [P]-plugin             Get/Update plugins from the selected stream.
 
-If something goes wrong : try rebuilding all [x][x]
-- If that does not help : try rebuilding aliases and all [y][y] [x][x]
-- If that does not help : rm ./cache/* - (leave ./cache/last_prune) - and restart
-- If that does not help : rm ./cache/* - (leave ./cache/last_prune) and rm ./itp-files/* and unpack all tarball by hand into ./itp-files and restart.
+sync_all calls a standalone script, which you can invoke in a separate terminal (e.g.):
+./sync-from-nodes.sh --loop
 
 DELETING ITP-FILE and ARCHIVES
 get the delete-plugin from one of these nodes: (via plugin-plugin or append /share/delete.sh)

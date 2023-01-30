@@ -70,7 +70,7 @@ __DOWNLOAD(){
 }
 
 __SYNC_ALL(){
-  ag --no-numbers -v "^#" < nodes.dat |
+  ag --no-numbers -v "^#" < nodes.dat | ag "$T_PATTERN" |
   while IFS= read -r NODE; do
     if test -z "$NODE";then echo "  II got empty line - break";break;fi
     URL=$(echo "$NODE" | __collum 1)
@@ -110,10 +110,11 @@ for T_ARG in $@;do
   if test "$T_ARG" = "--loop";then T_LOOP="yes"; shift
   elif test "$T_ARG" = "--less-verbose";then LESS_VERBOSE="yes"; shift
   elif echo "$T_ARG" | ag "^--pause=[0-9]*$" > /dev/null;then T_PAUSE="$(printf "%i" ${T_ARG#--pause=})"; shift
-  else echo "usage : ./sync-from-nodes.sh [--less-verbose] [--loop] [--pause=seconds] # seconds>599";exit;fi
+  elif echo "$T_ARG" | ag "^--pattern=.*$" > /dev/null;then T_PATTERN=${T_ARG#--pattern=}; shift
+  else echo "usage : ./sync-from-nodes.sh [--less-verbose] [--loop] [--pattern=regexp] [--pause=seconds] # seconds>599";exit;fi
   if test -z "$T_PAUSE" || test "$T_PAUSE" -lt 600;then T_PAUSE=3600;fi
 done
-
+if test -z "$T_PATTERN";then T_PATTERN=".";fi
 . ./update-provider.inc.sh && . ./include.sh || exit 1
 if test -f ./my-include.sh;then . ./my-include.sh || exit;fi
 if test -f ./whitelist.dat;then LIST_MODE=; LIST_RGXP="whitelist.dat";else LIST_MODE="-v"; LIST_RGXP="blacklist.dat";fi

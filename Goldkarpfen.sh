@@ -277,10 +277,9 @@ __QUARANTINE(){
 }
 
 __EDIT(){
-  if ! ag "$OWN_STREAM" cache/sane_files > /dev/null;then echo "  EE your own stream is not in the sane list";return;fi
-  echo "  II editing your own stream be careful - be CAREFUL!"
-  echo -n "  ?? [c]-continue [a]-abort >"
-  $GK_READ_CMD T_CONFIRM; if test "$T_CONFIRM" != "c";then printf "\n  II aborted\n";return;fi
+  set -- "$(printf "$OWN_STREAM #BE CAREFUL!\n$(ls nodes.dat blacklist.dat whitelist.dat search.dat 2> /dev/null)" | pipe_if_not_empty $GK_FZF_CMD | __collum 1)"
+  if test -z "$1" || ! test -f "$1";then echo "  II empty";return;fi
+  if ! test "$1" = "$OWN_STREAM";then $EDITOR "$1";return;fi
   GK_JM=; GK_LN=
   sed 's/\&bsol;/\\/g' "$OWN_STREAM" > "tmp/$OWN_ALIAS-$OWN_ADDR.itp" || return
   $EDITOR tmp/"$OWN_ALIAS"-"$OWN_ADDR"."itp"; echo

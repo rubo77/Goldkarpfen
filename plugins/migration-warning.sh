@@ -7,7 +7,7 @@ __MIGRATION(){
     printf "\nold_KEY_ADDR : $T_BUF1\nnew_KEY_ADDR : $T_BUF2\nOWN_ALIAS    : $OWN_ALIAS\n\n"
     cat DOC/address_migration.txt ; exit
   fi
-  for T_FILE in check-dependencies-ubuntu.sh .Goldkarpfen.config.default.sh;do
+  for T_FILE in check-dependencies-ubuntu.sh .Goldkarpfen.config.default.sh plugins/add_node.sh;do
     if test -f "$T_FILE";then echo "  II $T_FILE ist obsolete, you can delete it";fi
   done
 }

@@ -1,4 +1,4 @@
-#V0.31
+#V0.32
 
 ### ABOUT (design goal)
   Goldkarpfen was designed to provide a robust communication network, to secure
@@ -35,14 +35,14 @@ HiddenServicePort 80 127.0.0.1:SERVER_PORT
   - start tor (i2pd): tor --quiet & (i2pd --daemon &)
   - start Goldkarpfen : bash Goldkarpfen.sh
 
-#TODO for i2p : 
+#TODO for i2p :
 #configure ip2d tunnel
 
 ### GOLDKARPFEN FOR ANDROID (automated install)
-#WARNING : will change torrc file and ~/.profile , also : ABSOLUTELY NO WARRANTY!
+#WARNING : will change torrc, ~/.bashrc and ~/.profile , also : ABSOLUTELY NO WARRANTY!
   - install termux
 
-pkg upgrade ; pkg install tor curl && tor --quiet &
+pkg upgrade ; pkg install tor curl && if ! pidof tor > /dev/null;then eval "tor --quiet &";fi
 curl -f --progress-bar --proxy socks5://127.0.0.1:9050 --socks5-hostname 127.0.0.1:9050 http://rlnh2w5zjagfcbrf2kfazi3obl7agtd4g7flgpsvqaxnjrgbrihmsxyd.onion/share/gk-termux-installer.sh -o gk-termux-installer.sh
 sh gk-termux-installer.sh
 
