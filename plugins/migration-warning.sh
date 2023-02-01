@@ -7,8 +7,11 @@ __MIGRATION(){
     printf "\nold_KEY_ADDR : $T_BUF1\nnew_KEY_ADDR : $T_BUF2\nOWN_ALIAS    : $OWN_ALIAS\n\n"
     cat DOC/address_migration.txt ; exit
   fi
-  for T_FILE in check-dependencies-ubuntu.sh .Goldkarpfen.config.default.sh plugins/add_node.sh;do
-    if test -f "$T_FILE";then echo "  II $T_FILE ist obsolete, you can delete it";fi
+  if ! test "$(head -n 1 "$ITPFILE" | ag -o '<url1=(\bhttp://\b|\bgopher://\b).*>')" = "$(head -n 1 "$ITPFILE" | ag -o '<url1=.*>')";then
+    echo "  II your url1 header tag has no protocol prefix (http:// or gopher://)" | ag .
+  fi
+  for T_FILE in $(ls check-dependencies-ubuntu.sh .Goldkarpfen.config.default.sh plugins/add_node.sh 2> /dev/null);do
+    echo "  II $T_FILE ist obsolete, you can delete it"
   done
 }
 

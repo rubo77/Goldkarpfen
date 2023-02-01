@@ -31,7 +31,7 @@ __USER_PLUGIN(){
     $GK_READ_CMD T_BUF
     if test "$T_BUF" != "y";then echo;return;fi
     printf "\n  ## moving $2 to plugins\n"; mv downloads/"$(basename $2)" plugins/ || return
-    echo "  II plugin will be usable after restart" | ag "."
+    . plugins/"$(basename $2)" || return
     echo -n "  ?? share-host this file? (y/n) >"
     $GK_READ_CMD T_BUF; if test "$T_BUF" != "y";then echo;return;fi
     if test -f archives/"$2";then

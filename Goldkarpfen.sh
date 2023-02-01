@@ -277,7 +277,7 @@ __QUARANTINE(){
 }
 
 __EDIT(){
-  set -- "$(printf "$OWN_STREAM #BE CAREFUL!\n$(ls nodes.dat blacklist.dat whitelist.dat search.dat 2> /dev/null)" | pipe_if_not_empty $GK_FZF_CMD | __collum 1)"
+  set -- "$(printf "$OWN_STREAM #BE CAREFUL!\n$(ls launcher.dat nodes.dat blacklist.dat whitelist.dat search.dat 2> /dev/null)" | pipe_if_not_empty $GK_FZF_CMD | __collum 1)"
   if test -z "$1" || ! test -f "$1";then echo "  II empty";return;fi
   if ! test "$1" = "$OWN_STREAM";then $EDITOR "$1";return;fi
   GK_JM=; GK_LN=
