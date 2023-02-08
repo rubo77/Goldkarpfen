@@ -2,49 +2,39 @@
   Goldkarpfen is a pure p2p communication system without any central authority.
 
 ### INSTALLATION AND FIRST START
-1. Your EDITOR enviroment variable needs to be set similar to this (add this to ~/.bashrc or ~/.mkshrc or alike):
-export EDITOR="nano"
+### GOLDKARPFEN FOR ANDROID (automated install)
+# WARNING : will change torrc, ~/.bashrc and ~/.profile , also : ABSOLUTELY NO WARRANTY!
+  - install termux
+pkg upgrade ; pkg install tor curl && if ! pidof tor > /dev/null;then eval "tor --quiet &";fi
+URL=http://rlnh2w5zjagfcbrf2kfazi3obl7agtd4g7flgpsvqaxnjrgbrihmsxyd.onion;curl -f --proxy socks5://127.0.0.1:9050 --socks5-hostname 127.0.0.1:9050 $URL/share/gki.sh > gki.sh && sh gki.sh "$URL"
 
-2. INSTALL THE BASIC DEPENDENCIES
-  ag (the-silver-searcher), fzy (or fzf), libressl/openssl, xxd from vim/xxd-standalone, iproute2, darkhttpd, curl, tor
+  - NOTE : if you enable also i2p support
+pkg install i2pd && i2pd --daemon --loglevel=none &
+  - run gki.sh again
+sh gki.sh
 
-  - start tor (e.g. systemctl)
-sudo systemctl start tor
-
-  - test your settings
-./check-dependencies.sh
-  should return: tor-static ...
-
-3. CREATE AN ACCOUNT
-./new-account
+### GOLDKARPFEN FOR ANDROID (manual install)
+  - install termux (from Fdroid, or ...)
+  - upgrade
+pkg upgrade
+  - install the dependencies
+pkg install file fzy openssl-tool silversearcher-ag bc curl darkhttpd iproute2 vim tor ncurses-utils #i2pd
+if ! grep "^export EDITOR" .bashrc;then echo "export EDITOR=nano" >> .bashrc;. .bashrc;fi
+  - unpack
+tar xf Goldkarpfen-termux.tar.gz ; cd Goldkarpfen
+  - create an account
+./new-account.sh
   - note your KEY_ADDR
   - check the config:
 more ./Goldkarpfen.config
   - note your SERVER_PORT
-
-4. CONFIGURE TOR
-  - add this to your /etc/torrc
-HiddenServiceDir /var/lib/tor/KEY_ADDR/
+  - add this to your /data/data/com.termux/files/usr/etc/tor/torrc
+HiddenServiceDir /data/data/com.termux/files/usr/var/service/tor/KEY_ADDR/
 HiddenServicePort 80 127.0.0.1:SERVER_PORT
 
-  - restart tor (e.g. systemctl)
-sudo systemctl restart tor
-
-  - get your onion-url (replace /var/lib/tor with the correct tor-data-path)
-sudo cat /var/lib/tor/KEY_ADDR/hostname
-
-5. START
-  NOTE: dash (and others) does not support "read -n 1" - Goldkarpfen will work, but you have to press [Return] a lot ;)
-bash ./Goldkarpfen.sh  # or
-mksh ./Goldkarpfen.sh  # or
-busybox sh ./Goldkarpfen.sh
-
-  Press [h] to get an overview.
-
-  - and add your onion-url url with [r][h]
-
-7. MORE INFO (esp. if you want to use i2p)
-http://6f5bmqtipvz7wdurqx7ireer3j47wegaztivl5pnsiumk5jeurua.b32.i2p/share/FAQ.TXT
-http://6f5bmqtipvz7wdurqx7ireer3j47wegaztivl5pnsiumk5jeurua.b32.i2p/share/MORE_ABOUT_GOLDKARPFEN.TXT
-
-#LICENSE:CC0
+  - (if you are using i2pd -> configure a tunnel in ~/.i2pd using SERVER_PORT)
+  - start tor and/or i2pd
+tor --quiet &
+i2pd --daemon --loglevel=none &
+  - start Goldkarpfen
+bash Goldkarpfen.sh
