@@ -1,4 +1,4 @@
-#V0.32
+#V0.43
 
 ### ABOUT (design goal)
   Goldkarpfen was designed to provide a robust communication network, to secure
@@ -16,42 +16,106 @@
   a day is not prohibited, because it will not cause any technical problems, but
   can lead to different daily version for different users)
 
-### GOLDKARPFEN FOR ANDROID
-#LIMITATIONS : none, download and hosting works with tor (tor-browser) and i2pd flawlessly
-#NOTE: ignore (for now) : "Cannot open netlink socket"-error, or comment out "if ss -tulpn ..." lines in my-check-dependencies.sh
-  - install termux (from Fdroid, or ...)
-  - upgrade : pkg upgrade
-  - install the dependencies : pkg install file fzy openssl-tool silversearcher-ag bc curl darkhttpd iproute2 vim tor ncurses-utils (i2pd)
-  - echo "export EDITOR=nano" >> .bashrc
-  - unpack Goldkarpfen-latest.tar.gz ; cd Goldkarpfen
-  - create an account : ./new-account.sh (copy SERVER_PORT and KEY_ADDR)
-  - add this to your /data/data/com.termux/files/usr/etc/tor/torrc (KEY_ADDR and SERVER_PORT from Goldkarpfen.config) :
+### GOLDKARPFEN FOR ANDROID (automated install)
+# WARNING : will change torrc, ~/.bashrc and ~/.profile , also : ABSOLUTELY NO WARRANTY!
+  - install termux
+pkg upgrade ; pkg install tor curl && if ! pidof tor > /dev/null;then eval "tor --quiet &";fi
+URL=http://rlnh2w5zjagfcbrf2kfazi3obl7agtd4g7flgpsvqaxnjrgbrihmsxyd.onion;curl -f --proxy socks5://127.0.0.1:9050 --socks5-hostname 127.0.0.1:9050 $URL/share/gki.sh > gki.sh && sh gki.sh "$URL"
 
+  - NOTE : if you enable also i2p support
+pkg install i2pd && i2pd --daemon --loglevel=none &
+  - run gki.sh again
+sh gki.sh
+
+### GOLDKARPFEN FOR ANDROID (manual install)
+  - install termux (from Fdroid, or ...)
+  - upgrade
+pkg upgrade
+  - install the dependencies
+pkg install file fzy openssl-tool silversearcher-ag bc curl darkhttpd iproute2 vim tor ncurses-utils libqrencode #i2pd
+if ! grep "^export EDITOR" .bashrc;then echo "export EDITOR=nano" >> .bashrc;. .bashrc;fi
+  - unpack
+tar xf Goldkarpfen-termux.tar.gz ; cd Goldkarpfen
+  - create an account
+./new-account.sh
+  - note your KEY_ADDR
+  - check the config:
+more ./Goldkarpfen.config
+  - note your SERVER_PORT
+  - add this to your /data/data/com.termux/files/usr/etc/tor/torrc
 HiddenServiceDir /data/data/com.termux/files/usr/var/service/tor/KEY_ADDR/
 HiddenServicePort 80 127.0.0.1:SERVER_PORT
 
-  (- if you are using i2pd -> configure a tunnel in ~/.i2pd)
-  - copy start-services.sh to my-start-services.sh and stop-services.sh to my-stop-services.sh (important)
-  - start tor (i2pd): tor --quiet & (i2pd --daemon &)
-  - start Goldkarpfen : bash Goldkarpfen.sh
+  - (if you are using i2pd -> configure a tunnel in ~/.i2pd using SERVER_PORT)
+  - start tor and/or i2pd
+tor --quiet &
+i2pd --daemon --loglevel=none &
+  - start Goldkarpfen
+bash Goldkarpfen.sh
 
-#TODO for i2p :
-#configure ip2d tunnel
+### INSTALATION WITH ACCESS TO TOR CONTROLLER
+  - install the basic dependencies
+  ag (the-silver-searcher), fzy (or fzf), libressl/openssl, xxd from vim/xxd-standalone, iproute2, darkhttpd, curl, python3, python-stem, tor
 
-### GOLDKARPFEN FOR ANDROID (automated install)
-#WARNING : will change torrc, ~/.bashrc and ~/.profile , also : ABSOLUTELY NO WARRANTY!
-  - install termux
+  - edit your /etc/tor/torrc to contain this
+ControlPort 9051
+CookieAuthentication 1
+CookieAuthFile /var/lib/tor/control_auth_cookie
+CookieAuthFileGroupReadable 1
+DataDirectoryGroupReadable 1
+CacheDirectoryGroupReadable 1
 
-pkg upgrade ; pkg install tor curl && if ! pidof tor > /dev/null;then eval "tor --quiet &";fi
-curl -f --progress-bar --proxy socks5://127.0.0.1:9050 --socks5-hostname 127.0.0.1:9050 http://rlnh2w5zjagfcbrf2kfazi3obl7agtd4g7flgpsvqaxnjrgbrihmsxyd.onion/share/gk-termux-installer.sh -o gk-termux-installer.sh
-sh gk-termux-installer.sh
+  - add your user to the tor group (debian-tor on ubuntu) (restart may be neccessary!)
+  - test your settings
+python3 -c "import stem" && ./check-dependencies.sh
+  Should return: tor-ctrl ...
+
+  - create an account
+./new-account
+
+  - start
+bash ./Goldkarpfen.sh  # or
+mksh ./Goldkarpfen.sh  # or
+busybox sh ./Goldkarpfen.sh
+
+  - get your onion-url
+  Goldkarpfen will show the location of your hostname on start-up
+
+  - add your onion-url url with [r][h]
+
+### INSTALLATION WITH I2PD
+  - install the basic dependencies
+  ag (the-silver-searcher), fzy (or fzf), libressl/openssl, xxd from vim/xxd-standalone, iproute2, darkhttpd, curl, i2pd
+  - start your i2p-daemon
+i2pd
+
+  - test your settings
+./check-dependencies.sh
+  should return: ... i2p ...
+
+  - create an account
+./new-account
+  - check the config
+more ./Goldkarpfen.config
+  note your SERVER_PORT
+
+  - configure a http tunnel (use SERVER_PORT defined in your Goldkarpfen.config) and restart i2pd
+  - get your i2p-url
+curl http://127.0.0.1:7070/?page=i2p_tunnels
+
+  - start
+bash ./Goldkarpfen.sh  # or
+mksh ./Goldkarpfen.sh  # or
+busybox sh ./Goldkarpfen.sh
+
+  - add your i2p-url with [r][h]
 
 ### QUICK INSTALL FOR UBUNTU LIKE SYSTEMS
 ### NOTE: ABSOLUTELY NO WARRANTY!
   # GET THE LATEST Goldkarpfen-latest.tar.gz AND GO INTO THE FOLDER CONTAINING IT
 tar xfv Goldkarpfen-latest.tar.gz && cd Goldkarpfen
 sudo apt-get install build-essential python3-stem fzy silversearcher-ag tor dc xxd curl
-if ! grep "export EDITOR" ~/.bashrc;then echo 'export EDITOR="nano"' >> ~/.bashrc ; source ~/.bashrc;fi
+if ! grep "^export EDITOR" ~/.bashrc;then echo 'export EDITOR="nano"' >> ~/.bashrc ;. ~/.bashrc;fi
 mkdir -p tmp && cd tmp
 wget https://raw.githubusercontent.com/emikulic/darkhttpd/master/darkhttpd.c
 gcc darkhttpd.c -o darkhttpd; sudo mv darkhttpd /usr/local/bin
