@@ -1,4 +1,4 @@
-#V0.7
+#V0.8
 
 version <208 :
   (no bug - feature update)
@@ -89,3 +89,9 @@ curl -f --proxy localhost:4444 http://6f5bmqtipvz7wdurqx7ireer3j47wegaztivl5pnsi
 
   after fix : re-download all archives with [r][A] and archive your itp-stream with [a] ; on success delete quarantine/old-archives/*
   (fixed in 253+)
+
+version <269
+  (annoying)
+  url1 qrcode has a "=" before the url
+  solution : update to 270
+  (fixed in 270+)
