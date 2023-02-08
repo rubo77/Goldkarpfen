@@ -1,11 +1,5 @@
 #GPL-3 - See LICENSE file for copyright and license details.
-T_BUF=$(sed -n '6 p' Goldkarpfen.config)
-if test "$T_BUF" = "$(printf "%i" "$T_BUF")";then
-  GK_TOR_PORT="$T_BUF"
-else
-  GK_TOR_PORT="9050"
-fi
-
+T_BUF=$(sed -n '6 p' Goldkarpfen.config); if test "$T_BUF" = "$(printf "%i" "$T_BUF")";then GK_TOR_PORT="$T_BUF";else GK_TOR_PORT="9050";fi
 split() {
     set -f
     old_ifs=$IFS
@@ -17,16 +11,17 @@ split() {
 }
 
 __collum(){
-  arg1=$1
-  if test $# -gt 1;then old_ifs=$IFS; IFS=$2;fi
-  while read T_LINE; do
+  arg1=$1;old_ifs=$IFS
+  if test $# -gt 1;then IFS=$2;fi
+  while read -r T_LINE; do
     set -- $T_LINE
     for I in $(split "$arg1" "-");do
       col=$I
       eval "echo -n \${${col}}"
     done
     echo
-  done < /dev/stdin
+  done
+  IFS=$old_ifs
 }
 
 basename() {
@@ -49,7 +44,7 @@ __DOWNLOAD_COMMAND () {
   if echo "$1" | ag "^gopher://" > /dev/null;then THE_CHAR_OF_TERROR='\/';else THE_CHAR_OF_TERROR='';fi
   if echo "$1" | ag "^.*\.i2p" > /dev/null;then
     echo "curl --progress-bar -f --proxy localhost:4444 $1""/""$THE_CHAR_OF_TERROR""$2"
-  elif echo "$1" | ag "(\b127.0.0.1\b|\blocalhost\b)" > /dev/null;then
+  elif echo "$1" | ag "(\b\d{1,3}.\d{1,3}.\d{1,3}.\{1,3}\b|\blocalhost\b)" > /dev/null;then
     echo "curl --progress-bar -f $1""/""$THE_CHAR_OF_TERROR""$2"
   else
     echo "curl --progress-bar -f --proxy socks5://127.0.0.1:$GK_TOR_PORT --socks5-hostname 127.0.0.1:$GK_TOR_PORT $1""/""$THE_CHAR_OF_TERROR""$2"

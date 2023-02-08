@@ -15,12 +15,3 @@ if test -f ./my-start-services.sh;then
 elif echo "$GK_MODE" | ag '^tor.*host|i2p.*host' > /dev/null;then
   ./start-services.sh "$OWN_ADDR" "$1" "$(echo $GK_MODE | __collum 1)"
 fi
-
-if ! head -n 1 "$OWN_STREAM" | ag -Q '<url1=' > /dev/null;then
-  if echo "$GK_MODE" | ag "^tor" > /dev/null;then
-    echo "  II retrieve your hostname with: sudo cat /var/lib/tor/$OWN_ADDR/hostname"
-    echo "  II add an url1-header-tag with [r][h]"
-  elif echo "$GK_MODE" | ag "i2p" > /dev/null;then
-    echo "  II retrieve your i2p hostname and add an url1-header-tag with [r][h]"
-  fi
-fi

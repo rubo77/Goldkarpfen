@@ -15,7 +15,7 @@ MAIN
 DEFAULT PLUGINS
 [U]-update             Update your Goldkarpfen from a synced tarball.
 [A]-sync_all           Pull all the new tarballs from the nodes of your node list.
-[h]-header_tag         Add your main url to your header.
+[h]-url1               Show or add your url1 to your header.
 [a]-add_stream_url     Add the url of the selected stream to your node list.
 [P]-plugin             Get/Update plugins from the selected stream.
 

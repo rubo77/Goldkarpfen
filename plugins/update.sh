@@ -4,6 +4,7 @@ __USER_UPDATE(){
   cd update || exit
   echo "  ## FIRST RUN"
   if ./sync_runtime_files.sh --first-run;then
+    sync
     echo "  ## SECOND RUN"
     if ./sync_runtime_files.sh;then echo "  II restart your Goldkarpfen now " | ag "."
     else echo "  EE fatal error : it is recommended to exit Goldkarpfen now!";fi

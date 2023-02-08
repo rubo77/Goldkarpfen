@@ -70,11 +70,11 @@ __DOWNLOAD(){
 }
 
 __SYNC_ALL(){
-  ag --no-numbers -v "^#" < nodes.dat | ag "$T_PATTERN" |
+  ag --no-numbers -v "^[[:blank:]]*#" < nodes.dat | ag "$T_PATTERN" |
   while IFS= read -r NODE; do
     if test -z "$NODE";then echo "  II got empty line - break";break;fi
     URL=$(echo "$NODE" | __collum 1)
-    echo "$(tput rev)$URL/server.dat$(tput sgr0)"
+    echo "$(tput rev)$URL$(tput sgr0)"
     T_CMD=$(__DOWNLOAD_COMMAND "$URL" "server.dat" || echo "__error_getting_dl_cmd;")
     SERVER_DAT="$($T_CMD --max-filesize 6K | ag "^[0-9A-Za-z_]{1,12}-[0-9A-Za-z]{34}\.itp\.tar\.gz \d\d-\d\d-\d\d( D\d\d-\d\d-\d\d$|$)|^$UPD_NAME_REGEXP \d\d-\d\d-\d\d$" | grep $LIST_MODE -f "$LIST_RGXP" | sort -R | tr '\n' '\\' | sed 's/%/%%/g' | sed 's/\\/\\n/g')"
     if ! test -z "$SERVER_DAT";then
@@ -86,7 +86,7 @@ __SYNC_ALL(){
         set -- $LINE ; FILE_DATE=$2
         if ./check-dates.sh "$2" > /dev/null;then
           if ! test "$1" = "$VERIFICATION_STREAM.tar.gz" && test -f "quarantine/$1" || test "$(ls "quarantine/GARBAGE_$1."???????? 2> /dev/null | wc -l)" -gt 2;then
-            echo "  II $1 is quarantined (or 3X GARBAGE) - skipping download" | ag -v "^$UPD_NAME_REGEXP"
+            echo "  II skip (quarantine/3XGarbage) : ${1%%-*1*}" | ag -v "^$UPD_NAME_REGEXP"
           elif ag "^$1 " archives/server.dat > /dev/null || test "$1" = "$UPD_NAME" || test "$1" = "$VERIFICATION_STREAM.tar.gz";then
             LOCAL_DATE=$(ag --no-numbers --no-filename  "^$1 " archives/server.dat | head -n 1 | __collum 2) ;
             if ./check-dates.sh "$2" "$LOCAL_DATE" > /dev/null 2>&1;then
@@ -95,7 +95,7 @@ __SYNC_ALL(){
                 else
                   __DOWNLOAD "$1"
               fi
-            elif ! test "$LESS_VERBOSE" = "yes";then echo "  II no new version for $1";fi
+            elif ! test "$LESS_VERBOSE" = "yes";then echo "  II no update : ${1%%-*1*}";fi
           else
             if test -z "$UPDATE_ONLY";then __DOWNLOAD "$1" --new;fi
           fi
@@ -104,6 +104,10 @@ __SYNC_ALL(){
       __CHECK_FOR_UPD
     fi
   done
+  if ! test "$(ag --nonumbers "^(\bhttp\b|\bgopher\b)://[0-9A-Za-z]{1,80}\..* last_success:$(date +%y-%m-%d)" nodes.dat)" = "$(cat archives/tracker.dat)";then
+    ag --nonumbers "^(\bhttp\b|\bgopher\b)://[0-9A-Za-z]{1,80}\..* last_success:$(date +%y-%m-%d)" nodes.dat > tmp/tracker.dat
+    mv tmp/tracker.dat archives/ || exit 1
+  fi
 }
 
 for T_ARG in $@;do
@@ -119,9 +123,9 @@ if test -z "$T_PATTERN";then T_PATTERN=".";fi
 if test -f ./my-include.sh;then . ./my-include.sh || exit;fi
 if test -f ./whitelist.dat;then LIST_MODE=; LIST_RGXP="whitelist.dat";else LIST_MODE="-v"; LIST_RGXP="blacklist.dat";fi
 if command -v bspatch > /dev/null 2>&1;then GK_DIFF_MODE="yes";fi
-touch -a blacklist.dat && mkdir -p cache/last_prune archives plugins quarantine sync bkp tmp || exit 1
-trap 'echo "  ## pls wait ...";__CHECK_FOR_UPD;__UPD_NOTIFY; rm -f tmp/tmp.tar sync-from-nodes.pid; trap - EXIT; exit 0' INT HUP TERM QUIT
-trap 'echo "  ## pls wait ...";__CHECK_FOR_UPD;__UPD_NOTIFY; rm -f tmp/tmp.tar sync-from-nodes.pid; trap - EXIT; exit' EXIT
+touch -a blacklist.dat archives/tracker.dat && mkdir -p cache/last_prune archives plugins quarantine sync bkp tmp || exit 1
+trap 'echo "  ## pls wait ...";__CHECK_FOR_UPD;__UPD_NOTIFY; rm -f tmp/tmp.tar tmp/tracker.dat sync-from-nodes.pid; trap - EXIT; exit 0' INT HUP TERM QUIT
+trap 'echo "  ## pls wait ...";__CHECK_FOR_UPD;__UPD_NOTIFY; rm -f tmp/tmp.tar tmp/tracker.dat sync-from-nodes.pid; trap - EXIT; exit' EXIT
 ./update-archive-date.sh || exit 1
 
 if test "$T_LOOP" = "yes";then

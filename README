@@ -6,94 +6,44 @@
 export EDITOR="nano"
 
 2. INSTALL THE BASIC DEPENDENCIES
-  ag (the-silver-searcher), fzy (or fzf), libressl/openssl, xxd from vim/xxd-standalone, iproute2
+  ag (the-silver-searcher), fzy (or fzf), libressl/openssl, xxd from vim/xxd-standalone, iproute2, darkhttpd, curl, tor
 
-  IMPORTANT: test if the basic dependencies are met (must not return ERROR):
+  - start tor (e.g. systemctl)
+sudo systemctl start tor
+
+  - test your settings
 ./check-dependencies.sh
+  should return: tor-static ...
 
 3. CREATE AN ACCOUNT
 ./new-account
-  note: KEY_ADDR
-  Check the config:
+  - note your KEY_ADDR
+  - check the config:
 more ./Goldkarpfen.config
-  note: SERVER_PORT
+  - note your SERVER_PORT
 
-  If you want an offline instance -> proceed with STEP 6.
-
-4. Install the dependencies for download and hosting
-  darkhttpd, curl
-
-  Test your settings:
-./check-dependencies.sh
-  Should return: ... host get ok
-
-5.Choose a method for hosting:
-  5A. ONION-CTRL
-  5B. ONION-STATIC
-  5C. I2P
-
-5A. ONION-CTRL
-  Install the dependencies:
-  python3, python-stem, tor
-
-  Edit your /etc/tor/torrc to contain this:
-ControlPort 9051
-CookieAuthentication 1
-CookieAuthFile /var/lib/tor/control_auth_cookie
-CookieAuthFileGroupReadable 1
-DataDirectoryGroupReadable 1
-CacheDirectoryGroupReadable 1
-
-  Add your user to the tor group (debian-tor on ubuntu) (restart may be neccessary!)
-
-  Test your settings:
-./check-dependencies.sh
-  Should return: tor-ctrl ...
-
-5B. ONION-STATIC
-  Install the dependencies:
-  tor
-
-  add this to your /etc/torrc (KEY_ADDR and SERVER_PORT from above)
+4. CONFIGURE TOR
+  - add this to your /etc/torrc
 HiddenServiceDir /var/lib/tor/KEY_ADDR/
 HiddenServicePort 80 127.0.0.1:SERVER_PORT
 
-  Start tor (e.g. systemctl)
-sudo systemctl start tor
+  - restart tor (e.g. systemctl)
+sudo systemctl restart tor
 
-  Test your settings:
-./check-dependencies.sh
-  Should return: tor-static ...
+  - get your onion-url (replace /var/lib/tor with the correct tor-data-path)
+sudo cat /var/lib/tor/KEY_ADDR/hostname
 
-5C. i2p-SHARING
-  Install the dependencies:
-  i2pd or i2p-java
-  configure a http tunnel (use SERVER_PORT defined in your Goldkarpfen.config)
-  start your i2p-daemon (example i2pd)
-i2pd
-
-  Test your settings:
-./check-dependencies.sh
-  Should return: ... i2p ...
-
-6. START
+5. START
   NOTE: dash (and others) does not support "read -n 1" - Goldkarpfen will work, but you have to press [Return] a lot ;)
-  bash ./Goldkarpfen.sh  # or
-  mksh ./Goldkarpfen.sh  # or
-  busybox sh ./Goldkarpfen.sh
+bash ./Goldkarpfen.sh  # or
+mksh ./Goldkarpfen.sh  # or
+busybox sh ./Goldkarpfen.sh
 
   Press [h] to get an overview.
 
-  Get your service-url (if you have configured a ONION-hidden service or I2P-tunnel)
-  ONION:
-sudo cat /var/lib/tor/KEY_ADDR/hostname
+  - and add your onion-url url with [r][h]
 
-  I2P (example i2pd):
-  http://127.0.0.1:7070/?page=i2p_tunnels
-
-  and add your onion/i2p url with [r][h]
-
-7. MORE INFO
+7. MORE INFO (esp. if you want to use i2p)
 http://6f5bmqtipvz7wdurqx7ireer3j47wegaztivl5pnsiumk5jeurua.b32.i2p/share/FAQ.TXT
 http://6f5bmqtipvz7wdurqx7ireer3j47wegaztivl5pnsiumk5jeurua.b32.i2p/share/MORE_ABOUT_GOLDKARPFEN.TXT
 

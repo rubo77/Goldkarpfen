@@ -110,18 +110,18 @@ __VIEW(){
   else
     T_COUNTER=$GK_LN
   fi
-  printf "\n  $(tput bold)MM SUBMENU: viewer$(tput sgr0)  [t]-topic [/]-search_comments [n]-next [p]-previous [c]-comment [q]-exit_viewer\n"
+  printf "\n  $(tput bold)MM SUBMENU: viewer$(tput sgr0)  [t]-topic [/]-search_comments [n]-next [p]-previous [c]-comment [q]-exit_viewer\n" | fold -s -w "$GK_COLS"
   T_BUF=1
   while true;do
     if ! test $T_BUF = 0;then
       T_BUF1=$(sed -n "$T_COUNTER p" "$ITPFILE")
       T_BUF2=$(echo "$T_BUF1" | __collum 1)
-      echo "* $T_BUF1" | sed 's/\&bsol;/\\/g' | fold -w "$GK_COLS" -s
+      echo "* $T_BUF1" | sed 's/\&bsol;/\\/g' | fold -s -w "$GK_COLS"
       ag --no-numbers --no-heading "^\d\d\.\d\d:\d $T_BUF2 @$GK_ID" itp-files/*.itp | sort -k2 -n -t ":" |
       while IFS= read -r LLL;do
         T_BUF1=$(echo "$LLL" | __collum 2 "/" | __collum 1 ":" | __collum 1 "." | __collum 2 "-")
         T_BUF2=$(echo "$LLL" | __collum 2 ":" )
-        echo "$LLL" | sed -e "s/^.*@.................................../$T_BUF2 \[$(ag --no-color --no-numbers $T_BUF1 cache/aliases | __collum 1)\] /" -e 's/\&bsol;/\\/g' | fold -w "$GK_COLS" -s | sed 's/^/    /'
+        echo "$LLL" | sed -e "s/^.*@.................................../$T_BUF2 \[$(ag --no-color --no-numbers $T_BUF1 cache/aliases | __collum 1)\] /" -e 's/\&bsol;/\\/g' | fold -s -w "$GK_COLS" | sed 's/^/    /'
       done
       if test "$T_COUNTER" = "$1";then printf "^^^^^";fi
       if test "$T_COUNTER" = "$2";then printf "_____";fi
@@ -151,7 +151,7 @@ __VIEW(){
       ;;
       c)
         __COMMENT;T_BUF=1
-        printf "\n  $(tput bold)MM SUBMENU: viewer$(tput sgr0)  [t]-topic [/]-search_comments [n]-next [p]-previous [c]-comment [q]-exit_viewer\n"
+        printf "\n  $(tput bold)MM SUBMENU: viewer$(tput sgr0)  [t]-topic [/]-search_comments [n]-next [p]-previous [c]-comment [q]-exit_viewer\n" | fold -s -w "$GK_COLS"
         ;;
       q) GK_LN=$T_COUNTER;break ;;
     esac
@@ -266,7 +266,7 @@ __QUARANTINE(){
   set -- "$(ag --depth 0 -f -g '[0-9A-Za-z_]{1,12}-[0-9A-Za-z]{34}\.itp\.tar\.gz$' quarantine/ | pipe_if_not_empty $GK_FZF_CMD)"
   if test -z "$1" || ! test -f "$1";then echo "  II empty";return;fi
   echo "$1"
-  printf "  $(tput bold)MM SUBMENU: quarantine$(tput sgr0)  [m]-move-into-archives [d]-delete-from-q [q]-abort >"
+  printf "  $(tput bold)MM SUBMENU: quarantine$(tput sgr0)  [m]-move-into-archives [d]-delete-from-q [q]-abort >" | fold -s -w "$GK_COLS"
   $GK_READ_CMD T_CHAR
   case "$T_CHAR" in
     m) __MOVE_OUT_OF_QUARANTINE "$1";;
@@ -298,7 +298,7 @@ __EDIT(){
 }
 
 __REPAIRS(){
-  printf "  $(tput bold)MM SUBMENU: repairs$(tput sgr0)  [x]-rebuild-all [y]-rebuild-aliases [q]-abort >"
+  printf "  $(tput bold)MM SUBMENU: repairs$(tput sgr0)  [x]-rebuild-all [y]-rebuild-aliases [q]-abort >" | fold -s -w "$GK_COLS"
   $GK_READ_CMD T_CHAR
   echo
   case "$T_CHAR" in
@@ -374,7 +374,7 @@ __OWN_SHA_SUM_UPDATE(){
 }
 
 ### MAIN starts here
-echo "  ## Goldkarfpen $(cat VERSION*) "$(ls VERSION*)
+echo "  ## $(ls VERSION*) $(cat VERSION*) "
 
 #source start script
 . ./.Goldkarpfen.start.sh || exit
@@ -458,7 +458,7 @@ while true;do
     x) __REPAIRS ;;
     y) __REPAIRS ;;
     h)
-      echo; fold -w "$GK_COLS" -s < help-en.dat | sed 's/^/   /' | more;echo
+      echo; fold -w "$GK_COLS" -s < help-en.dat | sed 's/^/   /';echo
       echo -n "   $(cat VERSION*) ";ls VERSION*
     ;;
     !) __EDIT ;;
