@@ -43,6 +43,9 @@ busybox sh ./Goldkarpfen.sh
 
   - and add your onion-url url with [r][h]
 
+6. IMPORTANT : BACKUPS
+  - keep backups of your tor hidden service dirs and/or i2p-tunnel configuration
+
 7. MORE INFO (esp. if you want to use i2p)
 http://6f5bmqtipvz7wdurqx7ireer3j47wegaztivl5pnsiumk5jeurua.b32.i2p/share/FAQ.TXT
 http://6f5bmqtipvz7wdurqx7ireer3j47wegaztivl5pnsiumk5jeurua.b32.i2p/share/MORE_ABOUT_GOLDKARPFEN.TXT

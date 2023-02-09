@@ -44,7 +44,7 @@ __DOWNLOAD_COMMAND () {
   if echo "$1" | ag "^gopher://" > /dev/null;then THE_CHAR_OF_TERROR='\/';else THE_CHAR_OF_TERROR='';fi
   if echo "$1" | ag "^.*\.i2p" > /dev/null;then
     echo "curl --progress-bar -f --proxy localhost:4444 $1""/""$THE_CHAR_OF_TERROR""$2"
-  elif echo "$1" | ag "(\b\d{1,3}.\d{1,3}.\d{1,3}.\{1,3}\b|\blocalhost\b)" > /dev/null;then
+  elif echo "$1" | ag "\d{1,3}.\d{1,3}.\d{1,3}\.\d{1,3}|localhost" > /dev/null;then
     echo "curl --progress-bar -f $1""/""$THE_CHAR_OF_TERROR""$2"
   else
     echo "curl --progress-bar -f --proxy socks5://127.0.0.1:$GK_TOR_PORT --socks5-hostname 127.0.0.1:$GK_TOR_PORT $1""/""$THE_CHAR_OF_TERROR""$2"

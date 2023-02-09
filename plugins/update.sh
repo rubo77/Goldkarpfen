@@ -1,5 +1,5 @@
 #GPL-3 - See LICENSE file for copyright and license details.
-USER_PLUGINS_MENU="[U]-update_Goldkarpfen:__USER_UPDATE $USER_PLUGINS_MENU"
+USER_PLUGINS_MENU="[U]-updateGK:__USER_UPDATE $USER_PLUGINS_MENU"
 __USER_UPDATE(){
   cd update || exit
   echo "  ## FIRST RUN"
