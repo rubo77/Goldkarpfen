@@ -1,5 +1,5 @@
 #GPL-3 - See LICENSE file for copyright and license details.
-USER_PLUGINS_MENU="[U]-update_Goldkarpfen:__USER_UPDATE $USER_PLUGINS_MENU"
+USER_PLUGINS_MENU="[U]-updateGK:__USER_UPDATE $USER_PLUGINS_MENU"
 __USER_UPDATE(){
   cd update || exit
   echo "  ## FIRST RUN"
@@ -21,17 +21,17 @@ __USER_INQR(){
   if test "$1" = "local";then
     echo "  ?? enter your local address"
     read T_BUF3
-    if ! echo "$T_BUF3" | ag "^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$" > /dev/null;then echo "  EE input error";return;fi
+    if ! echo "$T_BUF3" | ag "^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$|^[a-z]{3,6}://\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$" > /dev/null;then echo "  EE input error";return;fi
     set -- "$T_BUF3:$(sed -n '4 p' Goldkarpfen.config)"
-    T_BUF1=;T_BUF4="curl tor";T_BUF5="tor --quiet &";T_BUF6="tor"
+    T_BUF4="curl tor";T_BUF5="tor --quiet &";T_BUF6="tor"
   else
-    set -- $(head -n 1 "$OWN_STREAM" | ag -o "<url1=http://[A-Za-z0-9.]*.onion|<url1=http://[A-Za-z0-9.]*.i2p>")
-    if test -z "$1";then echo "  EE your url1 header tag is not valid";echo "  II p2p-installer only for tor/i2p";return;fi
-    set -- "${1#<url1=}"; set -- "${1%>}"
-    if echo "$1" | ag "\.i2p$" > /dev/null;then T_BUF1="--proxy localhost:4444";T_BUF4="curl i2pd";T_BUF5="i2pd --daemon --loglevel=none &";T_BUF6="i2pd";else T_BUF1="--proxy socks5://127.0.0.1:9050 --socks5-hostname 127.0.0.1:9050";T_BUF4="curl tor";T_BUF5="tor --quiet &";T_BUF6="tor";fi
-    set -- "${1#<url1=http://}"; set -- "${1%>}"
+      set -- $(head -n 1 "$OWN_STREAM" | ag -o "<url1=[a-z]{3,6}://[A-Za-z0-9.]*[.:][A-Za-z0-9]{1,5}>")
+      if test -z "$1";then echo "  EE your url1 header tag is not valid";echo "  II p2p-installer only for tor/i2p";return;fi
+      set -- "${1#<url1=}"; set -- "${1%>}"
+      if echo "$1" | ag "\.i2p$" > /dev/null;then T_BUF4="curl i2pd";T_BUF5="i2pd --daemon --loglevel=none &";T_BUF6="i2pd";else T_BUF4="curl tor";T_BUF5="tor --quiet &";T_BUF6="tor";fi
   fi
+  T_CMD=$(__DOWNLOAD_COMMAND "$1" "share/gki.sh" || echo "__error_getting_dl_cmd;");T_CMD=$(echo $T_CMD | sed -e "s/--progress-bar //")
   qrencode "pkg upgrade ; pkg install $T_BUF4 && if ! pidof $T_BUF6 > /dev/null;then eval \"$T_BUF5\";fi" -t UTF8
   echo "Enter for next"; read T_BUF
-  qrencode "U=$1;curl -f $T_BUF1 \$U/share/gki.sh > gki.sh && sh gki.sh \$U" -t UTF8
+  qrencode "$(echo "U=$1;$T_CMD > gki.sh && sh gki.sh \$U" | sed 's/\\/\\\\/')" -t UTF8
 }

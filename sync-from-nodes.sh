@@ -104,8 +104,8 @@ __SYNC_ALL(){
       __CHECK_FOR_UPD
     fi
   done
-  if ! test "$(ag --nonumbers "^(\bhttp\b|\bgopher\b)://[0-9A-Za-z]{1,80}\..* last_success:$(date +%y-%m-%d)" nodes.dat)" = "$(cat archives/tracker.dat)";then
-    ag --nonumbers "^(\bhttp\b|\bgopher\b)://[0-9A-Za-z]{1,80}\..* last_success:$(date +%y-%m-%d)" nodes.dat > tmp/tracker.dat
+  if ! test "$(ag --nonumbers "^[a-z]{3,6}://[A-Za-z0-9.]*[.:][A-Za-z0-9]{1,5} last_success:$(date +%y-%m-%d)" nodes.dat)" = "$(cat archives/tracker.dat)";then
+    ag --nonumbers "^[a-z]{3,6}://[A-Za-z0-9.]*[.:][A-Za-z0-9]{1,5} last_success:$(date +%y-%m-%d)" nodes.dat > tmp/tracker.dat
     mv tmp/tracker.dat archives/ || exit 1
   fi
 }
@@ -118,7 +118,7 @@ for T_ARG in $@;do
   else echo "usage : ./sync-from-nodes.sh [--less-verbose] [--loop] [--pattern=regexp] [--pause=seconds] # seconds>599";exit;fi
   if test -z "$T_PAUSE" || test "$T_PAUSE" -lt 600;then T_PAUSE=3600;fi
 done
-if test -z "$T_PATTERN";then T_PATTERN=".";fi
+if test -z "$T_PATTERN";then T_PATTERN="^[a-z]{3,6}://[A-Za-z0-9.]*[.:][A-Za-z0-9]{1,5}";fi
 . ./update-provider.inc.sh && . ./include.sh || exit 1
 if test -f ./my-include.sh;then . ./my-include.sh || exit;fi
 if test -f ./whitelist.dat;then LIST_MODE=; LIST_RGXP="whitelist.dat";else LIST_MODE="-v"; LIST_RGXP="blacklist.dat";fi

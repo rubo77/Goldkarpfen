@@ -4,8 +4,9 @@ MAIN
 [s]-select-stream      Select a stream to read. {fuzzy menu}
 [u]-unpack             Unpack a tarball from your ./archives
 [m]-quarantine         move/delete tarballs from quarantine.
-
 [a]-archive/release    Archive your own stream to ./archives. This will publish your stream for others to download.
+
+[A]-sync               Pull all the new tarballs from the nodes of your node list.
 [r]-run                Run plugins.
 [!]-edit               Edit your itp-file by hand.
 [x/y]-repairs          Rebuild alias cache or rebuild all workfiles - only for troubleshooting.
@@ -14,9 +15,8 @@ MAIN
 
 DEFAULT PLUGINS
 [U]-update             Update your Goldkarpfen from a synced tarball.
-[A]-sync_all           Pull all the new tarballs from the nodes of your node list.
 [h]-url1               Show or add your url1 to your header.
-[a]-add_stream_url     Add the url of the selected stream to your node list.
+[a]-nodes              Add the urls to your node list.
 [P]-plugin             Get/Update plugins from the selected stream.
 
 sync_all calls a standalone script, which you can invoke in a separate terminal (e.g.):

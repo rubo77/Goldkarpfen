@@ -38,3 +38,6 @@ tor --quiet &
 i2pd --daemon --loglevel=none &
   - start Goldkarpfen
 bash Goldkarpfen.sh
+
+### IMPORTANT : BACKUPS
+  - keep backups of your tor hidden service dirs and/or i2p-tunnel configuration

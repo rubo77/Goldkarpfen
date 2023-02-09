@@ -276,6 +276,14 @@ __QUARANTINE(){
   esac
 }
 
+__SYNC(){
+  set -- "$(echo ALL $(ag -o --no-numbers '^[a-z]{3,6}://[A-Za-z0-9.]*[.:][A-Za-z0-9]{1,5}|^#_.*_#$' nodes.dat) | sed -e 's/$/ /' -e 's/_# /=/g' -e 's/#_/ /g' | tr ' ' '\n' | grep -E -v '^.*=$|#|^$' | pipe_if_not_empty $GK_FZF_CMD)"
+  set -- "${1#*=}"
+  if test -z "$1";then echo "  II empty";return;fi
+  if test "$1" = "ALL";then set -- ".";fi
+  if test -f my-sync-from-nodes.sh;then ./my-sync-from-nodes.sh "--pattern=$1" || exit;else ./sync-from-nodes.sh "--pattern=$1" || exit;fi
+}
+
 __EDIT(){
   set -- "$(printf "$OWN_STREAM #BE CAREFUL!\n$(ls launcher.dat nodes.dat blacklist.dat whitelist.dat search.dat 2> /dev/null)" | pipe_if_not_empty $GK_FZF_CMD | __collum 1)"
   if test -z "$1" || ! test -f "$1";then echo "  II empty";return;fi
@@ -445,13 +453,14 @@ __HOOK_START
 #main loop
 while true;do
   GK_COLS=$(( $(tput cols) - 5))
-  printf "\n[$GK_MODE] UTC:[$(date --utc "+%m.%d")] MY:$(tput rev)[$OWN_ALIAS]$(tput sgr0) SELECT:$(tput rev)[$GK_ALIAS]$(tput sgr0)$GK_JM\n[v]-view [p]-post [s]-select_stream [u]-unpack [m]-quarantine [a]-archive/release [r]-plugins [!]-edit [x/y]-repairs [h]-help [Q]-quit >" | fold -s -w $GK_COLS
+  printf "\n[$GK_MODE] UTC:[$(date --utc "+%m.%d")] MY:$(tput rev)[$OWN_ALIAS]$(tput sgr0) SELECT:$(tput rev)[$GK_ALIAS]$(tput sgr0)$GK_JM\n[v]-view [p]-post [s]-select_stream [u]-unpack [m]-quarantine [a]-archive/release [S]-sync [r]-plugins [!]-edit [x/y]-repairs [h]-help [Q]-quit >" | fold -s -w $GK_COLS
   $GK_READ_CMD T_CHAR
   echo
   case "$T_CHAR" in
     v) __VIEW ;;
     s) __SELECT_STREAM ;;
     p) __POST ;;
+    S) __SYNC ;;
     a) __ARCHIVE ;;
     u) __UNPACK ;;
     m) __QUARANTINE ;;
