@@ -9,7 +9,7 @@ __USER_PLUGIN(){
   # URL FILENAME VSTREAM
   set -- "$1" "$(echo $2 | __collum 1)" "$(echo $2 | __collum 2)"
   if test -f downloads/"$(basename $2)";then
-    echo -n "  ?? file exists - overwrite? (Y/n) >"
+    echo -n "  ?? file exists - overwrite? Y/[N] >"
     $GK_READ_CMD T_CONFIRM; if test "$T_CONFIRM" != "Y";then printf "\n  II aborted";return;else echo;fi
   fi
   echo "  ## downloading" $2
@@ -27,15 +27,15 @@ __USER_PLUGIN(){
     cd ..
     echo -n "  II downloaded version: ";sed -n "2p" downloads/"$(basename $2)"
     echo -n "  II local version     : ";sed -n "2p" plugins/"$(basename $2)" 2> /dev/null | grep "^#"
-    echo  -n "  ?? install this plugin? (y/n) >"
+    echo  -n "  ?? install this plugin? y/[n] >"
     $GK_READ_CMD T_BUF
     if test "$T_BUF" != "y";then echo;return;fi
     printf "\n  ## moving $2 to plugins\n"; mv downloads/"$(basename $2)" plugins/ || return
     . plugins/"$(basename $2)" || return
-    echo -n "  ?? share-host this file? (y/n) >"
+    echo -n "  ?? share-host this file? y/[n] >"
     $GK_READ_CMD T_BUF; if test "$T_BUF" != "y";then echo;return;fi
     if test -f archives/"$2";then
-      printf "\n  ?? file exists - overwrite? (Y/n) >"
+      printf "\n  ?? file exists - overwrite? Y/[N] >"
       $GK_READ_CMD T_CONFIRM; if test "$T_CONFIRM" != "Y";then printf "\n  II aborted\n";return;else echo;fi
     fi
     mkdir -p archives/share || exit

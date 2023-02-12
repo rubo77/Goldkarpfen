@@ -30,7 +30,7 @@ __UPD_NOTIFY(){
 
 __DOWNLOAD(){
   if test -z "$UPDATE_ONLY";then
-    if test $(ag --no-numbers --no-filename -v "^(\b$UPD_NAME_REGEXP\b|\b$VERIFICATION_STREAM.tar.gz\b)" archives/server.dat | wc -l) -gt 58;then
+    if test $(ag --no-numbers --no-filename -v "^(\b$UPD_NAME_REGEXP\b|\b$VERIFICATION_STREAM.tar.gz\b)" archives/server.dat | wc -l) -gt 49;then
       UPDATE_ONLY="y"; echo "  II archive-file-num-cap reached - UPDATE_ONLY mode" | ag "."
       if test "$2" = "--new";then return;fi
     fi

@@ -12,6 +12,6 @@ if ! test -f "$OWN_STREAM";then echo "  EE no itp file in itp-files"; exit;fi
 set -- "$(sed -n '4 p' Goldkarpfen.config)"
 if test -f ./my-start-services.sh;then
   ./my-start-services.sh "$OWN_ADDR" "$1"
-elif echo "$GK_MODE" | ag '^tor.*host|i2p.*host' > /dev/null;then
+elif echo "$GK_MODE" | ag 'host' > /dev/null;then
   ./start-services.sh "$OWN_ADDR" "$1" "$(echo $GK_MODE | __collum 1)"
 fi
