@@ -306,13 +306,15 @@ __EDIT(){
 }
 
 __REPAIRS(){
-  printf "  $(tput bold)MM SUBMENU: repairs$(tput sgr0)  [x]-rebuild-all [y]-rebuild-aliases [q]-abort >" | fold -s -w "$GK_COLS"
+  printf "  $(tput bold)MM SUBMENU: repairs$(tput sgr0)  [x]-rebuild-all [y]-rebuild-aliases [t]-restart_tor [i]-restart_i2pd [q]-abort >" | fold -s -w "$GK_COLS"
   $GK_READ_CMD T_CHAR
   echo
   case "$T_CHAR" in
     x) rm -f cache/*.sha512sum ; __INIT_FILES ; ITPFILE=$OWN_STREAM ; __INIT_GLOBALS ;;
     y) __REBUILD_ALIASES ;;
     q) return ;;
+    t) pidof tor > /dev/null || eval "nohup tor --quiet &" && printf "\n\n  ## tor restart " ;;
+    i) pidof i2pd > /dev/null || eval "nohup i2pd --quiet &" && printf "\n\n  ## i2pd restart ";;
     *) echo "  EE wrong key";return ;;
   esac
 }
@@ -453,7 +455,9 @@ __HOOK_START
 #main loop
 while true;do
   GK_COLS=$(( $(tput cols) - 5))
-  printf "\n[$GK_MODE] UTC:[$(date --utc "+%m.%d")] MY:$(tput rev)[$OWN_ALIAS]$(tput sgr0) SELECT:$(tput rev)[$GK_ALIAS]$(tput sgr0)$GK_JM\n[v]-view [p]-post [s]-select_stream [u]-unpack [m]-quarantine [a]-archive/release [S]-sync [r]-plugins [!]-edit [x/y]-repairs [h]-help [Q]-quit >" | fold -s -w $GK_COLS
+  if ! pidof tor > /dev/null && command -v tor > /dev/null;then echo "  II tor off -> [x][t] for restart";fi
+  if ! pidof i2pd > /dev/null && command -v i2pd > /dev/null;then echo "  II i2pd off -> [x][i] for restart";fi
+  printf "[$GK_MODE] UTC:[$(date --utc "+%m.%d")] MY:$(tput rev)[$OWN_ALIAS]$(tput sgr0) SELECT:$(tput rev)[$GK_ALIAS]$(tput sgr0)$GK_JM\n[v]-view [p]-post [s]-select_stream [u]-unpack [m]-quarantine [a]-archive/release [S]-sync [r]-plugins [!]-edit [x/y]-repairs [h]-help [Q]-quit >" | fold -s -w $GK_COLS
   $GK_READ_CMD T_CHAR
   echo
   case "$T_CHAR" in
