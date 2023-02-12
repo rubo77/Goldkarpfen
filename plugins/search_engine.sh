@@ -1,15 +1,16 @@
 #GPL-3 - See LICENSE file for copyright and license details.
-#V0.8
+#V0.9
 #GKdev-1FHDi5veznUojyHaZQ9wv5dwj5aqZmXYGg.itp
 USER_PLUGINS_MENU="[s]-search:__USER_SEARCH $USER_PLUGINS_MENU"
 __USER_SEARCH(){
   if ! test -f search.dat; then
-    echo "gopher://d735f63fvayqysxgbtlwckomiomuwde22warrroy3u7rhveyn6cdgzqd.onion gopher/search.cgi? #Goldkarpfen search (original)" > search.dat
+    echo "#gopher://encgi2pusf7ftciu7po4cgmmkrx4rmuqevphce3cnyb4ccyy6cma.b32.i2p gopher/search.cgi? #Goldkarpfen search (LVL0) i2p" > search.dat || return
+    echo "gopher://d735f63fvayqysxgbtlwckomiomuwde22warrroy3u7rhveyn6cdgzqd.onion gopher/search.cgi? #Goldkarpfen search (LVL0)" >> search.dat || return
   fi
   if ! test -f tmp/search_text;then
-    echo "" > tmp/search_text
+    echo "" > tmp/search_text || return
   else
-    echo "" >> tmp/search_text
+    echo "" >> tmp/search_text || return
   fi
   echo "#enter your search ; 10 results per page ; add page number at the end like : [[:space:]]P2" >> tmp/search_text
   echo "#maximum: 256 chars ; lines with # in the beginnig get ignored ; newlines will replaced with spaces." >> tmp/search_text

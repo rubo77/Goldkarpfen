@@ -1,5 +1,5 @@
 #GPL-3 - See LICENSE file for copyright and license details.
-#V0.5
+#V0.6
 #GKdev-1FHDi5veznUojyHaZQ9wv5dwj5aqZmXYGg.itp
 
 USER_PLUGINS_MENU="[C]-compare:__USER_COMPARE $USER_PLUGINS_MENU"
@@ -17,7 +17,7 @@ __USER_FCHECK(){
   __USER_COMPARE
   set -- "$(date --utc -d "$(tar -tvf "archives/$OWN_ALIAS-$OWN_ADDR.itp.tar.gz" --utc "$OWN_ALIAS-$OWN_ADDR.itp.sha512sum" | __collum 4)" +"%y-%m-%d")"
   if test "$1" = "$(date --utc '+%y-%m-%d')";then echo "  II YOU HAVE ALREADY ARCHIVED TODAY";fi
-  printf "  ?? really archive? (Y/n) >"
+  printf "  ?? really archive? Y/[N] >"
   $GK_READ_CMD T_CONFIRM
   if ! test "$T_CONFIRM" = "Y";then echo; return 1;fi
 }

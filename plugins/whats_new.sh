@@ -1,7 +1,7 @@
 #GPL-3 - See LICENSE file for copyright and license details.
-#V0.15
+#V0.16
 #Goldkarpfen-1JULSJ5Nnba9So48zi21rpfTuZ3tqNRaFB.itp
-USER_PLUGINS_MENU="[w]-whats_new:__USER_WHATSNEW $USER_PLUGINS_MENU"
+USER_PLUGINS_MENU="[w]-wassup:__USER_WHATSNEW $USER_PLUGINS_MENU"
 __USER_WHATSNEW(){
   T_BUF=$(seq 0 7 | sed -e "s/^/ -/" -e "s/$/ days/" | $GK_FZF_CMD)
   if test -z "$T_BUF";then echo "  II empty";return;fi
