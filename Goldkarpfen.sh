@@ -44,7 +44,7 @@ USER_HOOK_START="return"; USER_HOOK_ARCHIVE_START="return"
 #functions
 __CONFIRM_EXIT(){
   if test "$T_CHAR" = "Q";then return 0;fi
-  printf "\n  II you pressed [CTRL][C] - ?? exit Goldkarpfen? (y/n) >"
+  printf "\n  II you pressed [CTRL][C] - ?? exit Goldkarpfen? y/[n] >"
   $GK_READ_CMD T_CONFIRM
   if test "$T_CONFIRM" != "y";then
     printf "\n  II exit aborted\n"
@@ -231,10 +231,10 @@ __TEST_ARCHIVE_DATE(){
 }
 
 __UNPACK(){
-  set -- "$(ag -f -g "\.itp\.tar\.gz$" quarantine/ archives/ | pipe_if_not_empty $GK_FZF_CMD )"
+  set -- "$(ag --depth 0 -f -g "\.itp\.tar\.gz$" quarantine/ archives/ | pipe_if_not_empty $GK_FZF_CMD )"
   if test -z "$1" || ! test -f "$1";then echo "  II empty";return;fi
   if ! __TEST_ARCHIVE_DATE "$1";then
-    echo -n "  ?? force unpack? (Y/n) >"
+    echo -n "  ?? force unpack? Y/[N] >"
     $GK_READ_CMD T_CONFIRM;if test "$T_CONFIRM" != "Y";then printf "\n  II aborted\n";return;else echo;fi
   fi
   printf "  ## unpacking...\n"
@@ -257,7 +257,7 @@ __DELETE_FROM_QUARANTINE (){
   if test "$(basename "$ITPFILE")" = "$(basename "${1%.tar.gz}")";then ITPFILE=$OWN_STREAM; __INIT_GLOBALS;fi
   rm -f "$1" "itp-files/"$(basename "$1" | __collum 1 "." ).itp
   __INIT_FILES
-  echo -n "  ?? add this stream to your blacklist? (y/n) >"
+  echo -n "  ?? add this stream to your blacklist? y/[n] >"
   $GK_READ_CMD T_CONFIRM;if test "$T_CONFIRM" != "y";then printf "\n  II blacklisting skipped\n";return;fi
   echo $(basename "$1") >> blacklist.dat && sort <  blacklist.dat | uniq > tmp/blacklist.dat && mv tmp/blacklist.dat ./blacklist.dat || exit
 }

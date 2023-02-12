@@ -14,7 +14,7 @@ __USER_ADD(){
   if grep "$1" nodes.dat;then
     echo "  II this url is already in your node list"
   else
-    echo "  ?? are you sure to add $1 to nodes.dat (y/n) >"
+    echo "  ?? are you sure to add $1 to nodes.dat y/[n] >"
     $GK_READ_CMD T_CONFIRM
     if test "$T_CONFIRM" != "y";then return;fi
     echo "$1" >> nodes.dat || exit

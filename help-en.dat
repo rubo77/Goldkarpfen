@@ -23,7 +23,5 @@ sync_all calls a standalone script, which you can invoke in a separate terminal 
 ./sync-from-nodes.sh --loop
 
 DELETING ITP-FILE and ARCHIVES
-get the delete-plugin from one of these nodes: (via plugin-plugin or append /share/delete.sh)
+get the delete-plugin from this node: (via plugin-plugin or append /share/delete.sh)
 http://6f5bmqtipvz7wdurqx7ireer3j47wegaztivl5pnsiumk5jeurua.b32.i2p
-http://nhosxif6ahuzseajnr3ywtx6nj3xyulwsvhoe627whhfmyje3kja.b32.i2p
-http://rlnh2w5zjagfcbrf2kfazi3obl7agtd4g7flgpsvqaxnjrgbrihmsxyd.onion
