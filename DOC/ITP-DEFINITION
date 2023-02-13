@@ -1,6 +1,6 @@
 #GPL-3 - See LICENSE file for copyright and license details.
 ############################################################################
-#VERSION 1.0-RC2
+#VERSION 1.0-RC3
 
 ITP FILESET
 * filenames:
@@ -128,6 +128,6 @@ SHOULD (1-2 will possibly be enforced by ITP-DEF. 1.0 or later versions)
 3. SHOULD generate posts (comments) and collum 1 (and collum 2) are real dates (except ^00-entries)
 4. SHOULD have a solution for alias-doublettes.
 5. SHOULD validate KEY adresses and sign/check signatures of itp-files (with the KEY_ADDR).
-6. SHOULD not utilize timestamps with higher resolution than days.
+6. SHOULD not annoy users with hour-based (or even minute-based) timestamps.
 
 Any client not following the SHOULD's count not as invalid, but i call them unusable.

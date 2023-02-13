@@ -107,10 +107,9 @@ __PRUNE_ARCHIVES(){
       echo "  EE archives/$1 is too old - moved to quarantine/old-archives" | ag "."
       mv "archives/$1" "quarantine/old-archives/$2-$1" || exit
       if test -f "archives/$1_$3"; then mv "archives/$1_$3" "quarantine/old-archives/$2-$1_$3";fi
-      sed -i "/$T_LINE/d" archives/server.dat || exit
+      ./update-archive-date.sh "$1" || exit
     fi
   done < archives/server.dat
-  ./update-archive-date.sh || exit
 }
 
 __REMOVE_IF_MISSING(){
