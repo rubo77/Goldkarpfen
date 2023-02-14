@@ -9,7 +9,7 @@ For quick install instructions see MORE_ABOUT_GOLDKARPFEN.TXT
 
 1. install the app `termux` on your Android
 2. `pkg upgrade ; pkg install tor curl && if ! pidof tor > /dev/null;then eval "tor --quiet &";fi
-URL=https://gitlab.com/rubo77/Goldkarpfen/-/archive/release_275;curl -f https://gitlab.com/rubo77/Goldkarpfen/-/raw/main/INSTALL-on-Android-termux.sh > gki.sh && sh gki.sh "$URL"`
+URL=https://gitlab.com/rubo77/Goldkarpfen/-/archive/release_277_termux;curl -f https://gitlab.com/rubo77/Goldkarpfen/-/raw/main/INSTALL-on-Android-termux.sh > gki.sh && sh gki.sh "$URL"`
 
 This is the "gitlab way" ; if possible : use the **Mobile2Mobile** installer instead
 
