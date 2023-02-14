@@ -1,6 +1,6 @@
 #!/bin/sh
 #GPL-3 - See LICENSE file for copyright and license details.
-#V0.29
+#V0.31
 if ! test -f $(basename "$0");then echo "  EE run this script in its folder";exit 1;fi
 if ! test "$(pwd)" = "/data/data/com.termux/files/home";then echo "  EE gki.sh is meant to be run in the home folder.";exit 1;fi
 if test "$1" = "--delete";then
@@ -39,12 +39,16 @@ if ! test -d Goldkarpfen;then
   sleep 6
   if echo "$1" | grep "[A-Za-z0-9.]*\.i2p" > /dev/null;then
     T_BUF1="--proxy localhost:4444"
-  elif echo "$1" | grep -E "^[[:digit:]]{1,3}\.[[:digit:]]{1,3}\.[[:digit:]]{1,3}\.[[:digit:]]{1,3}" > /dev/null;then
+  elif echo "$1" | grep -E "[[:digit:]]{1,3}\.[[:digit:]]{1,3}\.[[:digit:]]{1,3}\.[[:digit:]]{1,3}" > /dev/null;then
     T_BUF1=
   else
     T_BUF1="--proxy socks5://127.0.0.1:9050 --socks5-hostname 127.0.0.1:9050"
   fi
-  if ! curl -f $T_BUF1 "$1/Goldkarpfen-termux.tar.gz" -o Goldkarpfen-termux.tar.gz; then exit;fi
+  if echo "$1" | ag "^gopher://" > /dev/null;then
+    if ! curl -f $T_BUF1 "$1/\/Goldkarpfen-termux.tar.gz" -o Goldkarpfen-termux.tar.gz; then exit;fi
+  else
+    if ! curl -f $T_BUF1 "$1/Goldkarpfen-termux.tar.gz" -o Goldkarpfen-termux.tar.gz; then exit;fi
+  fi
   tar -xf Goldkarpfen-termux.tar.gz
   pkg install file fzy openssl-tool silversearcher-ag bc darkhttpd iproute2 vim ncurses-utils libqrencode
   command -v file fzy openssl ag dc darkhttpd ip xxd tput > /dev/null || exit
