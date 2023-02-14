@@ -23,5 +23,7 @@ sync_all calls a standalone script, which you can invoke in a separate terminal 
 ./sync-from-nodes.sh --loop
 
 DELETING ITP-FILE and ARCHIVES
-get the delete-plugin from this node: (via plugin-plugin or append /share/delete.sh)
-http://6f5bmqtipvz7wdurqx7ireer3j47wegaztivl5pnsiumk5jeurua.b32.i2p
+  - quit Goldkarpfen
+  - rm itp-files/__stream__.itp and/or archives/__stream__.itp.tar.gz
+  - start Goldkarpfen
+(... or get the plugin : delete.sh)
