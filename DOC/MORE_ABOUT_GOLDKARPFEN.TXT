@@ -1,4 +1,4 @@
-#V0.43
+#V0.45
 
 ### ABOUT (design goal)
   Goldkarpfen was designed to provide a robust communication network, to secure
@@ -18,9 +18,10 @@
 
 ### GOLDKARPFEN FOR ANDROID (automated install)
 # WARNING : will change torrc, ~/.bashrc and ~/.profile , also : ABSOLUTELY NO WARRANTY!
+# This is the gitlab way ; if possible : use the Mobile2Mobile installer
   - install termux
 pkg upgrade ; pkg install tor curl && if ! pidof tor > /dev/null;then eval "tor --quiet &";fi
-URL=http://rlnh2w5zjagfcbrf2kfazi3obl7agtd4g7flgpsvqaxnjrgbrihmsxyd.onion;curl -f --proxy socks5://127.0.0.1:9050 --socks5-hostname 127.0.0.1:9050 $URL/share/gki.sh > gki.sh && sh gki.sh "$URL"
+URL=https://gitlab.com/rubo77/Goldkarpfen/-/archive/release_275;curl -f https://gitlab.com/rubo77/Goldkarpfen/-/raw/main/INSTALL-on-Android-termux.sh > gki.sh && sh gki.sh "$URL"
 
   - NOTE : if you enable also i2p support
 pkg install i2pd && i2pd --daemon --loglevel=none &
@@ -155,6 +156,26 @@ tar -xvf Goldkarpfen-latest.tar.gz
 cp Goldkarpfen/update/sync_runtime_files.sh .
 ./sync_runtime_files.sh
 rm Goldkarpfen-latest.tar.gz
+
+### NODE LIST MANAGEMENT
+  You can add nodes to your nodes.dat via [r][a] (stream url1 + node-links).
+  But the management of node labels is done by editing : [!]->nodes.dat
+  Keep your nodes.dat nice and clean!
+  - example nodes.dat :
+
+# comment
+#_peter________#
+http://xranerunarnerunaetunatren...
+#_paul_________#
+gopher://xraar8392893naetunatren...
+#_mary_________#
+http://xraar8392893naetunatren...
+# stop sync-ALL after this
+
+#_barly-on1____#
+http://xraar8392893naetunatren...
+#_local________#
+http://127.0.0.1:8098
 
 ### MIGRATING TO A NEW INSTALLATION
   If you want to migrate your data to a fresh install you have to do:

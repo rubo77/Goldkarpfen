@@ -4,13 +4,23 @@ Goldkarpfen is a p2p-share-hosted daily-routine blogging system without any cent
 ## INSTALLATION AND FIRST START
 For quick install instructions see MORE_ABOUT_GOLDKARPFEN.TXT
 
+### GOLDKARPFEN FOR ANDROID (automated install)
+**WARNING : will change `torrc`, `~/.bashrc` and `~/.profile` - also : ABSOLUTELY NO WARRANTY!**
+
+1. install the app `termux` on your Android
+2. `pkg upgrade ; pkg install tor curl && if ! pidof tor > /dev/null;then eval "tor --quiet &";fi
+URL=https://gitlab.com/rubo77/Goldkarpfen/-/archive/release_275;curl -f https://gitlab.com/rubo77/Goldkarpfen/-/raw/main/INSTALL-on-Android-termux.sh > gki.sh && sh gki.sh "$URL"`
+
+This is the "gitlab way" ; if possible : use the **Mobile2Mobile** installer instead
+
+
 ### 1. Set EDITOR enviroment variable
 Your `EDITOR` enviroment variable needs to be set similar to this (add this to `~/.bashrc` or `~/.mkshrc` or alike):
 
    export EDITOR="nano"
 
 ### 2. INSTALL THE BASIC DEPENDENCIES  
-ag (the-silver-searcher), fzy (or fzf), libressl/openssl, xxd from vim/xxd-standalone
+ag (the-silver-searcher), fzy (or fzf), libressl/openssl, xxd from vim/xxd-standalone, iproute2, darkhttpd, curl, tor
 
 *IMPORTANT:* test if the basic dependencies are met (must not return `ERROR`):  
 `./check-dependencies.sh`
