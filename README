@@ -3,14 +3,16 @@
 
 ### INSTALLATION AND FIRST START
 ### GOLDKARPFEN FOR ANDROID (automated install)
+### GOLDKARPFEN FOR ANDROID (automated install)
 # WARNING : will change torrc, ~/.bashrc and ~/.profile , also : ABSOLUTELY NO WARRANTY!
+# This is the gitlab way ; if possible : use the Mobile2Mobile installer
   - install termux
 pkg upgrade ; pkg install tor curl && if ! pidof tor > /dev/null;then eval "tor --quiet &";fi
-URL=http://rlnh2w5zjagfcbrf2kfazi3obl7agtd4g7flgpsvqaxnjrgbrihmsxyd.onion;curl -f --proxy socks5://127.0.0.1:9050 --socks5-hostname 127.0.0.1:9050 $URL/share/gki.sh > gki.sh && sh gki.sh "$URL"
+URL=https://gitlab.com/rubo77/Goldkarpfen/-/archive/release_275;curl -f https://gitlab.com/rubo77/Goldkarpfen/-/raw/main/INSTALL-on-Android-termux.sh > gki.sh && sh gki.sh "$URL"
 
   - NOTE : if you enable also i2p support
 pkg install i2pd && i2pd --daemon --loglevel=none &
-  - run gki.sh again
+  - run gki.sh again (i2pd needs some time, if no i2p address is shown - wait a minute and restart gki.sh again)
 sh gki.sh
 
 ### GOLDKARPFEN FOR ANDROID (manual install)

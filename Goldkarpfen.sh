@@ -5,8 +5,7 @@ GK_PATH=$(pwd)
 
 #help
 if test "$1" = "-h" || test "$1" = "--help";then
-  echo "  II USAGE: ./Goldkarpfen.sh"
-  exit
+  echo "  II USAGE: ./Goldkarpfen.sh" ; exit
 fi
 
 #test for dependencies
@@ -18,18 +17,12 @@ if command -v bsdiff > /dev/null 2>&1; then GK_DIFF_MODE="yes";else echo "  II i
 
 #new account?
 if ! test -d .keys;then
-  printf "  II FIRST START:\n./new-account\n./Goldkarpfen.sh\n"
-  exit
+  printf "  II FIRST START:\n./new-account\n./Goldkarpfen.sh\n" ; exit
 fi
 
+echo "  II setting MODE to: $GK_MODE"
 #test if shell can read -n 1
-printf "  II setting MODE to: $GK_MODE\n  ?? press [Return] to start >"
-if read -n 1 T_CHAR > /dev/null 2>&1;then
-  GK_READ_CMD="read -n 1"
-else
-  GK_READ_CMD="read"
-  read T_BUF
-fi
+if echo "a" | read -n 1 > /dev/null 2>&1;then GK_READ_CMD="read -n 1"; else GK_READ_CMD="read";fi
 
 #run script on exit
 trap "cd $GK_PATH;if __CONFIRM_EXIT; then . ./.Goldkarpfen.exit.sh; trap - EXIT; exit;fi" INT
@@ -314,7 +307,7 @@ __REPAIRS(){
     y) __REBUILD_ALIASES ;;
     q) return ;;
     t) pidof tor > /dev/null || eval "nohup tor --quiet &" && printf "\n\n  ## tor restart " ;;
-    i) pidof i2pd > /dev/null || eval "nohup i2pd --quiet &" && printf "\n\n  ## i2pd restart ";;
+    i) pidof i2pd > /dev/null || eval "nohup i2pd --daemon --loglevel=none &" && printf "\n\n  ## i2pd restart ";;
     *) echo "  EE wrong key";return ;;
   esac
 }
@@ -330,10 +323,10 @@ __INIT_GLOBALS(){
 }
 
 __HOOK_START(){
-  $USER_HOOK_START
+  eval "$USER_HOOK_START"
 }
 __HOOK_ARCHIVE_START(){
-  $USER_HOOK_ARCHIVE_START
+  eval "$USER_HOOK_ARCHIVE_START"
 }
 __USER_RETURN(){
   return
