@@ -1,13 +1,13 @@
 #!/bin/sh
 #GPL-3 - See LICENSE file for copyright and license details.
-#V0.31
+#V0.36
 if ! test -f $(basename "$0");then echo "  EE run this script in its folder";exit 1;fi
 if ! test "$(pwd)" = "/data/data/com.termux/files/home";then echo "  EE gki.sh is meant to be run in the home folder.";exit 1;fi
 if test "$1" = "--delete";then
 if ! test -d Goldkarpfen;then echo "no Goldkarpfen folder found!";exit;fi
 echo "WARNING : this command will alter your torrc and tor-var-folder" | ag "."
 echo "WARNING : use this command ONLY if you haven't configured your tor service manually" | ag "."
-echo "Proceed ? (Y/n)"
+echo "Proceed ? Y/[N]"
 read T_CONFIRM
 if test "$T_CONFIRM" = "Y";then
   if ! test -f Goldkarpfen/Goldkarpfen.config;then echo "ERROR : cannot open Goldkarpfen/Goldkarpfen.config";exit;fi
@@ -37,7 +37,11 @@ if ! pidof tor > /dev/null;then eval "nohup tor --quiet &";fi
 if ! test -d Goldkarpfen;then
   echo "pls wait ..."
   sleep 6
-  if echo "$1" | grep "[A-Za-z0-9.]*\.i2p" > /dev/null;then
+  T_BUF2="Goldkarpfen-termux.tar.gz"
+  if echo "$1" | grep "^https://gitlab.com" > /dev/null;then
+    T_BUF1=
+    if ! test -z "$2";then T_BUF2=$2;else T_BUF2="Goldkarpfen-release_277_termux.tar.gz";fi
+  elif echo "$1" | grep "[A-Za-z0-9.]*\.i2p" > /dev/null;then
     T_BUF1="--proxy localhost:4444"
   elif echo "$1" | grep -E "[[:digit:]]{1,3}\.[[:digit:]]{1,3}\.[[:digit:]]{1,3}\.[[:digit:]]{1,3}" > /dev/null;then
     T_BUF1=
@@ -45,11 +49,13 @@ if ! test -d Goldkarpfen;then
     T_BUF1="--proxy socks5://127.0.0.1:9050 --socks5-hostname 127.0.0.1:9050"
   fi
   if echo "$1" | ag "^gopher://" > /dev/null;then
-    if ! curl -f $T_BUF1 "$1/\/Goldkarpfen-termux.tar.gz" -o Goldkarpfen-termux.tar.gz; then exit;fi
+    if ! curl -f $T_BUF1 "$1/\/$T_BUF2" -o "$T_BUF2"; then exit;fi
   else
-    if ! curl -f $T_BUF1 "$1/Goldkarpfen-termux.tar.gz" -o Goldkarpfen-termux.tar.gz; then exit;fi
+    if ! curl -f $T_BUF1 "$1/$T_BUF2" -o "$T_BUF2"; then exit;fi
   fi
-  tar -xf Goldkarpfen-termux.tar.gz
+  T_BUF3=$(tar -tf "$T_BUF2" | head -n 1)
+  tar -xf "$T_BUF2" || exit
+  if ! test "$T_BUF3" = "Goldkarpfen/";then mv "$T_BUF3" Goldkarpfen || exit ;fi
   pkg install file fzy openssl-tool silversearcher-ag bc darkhttpd iproute2 vim ncurses-utils libqrencode
   command -v file fzy openssl ag dc darkhttpd ip xxd tput > /dev/null || exit
   cd Goldkarpfen || exit
@@ -110,7 +116,7 @@ fi
 printf '#!/bin/sh\nif ! pidof tor > /dev/null;then eval "nohup tor --quiet &";fi\nif ! pidof i2pd > /dev/null && command -v i2pd > /dev/null;then eval "nohup i2pd --daemon --loglevel=none &";fi\nif test -z "$EDITOR";then export EDITOR=nano;fi\ncd Goldkarpfen\nbash Goldkarpfen.sh' > start-gk.sh || exit
 if ! grep "^sh start-gk.sh" .profile > /dev/null 2>&1;then
   echo
-  echo "enable autostart Goldkarpfen (will change .profile)? y/n"
+  echo "enable autostart Goldkarpfen (will change .profile)? y/[n]"
   echo "(if you skip this step you need to start Goldkarpfen with : sh start-gk.sh)"
   read T_CONFIRM
   if test "$T_CONFIRM" = "y";then
@@ -138,8 +144,10 @@ if ! test -f Goldkarpfen/archives/Goldkarpfen-termux.tar.gz;then cp Goldkarpfen-
 echo
 printf "  II get your onion or i2p hostname with :\n  sh gki.sh\n  (legacy : sh gk-termux-installer.sh)\n"
 echo
-echo "[Return] to start Goldkarpfen"
-echo "[ctrl][c] to exit"
-echo "from promp start with : sh start-gk.sh"
+echo "[ctrl][c] to exit the installer"
+echo "(from promp start Goldkarpfen with)"
+echo "sh start-gk.sh"
+echo
+echo "[Return] to start Goldkarpfen" | ag "."
 read T_BUF
 sh start-gk.sh
