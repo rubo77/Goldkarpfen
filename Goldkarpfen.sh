@@ -377,7 +377,7 @@ __OWN_SHA_SUM_UPDATE(){
 }
 
 ### MAIN starts here
-echo "  ## $(ls VERSION*) $(cat VERSION*) "
+echo "  ## $(ls VERSION*) $(head -n 1 VERSION*) "
 
 #source start script
 . ./.Goldkarpfen.start.sh || exit
@@ -465,7 +465,7 @@ while true;do
     y) __REPAIRS ;;
     h)
       echo; fold -w "$GK_COLS" -s < help-en.dat | sed 's/^/   /';echo
-      echo -n "   $(cat VERSION*) ";ls VERSION*
+      ls VERSION* ; cat VERSION*;
     ;;
     !) __EDIT ;;
     r) __PLUGINS ;;
