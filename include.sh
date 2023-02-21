@@ -58,13 +58,14 @@ __ARCHIVE_DATE(){
 __TEST_ARCHIVE_CONTENT(){
   if ! test $(tar -tvf "$1" | ag " $(basename "$1" | __collum 1 ".").itp$| $(basename "$1" | __collum 1 ".").itp.sha512sum$| $(basename "$1" | __collum 1 ".").itp.sha512sum.sig$" | wc -l) = 3;then
     >&2 echo "  EE $1 does not contain the required file set - moved to quarantine for inspection"
-    mv "$1" "$(mktemp -p quarantine "GARBAGE_$(basename "$1").XXXXXXXX")" || exit
+    mv "$1" "$(mktemp -p quarantine "GARBAGE_$(basename "$1")${2#*//}.XXXXXXXX")" || exit
     return 1
   fi
 }
 
 __TEST_AND_UNPACK_ARCHIVE(){
-  __TEST_ARCHIVE_CONTENT "$1" || return 1
+  if test "$1" = "--no-unpack";then T_BUF1="--no-upack";shift;fi
+  __TEST_ARCHIVE_CONTENT "$1" "$2"|| return 1
   tar -xf "$1" -C tmp/ > /dev/null || return 1
   # FILENAME TMP_FILENAME OPTION_NO_UNPACK
   set -- "$1" "tmp/$(basename "${1%.gz}")" "$2"
@@ -77,7 +78,7 @@ __TEST_AND_UNPACK_ARCHIVE(){
     return 1
   fi
   if ./itp-check.sh "$2" "$2.sha512sum" && ./check-sign.sh "$2" > /dev/null 2>&1;then
-    if ! test "$3" = "--no-unpack";then
+    if ! test "$T_BUF1" = "--no-unpack";then
       mv "$2.sha512sum" itp-files && mv "$2.sha512sum.sig" itp-files && mv "$2" itp-files || exit
     else
       rm -f "$2" "$2.sha512sum" "$2.sha512sum.sig"
@@ -85,7 +86,7 @@ __TEST_AND_UNPACK_ARCHIVE(){
   else
     echo "  EE $1 no valid signature or/and itp-check failed - moved to quarantine for inspection"
     rm -f "$2.sha512sum" "$2.sha512sum.sig" "$2"
-    mv "$1" "$(mktemp -p quarantine "GARBAGE_$(basename "$1").XXXXXXXX")" || exit
+    mv "$1" "$(mktemp -p quarantine "GARBAGE_$(basename "$1")${3#*//}.XXXXXXXX")" || exit
     return 1
   fi
 }

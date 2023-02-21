@@ -4,6 +4,7 @@ if ! test -f $(basename "$0");then echo "  EE run this script in its folder";exi
 cd archives || exit 1
 if test "$(ls -tl --full-time *.tar.gz* server.dat 2>/dev/null | sha256sum)" = "$(cat ../cache/archives.sha512sum 2> /dev/null)";then exit 0;fi
 touch -a ./server.dat && . ../update-provider.inc.sh || exit 1
+if ! test -z "$LISTING_REGEXP";then UPD_NAME_REGEXP=$LISTING_REGEXP;fi
 __UPDATE_DATE(){
   if echo "$1" | ag --no-color "^[0-9A-Za-z_]{1,12}-[0-9A-Za-z]{34}\.itp\.tar\.gz$|^$UPD_NAME_REGEXP$" > /dev/null;then
     BUF=$(date --utc "+%y-%m-%d" -d $(tar -tvf "$1" --utc | head -n 1 | awk '{print $4}'))

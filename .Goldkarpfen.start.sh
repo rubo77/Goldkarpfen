@@ -6,7 +6,7 @@ OWN_ADDR=$(basename "$OWN_STREAM");OWN_ADDR=${OWN_ADDR##*-};OWN_ADDR=${OWN_ADDR%
 ITPFILE="$OWN_STREAM"
 OWN_SUM="$OWN_STREAM.sha512sum"
 
-mkdir -p tmp && rm -f tmp/* || exit
+mkdir -p tmp cache && rm -f tmp/* || exit
 if ! test -f "$OWN_STREAM";then echo "  EE no itp file in itp-files"; exit;fi
 #SERVER_PORT
 set -- "$(sed -n '4 p' Goldkarpfen.config)"
