@@ -39,13 +39,13 @@ if test -z "$1";then
   openssl ec -in .keys/priv.pem -outform DER|tail -c +8|head -c 32|xxd -p -c 32 > .keys/private-key
   openssl ec -in .keys/priv.pem -pubout -outform DER|tail -c 65|xxd -p -c 65 > .keys/public-key
   #ITP59Address encoding
-  if cat .keys/pub.pem | openssl ec -pubin -pubout -outform DER > /dev/null;then
+  if openssl ec -pubin -pubout -outform DER < .keys/pub.pem > /dev/null;then
     publicKeyToITP59Address < .keys/pub.pem > .keys/pub_hash
   else
     echo "ERROR" > .keys/pub_hash
   fi
 else
-  if cat "$1" | openssl ec -pubin -pubout -outform DER > /dev/null;then
+  if openssl ec -pubin -pubout -outform DER < "$1" > /dev/null;then
     publicKeyToITP59Address < "$1"
   else
     echo "ERROR"

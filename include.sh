@@ -1,5 +1,5 @@
 #GPL-3 - See LICENSE file for copyright and license details.
-T_BUF=$(sed -n '6 p' Goldkarpfen.config); if test "$T_BUF" = "$(printf "%i" "$T_BUF")";then GK_TOR_PORT="$T_BUF";else GK_TOR_PORT="9050";fi
+T_BUF=$(sed -n '6p' Goldkarpfen.config); if test "$T_BUF" = "$(printf "%i" "$T_BUF")";then GK_TOR_PORT="$T_BUF";else GK_TOR_PORT="9050";fi
 split() {
     set -f
     old_ifs=$IFS
@@ -52,7 +52,7 @@ __DOWNLOAD_COMMAND () {
 }
 
 __ARCHIVE_DATE(){
-  date --utc "+%y-%m-%d" -d $(tar -tvf "$1" --utc | head -n 1 | __collum 4)
+  date --utc "+%y-%m-%d" -d $(TZ=UTC tar -tvf "$1" | head -n 1 | __collum 4)
 }
 
 __TEST_ARCHIVE_CONTENT(){
@@ -71,7 +71,7 @@ __TEST_AND_UNPACK_ARCHIVE(){
   set -- "$1" "tmp/$(basename "${1%.gz}")" "$2"
   set -- "$1" "${2%.tar}" "$3"
   T_BUF=$(tail -n 1 "$2" | ag "^#LICENSE:CC0 \d\d-\d\d-\d\d$" | __collum 2)
-  if ! test "$T_BUF" = "$(date --utc +%y-%m-%d -d $(TZ="UTC" ls -l --time-style="long-iso"  "$2" | __collum 6))";then
+  if ! test "$T_BUF" = "$(date --utc +%y-%m-%d -d $(TZ=UTC ls -l --full-time  "$2" | __collum 6))";then
     echo "  EE $1 time stamp is not valid - moved to quarantine for inspection"
     rm -f "$2.sha512sum" "$2.sha512sum.sig" "$2"
     mv "$1" "$(mktemp -p quarantine "GARBAGE_$(basename "$1").XXXXXXXX")" || exit

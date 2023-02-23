@@ -8,7 +8,7 @@ __USER_ADD(){
     set -- "${1#*=}"
     if test -z "$1";then echo "  II empty";return;fi
     T_CMD=$(__DOWNLOAD_COMMAND "$1" "tracker.dat" || echo "__error_getting_dl_cmd;")
-    set -- "$($T_CMD | ag -o "^[a-z]{3,6}://[A-Za-z0-9.]*[.:][A-Za-z0-9]{1,5} last_success:$(date +%y-%m-%d)" | grep -v "^$" | pipe_if_not_empty $GK_FZF_CMD -p "add node> "| __collum 1)"
+    set -- "$($T_CMD | ag -o "^[a-z]{3,6}://[A-Za-z0-9.]*[.:][A-Za-z0-9]{1,5} last_success:$(date +%y-%m-%d)" | grep -v "^$" | pipe_if_not_empty $GK_FZF_CMD --prompt="__ADD NODE:"| __collum 1)"
     if test -z "$1";then echo "  II empty";return;fi
   fi
   if grep "$1" nodes.dat;then

@@ -6,13 +6,9 @@
 #time format: "%y-%m-%d" or "%y-%m-%d %M:%H" (minute and hour are ignored)
 #does not account for differences greater than 10 year around a century flip
 now=$(date --utc +"%y-%m-%d")
-this_year=$(echo "$now" | awk -F "-" '{printf "%d\n",$1;}')
-year1=$(echo "$1" | awk -F "-" '{printf "%d\n",$1;}')
-if test -z "$2";then
-  year2=$(echo "$1" | awk -F "-" '{printf "%d\n",$1;}')
-else
-  year2=$(echo "$2" | awk -F "-" '{printf "%d\n",$1;}')
-fi
+this_year=${now%%-*};this_year=${this_year#0};
+year1=${1%%-*};year1=${year1#0}
+if test -z "$2";then year2=$year1; else year2=${2%%-*};year2=${year2#0};fi
 
 if test "$this_year" -eq 0;then
   this_year=90
@@ -29,9 +25,9 @@ if test $((this_year - year1)) -gt 1;then
   >&2 echo "  EE date1 is older than 333 days"
   exit 1
 fi
-days_from_null_now=$(echo "$this_year 366 * $(date --utc -d "$now" "+%j") + p" | dc)
-days_from_null_1=$(echo "$year1 366 * $(date --utc -d "$1" "+%j") + p" | dc)
-days_from_null_2=$(echo "$year2 366 * $(date --utc -d "$2" "+%j") + p" | dc)
+days_from_null_now=$(echo "$this_year 366 * $(date --utc -d "20$now" "+%j") + p" | dc)
+days_from_null_1=$(echo "$year1 366 * $(date --utc -d "20$1" "+%j") + p" | dc)
+days_from_null_2=$(echo "$year2 366 * $(date --utc -d "20$2" "+%j") + p" | dc)
 if test $((days_from_null_now - days_from_null_1)) -gt 333;then
   >&2 echo "  EE date1 is older than 333 days"
   exit 1

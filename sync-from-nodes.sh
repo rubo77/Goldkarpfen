@@ -1,14 +1,14 @@
 #!/bin/sh
 #GPL-3 - See LICENSE file for copyright and license details.
 if ! test -f $(basename "$0");then echo "  EE run this script in its folder";exit 1;fi
-if test -f cache/sync-from-nodes.pid && ps --pid "$(cat cache/sync-from-nodes.pid)" > /dev/null;then echo "  EE sync-from-nodes.pid exists";exit 0;fi
+if test -f cache/sync-from-nodes.pid && ps ax | ag "^ *$(cat cache/sync-from-nodes.pid) " > /dev/null;then echo "  EE sync-from-nodes.pid exists";exit 0;fi
 echo $$ > cache/sync-from-nodes.pid
 
 __CHECK_FOR_UPD(){
   __INIT_FILES
   if test -f "quarantine/$UPD_NAME";then
     VERSION_ARCHIVES=$(tar -tf quarantine/"$UPD_NAME" 2> /dev/null | ag "VERSION" | __collum 3 "." || echo 0)
-    if test "$(grep "$UPD_NAME_REGEXP VERSION-2\.1\." itp-files/$VERIFICATION_STREAM | tail -n 1 | sed 's/.*\.//' )" = "$VERSION_ARCHIVES";then
+    if test "$(ag -o "$UPD_NAME_REGEXP VERSION-2\.1\.\d*" itp-files/$VERIFICATION_STREAM | tail -n 1 | sed 's/.*\.//' )" = "$VERSION_ARCHIVES";then
       if ! grep "$(sha512sum quarantine/$UPD_NAME | __collum 1)" itp-files/$VERIFICATION_STREAM;then
         printf "  EE Could not verify checksum of $UPD_NAME - moved to quarantine/GARBAGE\n"
         mv "quarantine/$UPD_NAME" "$(mktemp -p quarantine "GARBAGE_$UPD_NAME${URL#*//}.XXXXXXXX")" || exit 1
@@ -75,7 +75,7 @@ __SYNC_ALL(){
     URL=$(echo "$NODE" | __collum 1)
     echo "$(tput rev)$URL$(tput sgr0)"
     T_CMD=$(__DOWNLOAD_COMMAND "$URL" "server.dat" || echo "__error_getting_dl_cmd;")
-    SERVER_DAT="$($T_CMD --max-filesize 6K | ag "^[0-9A-Za-z_]{1,12}-[0-9A-Za-z]{34}\.itp\.tar\.gz \d\d-\d\d-\d\d( D\d\d-\d\d-\d\d$|$)|^$UPD_NAME_REGEXP \d\d-\d\d-\d\d$" | grep $LIST_MODE -f "$LIST_RGXP" | grep -v -F -f archives/server.dat | sort -R | tr '\n' '\\' | sed 's/%/%%/g' | sed 's/\\/\\n/g')"
+    SERVER_DAT="$($T_CMD --max-filesize 6K | ag "^[0-9A-Za-z_]{1,12}-[0-9A-Za-z]{34}\.itp\.tar\.gz \d\d-\d\d-\d\d( D\d\d-\d\d-\d\d$|$)|^$UPD_NAME_REGEXP \d\d-\d\d-\d\d$" | grep $LIST_MODE -f "$LIST_RGXP" | grep -v -F -f archives/server.dat | sort -r | tr '\n' '\\' | sed 's/%/%%/g' | sed 's/\\/\\n/g')"
     if ! test -z "$SERVER_DAT";then
       CH_LINE=$(grep -n "^$URL" nodes.dat | head -n 1 | __collum 1 ":")
       sed -i "$CH_LINE c$URL last_success:$(date +"%y-%m-%d")" nodes.dat
@@ -86,7 +86,7 @@ __SYNC_ALL(){
         LOCAL_DATE=$(ag --no-numbers --no-filename  "^$1 " archives/server.dat | head -n 1 | __collum 2)
         if ./check-dates.sh "$2" "$LOCAL_DATE" > /dev/null 2>&1;then
           if ! test "$1" = "$VERIFICATION_STREAM.tar.gz" && test -f "quarantine/$1" || test "$(ls "quarantine/GARBAGE_$1${URL#*//}."???????? 2> /dev/null | wc -l)" -gt 2;then
-            echo "  II skip (quarantine/3XGarbage) : ${1%%-*1*}" | ag -v "^$UPD_NAME_REGEXP"
+            echo "  II QUARANTINE : ${1%%-*1*} (skip)" | ag -v "^$UPD_NAME_REGEXP"
           elif ag "^$1 " archives/server.dat > /dev/null || test "$1" = "$UPD_NAME" || test "$1" = "$VERIFICATION_STREAM.tar.gz";then
             if test "$LOCAL_DATE" = "${3#D}" && test "$GK_DIFF_MODE" = "yes" && ! test "$1" = "$UPD_NAME" && ! test "$1" = "$VERIFICATION_STREAM.tar.gz";then
                 if ! __DOWNLOAD "$1_$3" --patch;then __DOWNLOAD "$1";fi

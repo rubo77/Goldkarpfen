@@ -59,7 +59,7 @@ __COMMENT(){
   if test -z "$GK_JM";then echo "  EE no post selected";return;fi
   if ! date -d "20-$(echo "$GK_JM" | sed -e 's/\./-/' -e 's/:.*//')" > /dev/null;then echo "  EE invalid date - this may be just technical data";return 1;fi
   echo
-  sed -n -e "$GK_LN p" "$ITPFILE" -e 's/\&bsol;/\\/g'
+  sed -n -e ""$GK_LN"p" "$ITPFILE" -e 's/\&bsol;/\\/g'
   printf "\n  ?? comment this post?  [c]-continue [a]-abort >"
   $GK_READ_CMD T_CONFIRM;if test "$T_CONFIRM" != "c";then printf "\n  II aborted\n";return;fi
   echo
@@ -85,7 +85,7 @@ __SEARCH(){
     # POST_BEGIN POST_END
     set -- "$(( $(ag "^#POSTS_BEGIN" "$ITPFILE"| __collum 1 ":") + 1 ))" "$(( $(ag "^#POSTS_END" "$ITPFILE"| __collum 1 ":") - 1 ))"
     # FUZZY_RESULT POST_BEGIN POST_END
-    set -- "$(sed -n -e "$1 , $2 p" "$ITPFILE" -e 's/\&bsol;/\\/g' | ag "^\d\d.\d\d:\d " | pipe_if_not_empty $GK_FZF_CMD | __collum 1)" "$1" "$2"
+    set -- "$(sed -n -e ""$1","$2"p" "$ITPFILE" -e 's/\&bsol;/\\/g' | ag "^\d\d.\d\d:\d " | pipe_if_not_empty $GK_FZF_CMD | __collum 1)" "$1" "$2"
   fi
   if test -z "$1";then return;fi
   # FUZZY_RESULT LINE
@@ -107,7 +107,7 @@ __VIEW(){
   T_BUF=1
   while true;do
     if ! test $T_BUF = 0;then
-      T_BUF1=$(sed -n "$T_COUNTER p" "$ITPFILE")
+      T_BUF1=$(sed -n ""$T_COUNTER"p" "$ITPFILE")
       T_BUF2=$(echo "$T_BUF1" | __collum 1)
       echo "* $T_BUF1" | sed 's/\&bsol;/\\/g' | fold -s -w "$GK_COLS"
       ag --no-numbers --no-heading "^\d\d\.\d\d:\d $T_BUF2 @$GK_ID" itp-files/*.itp | sort -k2 -n -t ":" |
@@ -181,13 +181,13 @@ __POST(){
 
 __ARCHIVE(){
   if ! __HOOK_ARCHIVE_START;then return;fi
-  if test -f "archives/$OWN_ALIAS-$OWN_ADDR.itp.tar.gz" && test "$(tar xOf "archives/$OWN_ALIAS-$OWN_ADDR.itp.tar.gz" "$OWN_ALIAS-$OWN_ADDR.itp.sha512sum")" = "$(cat "itp-files/$OWN_ALIAS-$OWN_ADDR.itp.sha512sum")";then
+  if test -f "archives/$OWN_ALIAS-$OWN_ADDR.itp.tar.gz" && test "$(tar -xOf "archives/$OWN_ALIAS-$OWN_ADDR.itp.tar.gz" "$OWN_ALIAS-$OWN_ADDR.itp.sha512sum")" = "$(cat "itp-files/$OWN_ALIAS-$OWN_ADDR.itp.sha512sum")";then
     echo "  II you haven’t changed anything - abort"; return
   fi
   sed -i "s/^#LICENSE:CC0.*$/#LICENSE:CC0 $(date --utc '+%y-%m-%d')/" "$OWN_STREAM"
   __OWN_SHA_SUM_UPDATE || return
-  echo "  ## archiving"
-  tar cfv "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar" --mtime="$(date +'%Y-%m-%d %H:00')" -C itp-files "$OWN_ALIAS-$OWN_ADDR.itp.sha512sum" "$OWN_ALIAS-$OWN_ADDR.itp" "$OWN_ALIAS-$OWN_ADDR.itp.sha512sum.sig" --utc --numeric-owner || return
+  echo "  ## archiving UTC $(date --utc +'%Y-%m-%d %H:00:00')"
+  tar -cvf "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar" -C itp-files "$OWN_ALIAS-$OWN_ADDR.itp.sha512sum" "$OWN_ALIAS-$OWN_ADDR.itp" "$OWN_ALIAS-$OWN_ADDR.itp.sha512sum.sig" --numeric-owner || return
   if test -f "archives/$OWN_ALIAS-$OWN_ADDR.itp.tar.gz";then
     if test -f "bkp/$OWN_ALIAS-$OWN_ADDR.itp.tar" && test "$GK_DIFF_MODE" = "yes";then
       set -- "$(__ARCHIVE_DATE "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar")" "$(__ARCHIVE_DATE "bkp/$OWN_ALIAS-$OWN_ADDR.itp.tar")"
@@ -214,7 +214,7 @@ __TEST_ARCHIVE_DATE(){
   ./check-dates.sh "$T_BUF1" || return 1
   T_BUF="itp-files/$(set -- "$(basename "$1")" ; echo "${1%.tar.gz}").sha512sum"
   if test -f "$T_BUF";then
-    T_BUF2=$(TZ=UTC ls --full-time --time-style="+%y-%m-%d" "$T_BUF" | __collum 6)
+    T_BUF2=$(date "+%y-%m-%d" -d "$(TZ=UTC ls --full-time "$T_BUF" | __collum 6)")
   else
     return 0
   fi
@@ -384,7 +384,7 @@ echo "  ## $(ls VERSION*) $(head -n 1 VERSION*) "
 
 #set some globals
 GK_JM=; GK_LN=
-if command -v fzy > /dev/null 2>&1;then GK_FZF_CMD="fzy";else GK_FZF_CMD="fzf";fi
+if command -v fzy > /dev/null 2>&1;then GK_FZF_CMD="fzy --prompt=__SELECT:";else GK_FZF_CMD="fzf --prompt=__SELECT:";fi
 
 #create dirs
 mkdir -p cache/last_prune archives plugins quarantine sync bkp || exit
@@ -395,7 +395,7 @@ USER_PLUGINS_MENU="[q]-return_to_main:__USER_RETURN"
 
 #source plugins
 if find plugins -name '*\.sh' | ag '\.sh$' > /dev/null;then
-  echo -n "  ## loading plugins: "
+  echo -n "  ## loading : "
   for T_FILE in $(ag -f -g "\.sh$" plugins/);do
     if . ./"$T_FILE" 2>&1 > /dev/null;then echo -n "$(basename "${T_FILE%.sh}") ";fi
   done

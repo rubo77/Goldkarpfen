@@ -7,7 +7,7 @@ touch -a ./server.dat && . ../update-provider.inc.sh || exit 1
 if ! test -z "$LISTING_REGEXP";then UPD_NAME_REGEXP=$LISTING_REGEXP;fi
 __UPDATE_DATE(){
   if echo "$1" | ag --no-color "^[0-9A-Za-z_]{1,12}-[0-9A-Za-z]{34}\.itp\.tar\.gz$|^$UPD_NAME_REGEXP$" > /dev/null;then
-    BUF=$(date --utc "+%y-%m-%d" -d $(tar -tvf "$1" --utc | head -n 1 | awk '{print $4}'))
+    BUF=$(date --utc "+%y-%m-%d" -d $(TZ=UTC tar -tvf "$1" | head -n 1 | awk '{print $4}'))
   else
     return 0
   fi
@@ -16,7 +16,7 @@ __UPDATE_DATE(){
     mv "$1" "$(mktemp -p ../quarantine "GARBAGE_$1.XXXXXXXX")" || exit 1
     return 0
   fi
-  DATE=$(date --utc +"%y-%m-%d" -d $BUF)
+  DATE=$BUF
   DDATE="$(ls "$1"* | tail -n 1 | ag -o "D\d\d-\d\d-\d\d$")"
   if test -z "$DDATE";then echo "$1 $DATE";else echo "$1 $DATE $DDATE";fi
   return 0
@@ -27,7 +27,7 @@ if test -z "$1";then
     T_BUF="$(__UPDATE_DATE "$FILE")"
     if ! test -z "$T_BUF";then SERVER_DAT="$SERVER_DAT$T_BUF\n";fi
   done
-  if ! test "$SERVER_DAT" = "$(cat ../archives/server.dat | tr '\n' '\\' | sed 's/%/%%/g' | sed 's/\\/\\n/g')";then printf "$SERVER_DAT" > ../archives/server.dat || exit 1;fi
+  if ! test "$SERVER_DAT" = "$(tr '\n' '\\' < ../archives/server.dat | sed 's/%/%%/g' | sed 's/\\/\\n/g')";then printf "$SERVER_DAT" > ../archives/server.dat || exit 1;fi
 else
   sed -i "/^$1/d" ./server.dat || exit 1
   if test -f "$1";then __UPDATE_DATE "$1" >> ./server.dat || exit 1;fi
