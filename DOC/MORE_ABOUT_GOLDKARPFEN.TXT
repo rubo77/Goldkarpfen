@@ -1,4 +1,4 @@
-#V0.45
+#V0.50
 
 ### ABOUT (design goal)
   Goldkarpfen was designed to provide a robust communication network, to secure
@@ -17,11 +17,7 @@
   can lead to different daily version for different users)
 
 ### GOLDKARPFEN FOR ANDROID (automated install)
-# WARNING : will change torrc, ~/.bashrc and ~/.profile , also : ABSOLUTELY NO WARRANTY!
-# This is the gitlab way ; if possible : use the Mobile2Mobile installer
-  - install termux
-pkg upgrade ; pkg install tor curl && if ! pidof tor > /dev/null;then eval "tor --quiet &";fi
-URL=https://gitlab.com/rubo77/Goldkarpfen/-/archive/release_275;curl -f https://gitlab.com/rubo77/Goldkarpfen/-/raw/main/INSTALL-on-Android-termux.sh > gki.sh && sh gki.sh "$URL"
+  - check https://gitlab.com/rubo77/Goldkarpfen/-/blob/main/README.md
 
   - NOTE : if you enable also i2p support
 pkg install i2pd && i2pd --daemon --loglevel=none &
@@ -247,7 +243,7 @@ cp start-services.sh my-start-services.sh
 cp stop-services.sh my-stop-services.sh
 
   - Edit my-start-service.sh : comment out darkhttpd lines and add the gopher lines:
-#darkhttpd archives/ --port $2 --daemon --log server.log --maxconn 10 --no-server-id --no-listing --pidfile ./tmp/darkhttpd.pid | sed 's/^/ \* /'
+#darkhttpd archives/ --port $2 --daemon --log server.log ...
 geomyidae -b archives -p $2 -logfile server.log
 if test "$3" = "tor-ctrl";then python3 start-hidden-service.py $1 $2 70;else sleep 0.2;fi #80 for http, 70 for gopher
 
@@ -320,6 +316,12 @@ Goldkarpfen-latest.tar.gz
     itp-file (like in: Goldkarpfen-1JULSJ5Nnba9So48zi21rpfTuZ3tqNRaFB.itp)
   - move that tarball into your archives with your itp-file.tar.gz
   - tell your peers to change their update-provider.inc.sh accordingly
+
+### OFFER MORE THAN ONE FORK FOR DOWNLOAD
+  - update to 279+
+  - edit update-provider.inc.sh and have a line like this :
+
+LISTING_REGEXP="Goldkarpfen-latest\.tar\.gz|Goldkarpfen-termux\.tar\.gz"
 
 ### ABOUT DISTRIBUTED SEARCH ENGINES
   CONCEPTION :

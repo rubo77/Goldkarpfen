@@ -1,4 +1,4 @@
-#V0.6
+#V0.7
 
 Q: Why is Goldkarpfen needed, aren’t there enough communications platforms?
 A1:
@@ -148,5 +148,9 @@ A:
   I suggest to leave the www and use Goldkarpfen instead (if i am forced to use one i prefer lynx).
 
 Q: When will GNU-HURD be available?
+
+APOLOGIA
+  - $(< file.dat) does not work with dash # usage of cat
+  - the one-key-interface is extremly effective, esp. on mobile
 
 #LICENSE:CC0
