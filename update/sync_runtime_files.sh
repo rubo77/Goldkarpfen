@@ -20,7 +20,7 @@ if test "$1" = "--first-run";then
 else
   set -e
   rm -f ../VERSION* ; mkdir -p ../DOC ../plugins ; cd Goldkarpfen
-  for T_FILE in Goldkarpfen.sh plugins/update.sh include.sh sync-from-nodes.sh update-archive-date.sh check-dependencies.sh itp-check.sh keys.sh sign.sh check-sign.sh check-dates.sh prune-month.sh plugins/migration-warning.sh plugins/nodes.sh plugins/plugin.sh start-hidden-service.py start-services.sh stop-hidden-service.py stop-services.sh help-en.dat .Goldkarpfen.start.sh .Goldkarpfen.exit.sh new-account.sh DOC/address_migration.txt LICENSE README DOC/ITP-DEFINITION;do
+  for T_FILE in Goldkarpfen.sh plugins/update.sh include.sh sync-from-nodes.sh update-archive-date.sh check-dependencies.sh itp-check.sh keys.sh sign.sh check-sign.sh check-dates.sh prune-month.sh plugins/migration-warning.sh plugins/nodes.sh plugins/plugin.sh start-hidden-service.py start-services.sh stop-hidden-service.py stop-services.sh help-en.dat .Goldkarpfen.start.sh .Goldkarpfen.exit.sh new-account.sh DOC/address_migration.txt LICENSE README;do
     if ! cmp "$T_FILE" "../../$T_FILE" > /dev/null 2>&1;then
       cp -a --verbose "$T_FILE" "../../$T_FILE"
     fi

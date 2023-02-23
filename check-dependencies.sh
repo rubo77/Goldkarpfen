@@ -8,7 +8,7 @@ __WHICH(){
 RE=
 if test -z $EDITOR;then echo >&2 "EDITOR env var is empty.";RE="ERROR";fi
 if ! command -v fzf > /dev/null 2>&1  && ! command -v fzy > /dev/null 2>&1 ;then >&2 echo "  EE fzf or fzy not found";RE="ERROR";fi
-if ! __WHICH "pidof ps tput gzip dd du mktemp xxd ag dc openssl fold awk sed grep basename sha512sum tr cat touch tail head cmp tar date sort uniq wc file pwd diff";then RE="ERROR";fi
+if ! __WHICH "pidof ps tput gzip gunzip dd du mktemp xxd ag dc openssl fold awk sed grep basename sha512sum tr cat touch tail head cmp tar date sort uniq wc file pwd diff";then RE="ERROR";fi
 if test "$RE" = "ERROR";then echo "$RE";exit 1;else RE="ok";fi
 if __WHICH "curl";then RE="get $RE";fi
 if __WHICH "darkhttpd";then RE="host $RE";fi
