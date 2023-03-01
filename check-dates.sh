@@ -4,22 +4,18 @@
 #usage: __CHECK__DATES [date1] [date2] or test for age: __CHECK__DATES [date1]
 #Tests if date1 is newer than date2 and date 1 is not older than 333 days. Time resolution: days.
 #time format: "%y-%m-%d" or "%y-%m-%d %M:%H" (minute and hour are ignored)
-#does not account for differences greater than 10 year around a century flip
+#does not account for differences greater than 12 year around a century flip
 now=$(date --utc +"%y-%m-%d")
 this_year=${now%%-*};this_year=${this_year#0};
 year1=${1%%-*};year1=${year1#0}
 if test -z "$2";then year2=$year1; else year2=${2%%-*};year2=${year2#0};fi
 
 if test "$this_year" -eq 0;then
-  this_year=90
-  year1=$((year1 - 10))
-  year2=$((year2 - 10))
-  if test "$year1" -lt -1;then
-    year1=$((year1 + 100))
-  fi
-  if test "$year2" -lt -1;then
-    year2=$((year2 + 100))
-  fi
+  this_year=88
+  year1=$((year1 - 12))
+  year2=$((year2 - 12))
+  if test "$year1" -lt -1;then year1=$((year1 + 100));fi
+  if test "$year2" -lt -1;then year2=$((year2 + 100));fi
 fi
 if test $((this_year - year1)) -gt 1;then
   >&2 echo "  EE date1 is older than 333 days"

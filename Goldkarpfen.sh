@@ -186,7 +186,7 @@ __ARCHIVE(){
   fi
   sed -i "s/^#LICENSE:CC0.*$/#LICENSE:CC0 $(date --utc '+%y-%m-%d')/" "$OWN_STREAM"
   __OWN_SHA_SUM_UPDATE || return
-  echo "  ## archiving UTC $(date --utc +'%Y-%m-%d %H:00:00')"
+  echo "  ## archiving UTC $(date --utc +%Y-%m-%d_%H:00:00)"
   tar -cvf "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar" -C itp-files "$OWN_ALIAS-$OWN_ADDR.itp.sha512sum" "$OWN_ALIAS-$OWN_ADDR.itp" "$OWN_ALIAS-$OWN_ADDR.itp.sha512sum.sig" --numeric-owner || return
   if test -f "archives/$OWN_ALIAS-$OWN_ADDR.itp.tar.gz";then
     if test -f "bkp/$OWN_ALIAS-$OWN_ADDR.itp.tar" && test "$GK_DIFF_MODE" = "yes";then

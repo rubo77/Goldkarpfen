@@ -9,10 +9,11 @@ __CHECK_FOR_UPD(){
   if test -f "quarantine/$UPD_NAME";then
     VERSION_ARCHIVES=$(tar -tf quarantine/"$UPD_NAME" 2> /dev/null | ag "VERSION" | __collum 3 "." || echo 0)
     if test "$(ag -o "$UPD_NAME_REGEXP VERSION-2\.1\.\d*" itp-files/$VERIFICATION_STREAM | tail -n 1 | sed 's/.*\.//' )" = "$VERSION_ARCHIVES";then
-      if ! grep "$(sha512sum quarantine/$UPD_NAME | __collum 1)" itp-files/$VERIFICATION_STREAM;then
+      if ! ag "$(sha512sum quarantine/$UPD_NAME | __collum 1)" itp-files/$VERIFICATION_STREAM > /dev/null;then
         printf "  EE Could not verify checksum of $UPD_NAME - moved to quarantine/GARBAGE\n"
         mv "quarantine/$UPD_NAME" "$(mktemp -p quarantine "GARBAGE_$UPD_NAME${URL#*//}.XXXXXXXX")" || exit 1
       else
+        echo "  II $UPD_NAME verified"
         mv "quarantine/$UPD_NAME" archives/ && ./update-archive-date.sh "$UPD_NAME" || exit 1
       fi
     else
@@ -75,11 +76,10 @@ __SYNC_ALL(){
     URL=$(echo "$NODE" | __collum 1)
     echo "$(tput rev)$URL$(tput sgr0)"
     T_CMD=$(__DOWNLOAD_COMMAND "$URL" "server.dat" || echo "__error_getting_dl_cmd;")
-    SERVER_DAT="$($T_CMD --max-filesize 6K | ag "^[0-9A-Za-z_]{1,12}-[0-9A-Za-z]{34}\.itp\.tar\.gz \d\d-\d\d-\d\d( D\d\d-\d\d-\d\d$|$)|^$UPD_NAME_REGEXP \d\d-\d\d-\d\d$" | grep $LIST_MODE -f "$LIST_RGXP" | grep -v -F -f archives/server.dat | sort -r | tr '\n' '\\' | sed 's/%/%%/g' | sed 's/\\/\\n/g')"
+    SERVER_DAT="$($T_CMD --max-filesize 6K | ag "^[0-9A-Za-z_]{1,12}-[0-9A-Za-z]{34}\.itp\.tar\.gz \d\d-\d\d-\d\d( D\d\d-\d\d-\d\d$|$)|^$UPD_NAME_REGEXP \d\d-\d\d-\d\d$" | grep $LIST_MODE -f "$LIST_RGXP" | sort -r | tr '\n' '\\' | sed 's/%/%%/g' | sed 's/\\/\\n/g')"
     if ! test -z "$SERVER_DAT";then
-      CH_LINE=$(grep -n "^$URL" nodes.dat | head -n 1 | __collum 1 ":")
-      sed -i "$CH_LINE c$URL last_success:$(date +"%y-%m-%d")" nodes.dat
-      printf "$SERVER_DAT" |
+      sed -i "s@^$URL.*@$URL last_success:$(date +"%y-%m-%d")@" nodes.dat
+      printf "$SERVER_DAT" | grep -v -F -f archives/server.dat |
       while IFS= read -r LINE; do
         #FILE DATE DIFF-DATE
         set -- $LINE ; FILE_DATE=$2
@@ -114,7 +114,7 @@ for T_ARG in $@;do
   else echo "usage : ./sync-from-nodes.sh [--loop] [--pattern=regexp] [--pause=seconds] # seconds>599";exit;fi
   if test -z "$T_PAUSE" || test "$T_PAUSE" -lt 600;then T_PAUSE=3600;fi
 done
-if test -z "$T_PATTERN";then T_PATTERN="^[a-z]{3,6}://[A-Za-z0-9.]*[.:][A-Za-z0-9]{1,5}";fi
+if test -z "$T_PATTERN";then T_PATTERN="^[a-z]{3,6}://[A-Za-z0-9.]*[.:][A-Za-z0-9]{1,5}|^$";fi
 . ./update-provider.inc.sh && . ./include.sh || exit 1
 if test -f ./my-include.sh;then . ./my-include.sh || exit;fi
 if test -f ./whitelist.dat;then LIST_MODE=; LIST_RGXP="whitelist.dat";else LIST_MODE="-v"; LIST_RGXP="blacklist.dat";fi
