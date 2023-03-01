@@ -1,10 +1,10 @@
 #GPL-3 - See LICENSE file for copyright and license details.
-#V0.4
+#V0.5
 #GKdev-1FHDi5veznUojyHaZQ9wv5dwj5aqZmXYGg.itp
 USER_PLUGINS_MENU="[l]-launch:__USER_LAUNCH $USER_PLUGINS_MENU"
 __USER_LAUNCH(){
   if ! test -f launcher.dat; then
-    printf 'echo "edit launcher.dat to add more programs"\nbash #subshell (exit with [CTRL-d])\nranger #file manager\nnano #editor\nif pidof tor;then echo "OK";else echo "tor is not running";fi #test if tor is running\ncurl -f --progress-bar --proxy socks5://127.0.0.1:9050 --socks5-hostname 127.0.0.1:9050 rate.sx/btc | grep -v " *│" #check btc price\n' > launcher.dat
+    printf 'echo "edit launcher.dat to add more programs"\nbash #subshell (exit with [CTRL-d])\nfff #file manager\nnano #editor\ncurl -f --progress-bar --proxy socks5://127.0.0.1:9050 --socks5-hostname 127.0.0.1:9050 rate.sx/btc | grep -v " *│" #check btc price\n' > launcher.dat
   fi
   set -- "$(
   cat launcher.dat |
