@@ -5,8 +5,8 @@ MAIN
 [u]-unpack             Unpack a tarball from your ./archives
 [m]-quarantine         move/delete tarballs from quarantine.
 [a]-archive/release    Archive your own stream to ./archives. This will publish your stream for others to download.
+[S]-sync               Pull all the new tarballs from the nodes of your node list.
 
-[A]-sync               Pull all the new tarballs from the nodes of your node list.
 [r]-run                Run plugins.
 [!]-edit               Edit your itp-file by hand.
 [x/y]-repairs          Rebuild alias cache or rebuild all workfiles - only for troubleshooting.
@@ -14,7 +14,7 @@ MAIN
 [Q]-quit               Exit the program.
 
 DEFAULT PLUGINS
-[U]-update             Update your Goldkarpfen from a synced tarball.
+[U]-updGK              Update your Goldkarpfen from a synced tarball.
 [h]-url1               Show or add your url1 to your header.
 [a]-nodes              Add the urls to your node list.
 [P]-plugin             Get/Update plugins from the selected stream.

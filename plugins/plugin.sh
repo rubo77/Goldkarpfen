@@ -3,7 +3,7 @@ USER_PLUGINS_MENU="[P]-plugin:__USER_PLUGIN $USER_PLUGINS_MENU"
 __USER_PLUGIN(){
   mkdir -p downloads || exit
   # URL FILENAME-LINK
-  set -- "$(sed -n "1p" $ITPFILE | sed -e "s/^.*<url1=//" -e "s/>.*//")" "$(ag --no-numbers "<plugin=.*>" $ITPFILE | sed -e "s/^.*<.*=//" -e "s/>/ /" | pipe_if_not_empty $GK_FZF_CMD)"
+  set -- "$(ag -m 1 -o "^#ITP.*<url1=[a-z]{3,6}://[A-Za-z0-9.]*[.:][A-Za-z0-9]{1,5}>" "$ITPFILE" 2> /dev/null | sed -e "s/^.*<url1=//" -e "s/>.*//")" "$(ag --no-numbers "<plugin=[a-zA-Z0-9._\-/]*>" "$ITPFILE" | sed -e "s/^.*<.*=//" -e "s/>/ /" | pipe_if_not_empty $GK_FZF_CMD)"
   if test -z "$1";then echo "  II the stream has no url1 tag";return;fi
   if test -z "$2";then echo "  II empty";return;fi
   # URL FILENAME VSTREAM
@@ -12,7 +12,7 @@ __USER_PLUGIN(){
     echo -n "  ?? file exists - overwrite? Y/[N] >"
     $GK_READ_CMD T_CONFIRM; if test "$T_CONFIRM" != "Y";then printf "\n  II aborted";return;else echo;fi
   fi
-  echo "  ## downloading" $2
+  echo "  ## downloading $2"
   T_CMD=$(__DOWNLOAD_COMMAND "$1" "$2" || echo "__error_getting_dl_cmd;")
   $T_CMD -o downloads/"$(basename $2)" || return
     if file -b --mime-type downloads/"$(basename $2)" | sed 's|/.*||' | ag -v "text";then echo "  EE fatal: $(basename $2) is not a textfile";return 1;fi
