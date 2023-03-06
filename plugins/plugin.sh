@@ -28,9 +28,9 @@ __USER_PLUGIN(){
     echo -n "  II downloaded version: ";sed -n "2p" downloads/"$(basename $2)"
     echo -n "  II local version     : ";sed -n "2p" plugins/"$(basename $2)" 2> /dev/null | grep "^#"
     echo  -n "  ?? install this plugin? y/[n] >"
-    $GK_READ_CMD T_BUF
+    $GK_READ_CMD T_BUF;echo
     if test "$T_BUF" != "y";then echo;return;fi
-    printf "\n  ## moving $2 to plugins\n"; mv downloads/"$(basename $2)" plugins/ || return
+    mv -v downloads/"$(basename $2)" plugins/ || return
     . plugins/"$(basename $2)" || return
     echo -n "  ?? share-host this file? y/[n] >"
     $GK_READ_CMD T_BUF; if test "$T_BUF" != "y";then echo;return;fi
@@ -39,7 +39,7 @@ __USER_PLUGIN(){
       $GK_READ_CMD T_CONFIRM; if test "$T_CONFIRM" != "Y";then printf "\n  II aborted\n";return;else echo;fi
     fi
     mkdir -p archives/share || exit
-    echo "  II copying $(basename $2) to archives/share"; cp plugins/"$(basename $2)" archives/share || return
+    cp -v plugins/"$(basename $2)" archives/share || return
     echo "  II add a post (or edit an existing one) with:"
     echo "  $(tput rev)<plugin=share/$(basename $2)> $(sed -n '3p' archives/share/$(basename $2)) $(sed -n '2p' archives/share/$(basename $2))$(tput sgr0)"
 }

@@ -6,20 +6,22 @@ echo $$ > cache/sync-from-nodes.pid
 
 __CHECK_FOR_UPD(){
   __INIT_FILES
-  if test -f "quarantine/$UPD_NAME";then
-    VERSION_ARCHIVES=$(tar -tf quarantine/"$UPD_NAME" 2> /dev/null | ag "VERSION" | __collum 3 "." || echo 0)
-    if test "$(ag -o "$UPD_NAME_REGEXP VERSION-2\.1\.\d*" itp-files/$VERIFICATION_STREAM | tail -n 1 | sed 's/.*\.//' )" = "$VERSION_ARCHIVES";then
-      if ! ag "$(sha512sum quarantine/$UPD_NAME | __collum 1)" itp-files/$VERIFICATION_STREAM > /dev/null;then
-        printf "  EE Could not verify checksum of $UPD_NAME - moved to quarantine/GARBAGE\n"
-        mv "quarantine/$UPD_NAME" "$(mktemp -p quarantine "GARBAGE_$UPD_NAME${URL#*//}.XXXXXXXX")" || exit 1
+  for T_FILE in $(ls sync/ | ag "^($UPD_NAME_REGEXP)$");do
+    T_BUF=$(tar -xOf "sync/$T_FILE" Goldkarpfen/update-provider.inc.sh | ag -m 1 -o "[0-9A-Za-z_]{1,12}-[0-9A-Za-z]{34}\.itp" 2> /dev/null)
+    VERSION_ARCHIVES=$(tar -tf "sync/$T_FILE" 2> /dev/null | ag "VERSION" | __collum 3 "." || echo 0)
+    if test "$(ag -m 1 -o "$T_FILE VERSION-2\.1\.\d*" "itp-files/$T_BUF" 2> /dev/null | sed 's/.*\.//' )" = "$VERSION_ARCHIVES";then
+      if ! ag " $(sha512sum sync/$T_FILE | __collum 1) " "itp-files/$T_BUF" > /dev/null;then
+        printf "  EE Could not verify checksum of $T_FILE - moved to quarantine/GARBAGE\n"
+        mv "sync/$T_FILE" "$(mktemp -p quarantine "GARBAGE_$T_FILE${URL#*//}.XXXXXXXX")" || exit 1
       else
-        echo "  II $UPD_NAME verified"
-        mv "quarantine/$UPD_NAME" archives/ && ./update-archive-date.sh "$UPD_NAME" || exit 1
+        echo "  II $T_FILE verified"
+        mv "sync/$T_FILE" archives/ && ./update-archive-date.sh "$T_FILE" || exit 1
       fi
     else
-      rm -f "quarantine/$UPD_NAME"
+      echo "  II $T_FILE / $T_BUF version mismatch -> skip"
+      rm -f "sync/$T_FILE"
     fi
-  fi
+  done
 }
 
 __UPD_NOTIFY(){
@@ -30,7 +32,7 @@ __UPD_NOTIFY(){
 
 __DOWNLOAD(){
   if test -z "$UPDATE_ONLY";then
-    if test $(ag --no-numbers --no-filename -v "^(\b$UPD_NAME_REGEXP\b|\b$VERIFICATION_STREAM.tar.gz\b)" archives/server.dat | wc -l) -gt 49;then
+    if test $(ag --no-numbers --no-filename -v "^($UPD_NAME_REGEXP)|^($VERIFICATION_STREAM.tar.gz)" archives/server.dat | wc -l) -gt 49;then
       UPDATE_ONLY="y"; echo "  II archive-file-num-cap reached - UPDATE_ONLY mode" | ag "."
       if test "$2" = "--new";then return;fi
     fi
@@ -49,7 +51,7 @@ __DOWNLOAD(){
     fi
     return 1
   fi
-  if test "$1" = "$UPD_NAME";then mv "sync/$1" quarantine || exit 1;return 0;fi
+  if echo "$1" | ag "$UPD_NAME_REGEXP" > /dev/null;then return 0;fi
   if ag "${1%.tar.gz}|${1%.tar}" cache/sane_files > /dev/null || test "$1" = "$VERIFICATION_STREAM.tar.gz";then
      T_TARGET="archives/" ; OPTIONS=
   elif test -f "archives/${1%.gz}.gz";then
@@ -76,17 +78,17 @@ __SYNC_ALL(){
     URL=$(echo "$NODE" | __collum 1)
     echo "$(tput rev)$URL$(tput sgr0)"
     T_CMD=$(__DOWNLOAD_COMMAND "$URL" "server.dat" || echo "__error_getting_dl_cmd;")
-    SERVER_DAT="$($T_CMD --max-filesize 6K | ag "^[0-9A-Za-z_]{1,12}-[0-9A-Za-z]{34}\.itp\.tar\.gz \d\d-\d\d-\d\d( D\d\d-\d\d-\d\d$|$)|^$UPD_NAME_REGEXP \d\d-\d\d-\d\d$" | grep $LIST_MODE -f "$LIST_RGXP" | sort -r | tr '\n' '\\' | sed 's/%/%%/g' | sed 's/\\/\\n/g')"
+    SERVER_DAT="$($T_CMD --max-filesize 6K | ag "^[0-9A-Za-z_]{1,12}-[0-9A-Za-z]{34}\.itp\.tar\.gz \d\d-\d\d-\d\d( D\d\d-\d\d-\d\d$|$)|^($UPD_NAME_REGEXP) \d\d-\d\d-\d\d$" | grep $LIST_MODE -f "$LIST_RGXP" | sort -r | tr '\n' '\\' | sed 's/%/%%/g' | sed 's/\\/\\n/g')"
     if ! test -z "$SERVER_DAT";then
       sed -i "s@^$URL.*@$URL last_success:$(date +"%y-%m-%d")@" nodes.dat
       printf "$SERVER_DAT" | grep -v -F -f archives/server.dat |
       while IFS= read -r LINE; do
         #FILE DATE DIFF-DATE
         set -- $LINE ; FILE_DATE=$2
-        LOCAL_DATE=$(ag --no-numbers --no-filename  "^$1 " archives/server.dat | head -n 1 | __collum 2)
+        LOCAL_DATE=$(ag -m 1 --no-numbers --no-filename  "^$1 " archives/server.dat 2> /dev/null | __collum 2)
         if ./check-dates.sh "$2" "$LOCAL_DATE" > /dev/null 2>&1;then
           if ! test "$1" = "$VERIFICATION_STREAM.tar.gz" && test -f "quarantine/$1" || test "$(ls "quarantine/GARBAGE_$1${URL#*//}."???????? 2> /dev/null | wc -l)" -gt 2;then
-            echo "  II QUARANTINE : ${1%%-*1*} (skip)" | ag -v "^$UPD_NAME_REGEXP"
+            echo "  II QUARANTINE : ${1%%-*1*} (skip)"
           elif ag "^$1 " archives/server.dat > /dev/null || test "$1" = "$UPD_NAME" || test "$1" = "$VERIFICATION_STREAM.tar.gz";then
             if test "$LOCAL_DATE" = "${3#D}" && test "$GK_DIFF_MODE" = "yes" && ! test "$1" = "$UPD_NAME" && ! test "$1" = "$VERIFICATION_STREAM.tar.gz";then
                 if ! __DOWNLOAD "$1_$3" --patch;then __DOWNLOAD "$1";fi
@@ -123,7 +125,7 @@ touch -a blacklist.dat archives/tracker.dat && mkdir -p cache/last_prune archive
 trap 'echo "  ## pls wait ...";__CHECK_FOR_UPD;__UPD_NOTIFY; rm -f tmp/tmp.tar tmp/tracker.dat cache/sync-from-nodes.pid; trap - EXIT; exit 0' INT HUP TERM QUIT
 trap 'echo "  ## pls wait ...";__CHECK_FOR_UPD;__UPD_NOTIFY; rm -f tmp/tmp.tar tmp/tracker.dat cache/sync-from-nodes.pid; trap - EXIT; exit' EXIT
 ./update-archive-date.sh || exit 1
-
+if ! test -z "$LISTING_REGEXP";then UPD_NAME_REGEXP=$LISTING_REGEXP;fi
 if test "$T_LOOP" = "yes";then
   while true;do
     __SYNC_ALL

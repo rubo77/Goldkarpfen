@@ -89,7 +89,7 @@ __SEARCH(){
   fi
   if test -z "$1";then return;fi
   # FUZZY_RESULT LINE
-  set -- "$1" "$(grep -n "^$1 " "$ITPFILE" | head -n 1 | __collum 1 ":")"
+  set -- "$1" "$(ag -m 1 "^$1 " "$ITPFILE" 2> /dev/null | __collum 1 ":")"
   if test -z "$2";then return;fi
   GK_JM=$1; GK_LN=$2
 }
@@ -114,7 +114,7 @@ __VIEW(){
       while IFS= read -r LLL;do
         T_BUF1=$(echo "$LLL" | __collum 2 "/" | __collum 1 ":" | __collum 1 "." | __collum 2 "-")
         T_BUF2=$(echo "$LLL" | __collum 2 ":" )
-        echo "$LLL" | sed -e "s/^.*@.................................../$T_BUF2 \[$(ag --no-color --no-numbers $T_BUF1 cache/aliases | __collum 1)\] /" -e 's/\&bsol;/\\/g' | fold -s -w "$GK_COLS" | sed 's/^/    /'
+        echo "$LLL" | sed -e "s/^.*@.................................../$T_BUF2 \[$(ag --no-color --no-numbers $T_BUF1 cache/aliases | __collum 1)\] /" -e 's/\&bsol;/\\/g' | sed 's/^/    /' | fold -s -w "$GK_COLS"
       done
       if test "$T_COUNTER" = "$1";then printf "^^^^^";fi
       if test "$T_COUNTER" = "$2";then printf "_____";fi
@@ -447,7 +447,7 @@ __HOOK_START
 
 #main loop
 while true;do
-  GK_COLS=$(( $(tput cols) - 5))
+  GK_COLS=$(tput cols)
   if ! pidof tor > /dev/null && command -v tor > /dev/null;then echo "  II tor off -> [x][t] for restart";fi
   if ! pidof i2pd > /dev/null && command -v i2pd > /dev/null;then echo "  II i2pd off -> [x][i] for restart";fi
   printf "\n[$GK_MODE] UTC:[$(date --utc "+%m.%d")] MY:$(tput rev)[$OWN_ALIAS]$(tput sgr0) SELECT:$(tput rev)[$GK_ALIAS]$(tput sgr0)$GK_JM\n[v]-view [p]-post [s]-select_stream [u]-unpack [m]-quarantine [a]-archive/release [S]-sync [r]-plugins [!]-edit [x/y]-repairs [h]-help [Q]-quit >" | fold -s -w $GK_COLS

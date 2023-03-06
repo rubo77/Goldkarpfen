@@ -31,7 +31,9 @@ __USER_INQR(){
       if echo "$1" | ag "\.i2p$" > /dev/null;then T_BUF4="curl i2pd";T_BUF5="i2pd --daemon --loglevel=none &";T_BUF6="i2pd";else T_BUF4="curl tor";T_BUF5="tor --quiet &";T_BUF6="tor";fi
   fi
   T_CMD=$(__DOWNLOAD_COMMAND "$1" "share/gki.sh" || echo "__error_getting_dl_cmd;");T_CMD=$(echo $T_CMD | sed -e "s/--progress-bar //")
+  echo -n "$(tput setab 0)$(tput setaf 15)"
   qrencode "pkg upgrade ; pkg install $T_BUF4 && if ! pidof $T_BUF6 > /dev/null;then eval \"$T_BUF5\";fi" -t UTF8
   echo "Enter for next"; read T_BUF
   qrencode "$(echo "U=$1;$T_CMD > gki.sh && sh gki.sh \$U" | sed 's/\\/\\\\/')" -t UTF8
+  echo -n "$(tput sgr0)"
 }

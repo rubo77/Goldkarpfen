@@ -64,7 +64,7 @@ __TEST_ARCHIVE_CONTENT(){
 }
 
 __TEST_AND_UNPACK_ARCHIVE(){
-  if test "$1" = "--no-unpack";then T_BUF1="--no-upack";shift;fi
+  if test "$1" = "--no-unpack";then T_BUF1="--no-unpack";shift;fi
   __TEST_ARCHIVE_CONTENT "$1" "$2"|| return 1
   tar -xf "$1" -C tmp/ > /dev/null || return 1
   # FILENAME TMP_FILENAME OPTION_NO_UNPACK

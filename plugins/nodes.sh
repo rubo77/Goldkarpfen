@@ -30,7 +30,7 @@ __USER_HEADER(){
     if test -z "$1";then echo "  EE your url1 header tag is not valid";return;fi
     if ! command -v qrencode > /dev/null 2>&1;then echo "  II install libqrencode (or qrencode) for qrcode";return;fi
     set -- "${1#*<url1=}"; set -- "${1%>*}"
-    qrencode "$1" -t UTF8
+    echo -n "$(tput setab 0)$(tput setaf 15)";qrencode "$1" -t UTF8;echo -n "$(tput sgr0)"
   else
     printf "\n  ?? enter your url1 >"
     read T_BUF
@@ -72,7 +72,7 @@ __USER_DOWNLOAD(){
       $GK_READ_CMD T_CONFIRM;if test "$T_CONFIRM" != "Y";then printf "\n  II aborted\n";return;else echo;fi
     fi
     mkdir -p archives/share || exit
-    echo "  ## copying $2 to archives/share"; cp downloads/"$(basename $2)" archives/share || return
+    cp -v downloads/"$(basename $2)" archives/share || return
     echo "  II add a post with this: <download=share/$(basename $2)>"
 }
 
@@ -81,9 +81,8 @@ __USER_EXEC(){
   # URL DL_LINK
   set -- "$(ag -o --no-numbers "<exec=.*>" "$ITPFILE" | sed -e "s/<exec=//" -e "s/>$//" | pipe_if_not_empty $GK_FZF_CMD)"
   if test -z "$1";then echo "  II empty";return;fi
-  echo -n "command : ";ag --no-numbers --no-color -o -Q "$1" "$ITPFILE" |  sed 's/\&bsol;/\\/g'
-  set -- "$(echo $1 | sed 's/\&bsol;/\\/g')"
+  echo -n "command : ";ag --no-numbers --no-color -o -Q "$1" "$ITPFILE" | sed 's/\&bsol;/\\/g'
   printf "  II executing code can be dangerous!\n  II be sure to understand the command!\n" | ag "."
   echo -n "  ?? really execute? Y/[N] [Return] >"; read T_CONFIRM;if test "$T_CONFIRM" != "Y";then printf "\n  II aborted\n";return;else echo;fi
-  eval "$1"
+  eval "$(ag --no-numbers --no-color -o -Q "$1" "$ITPFILE" | sed 's/\&bsol;/\\/g')"
 }
