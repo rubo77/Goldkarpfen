@@ -13,7 +13,7 @@ echo "  ## startup ..."
 GK_MODE="ERROR"
 if test -f my-check-dependencies.sh;then GK_MODE=$(./my-check-dependencies.sh | tail -n 1);else GK_MODE=$(./check-dependencies.sh | tail -n 1);fi
 if test "$GK_MODE" = "ERROR";then exit;fi
-if command -v bsdiff > /dev/null 2>&1; then GK_DIFF_MODE="yes";else echo "  II install bsdiff to enable diff-mode";fi
+if command -v xdelta3 > /dev/null 2>&1; then GK_DIFF_MODE="yes";else echo "  II install xdelta3 to enable diff-mode";fi
 
 #new account?
 if ! test -d .keys;then
@@ -116,8 +116,8 @@ __VIEW(){
         T_BUF2=$(echo "$LLL" | __collum 2 ":" )
         echo "$LLL" | sed -e "s/^.*@.................................../$T_BUF2 \[$(ag --no-color --no-numbers $T_BUF1 cache/aliases | __collum 1)\] /" -e 's/\&bsol;/\\/g' | sed 's/^/    /' | fold -s -w "$GK_COLS"
       done
-      if test "$T_COUNTER" = "$1";then printf "^^^^^";fi
-      if test "$T_COUNTER" = "$2";then printf "_____";fi
+      if test "$T_COUNTER" = "$1";then printf " ^^^^^";fi
+      if test "$T_COUNTER" = "$2";then printf " _____";fi
       T_BUF=0
     fi
     GK_JM=$T_BUF2; GK_LN=$T_COUNTER
@@ -193,7 +193,7 @@ __ARCHIVE(){
       set -- "$(__ARCHIVE_DATE "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar")" "$(__ARCHIVE_DATE "bkp/$OWN_ALIAS-$OWN_ADDR.itp.tar")"
       if ! test "$1" = "$2";then
         echo "  II generating diff from $2"
-        bsdiff "bkp/$OWN_ALIAS-$OWN_ADDR.itp.tar" "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar" "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar.gz_D$2"
+        xdelta3 -e -s "bkp/$OWN_ALIAS-$OWN_ADDR.itp.tar" "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar" "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar.gz_D$2"
       fi
     fi
     rm -f "bkp/__$OWN_ALIAS-$OWN_ADDR.itp.tar" && cp "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar" bkp/ || exit
@@ -224,7 +224,11 @@ __TEST_ARCHIVE_DATE(){
 }
 
 __UNPACK(){
-  set -- "$(ag --depth 0 -f -g "\.itp\.tar\.gz$" quarantine/ archives/ | pipe_if_not_empty $GK_FZF_CMD )"
+  if test "$1" = "--all";then
+    set -- "$(ag --depth 0 -f -g "\.itp\.tar\.gz$" quarantine/ archives/ | pipe_if_not_empty $GK_FZF_CMD )"
+  else
+    set -- "$(ag --depth 0 -f -g "\.itp\.tar\.gz$" quarantine/ archives/ | ag -v "$(cat cache/sane_files | sed 's@itp-files/@|@' | tr -d '\n' | sed 's/^|//')" | pipe_if_not_empty $GK_FZF_CMD )"
+  fi
   if test -z "$1" || ! test -f "$1";then echo "  II empty";return;fi
   if ! __TEST_ARCHIVE_DATE "$1";then
     echo -n "  ?? force unpack? Y/[N] >"
@@ -450,7 +454,7 @@ while true;do
   GK_COLS=$(tput cols)
   if ! pidof tor > /dev/null && command -v tor > /dev/null;then echo "  II tor off -> [x][t] for restart";fi
   if ! pidof i2pd > /dev/null && command -v i2pd > /dev/null;then echo "  II i2pd off -> [x][i] for restart";fi
-  printf "\n[$GK_MODE] UTC:[$(date --utc "+%m.%d")] MY:$(tput rev)[$OWN_ALIAS]$(tput sgr0) ACTIVE:$(tput rev)[$GK_ALIAS]$(tput sgr0)$GK_JM\n[v]-view [p]-post [s]-select_stream [u]-unpack [a]-archive/release [S]-sync [r]-plugins [m]-quarantine [D]-delete [!]-edit [x/y]-repairs [h]-help [Q]-quit >" | fold -s -w $GK_COLS
+  printf "\n[$GK_MODE] UTC:[$(date --utc "+%m.%d")] MY:$(tput rev)[$OWN_ALIAS]$(tput sgr0) ACTIVE:$(tput rev)[$GK_ALIAS]$(tput sgr0)$GK_JM\n[v]-view [p]-post [s]-select_stream [u/U]-unpack [a]-archive/release [S]-sync [r]-plugins [m]-quarantine [D]-delete [!]-edit [x/y]-repairs [h]-help [Q]-quit >" | fold -s -w $GK_COLS
   $GK_READ_CMD T_CHAR
   echo
   case "$T_CHAR" in
@@ -460,6 +464,7 @@ while true;do
     S) __SYNC ;;
     a) __ARCHIVE ;;
     u) __UNPACK ;;
+    U) __UNPACK --all;;
     m) __QUARANTINE ;;
     D) __DELETE ;;
     x) __REPAIRS ;;

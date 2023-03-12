@@ -42,7 +42,7 @@ __DOWNLOAD(){
   $T_CMD -o "sync/$1" --max-filesize 318K || return 1
   if test "$2" = "--patch";then
     set -- "$(echo "$1" | __collum 1 ".").itp.tar" "$2" "$1"
-    gunzip -c "archives/$1.gz" > tmp/tmp.tar; bspatch tmp/tmp.tar "sync/$1" "sync/$3"; rm -f tmp/tmp.tar
+    gunzip -c "archives/$1.gz" > tmp/tmp.tar; if ! xdelta3 -d -s tmp/tmp.tar "sync/$3" "sync/$1";then rm -f tmp/tmp.tar "sync/$3";return 1;else rm -f tmp/tmp.tar;fi
   fi
   if ! test "$(__ARCHIVE_DATE "sync/$1")" = "$FILE_DATE";then
     if test "$2" = "--patch";then rm -f "sync/$3" "sync/$1" || exit 1;else
@@ -120,7 +120,7 @@ if test -z "$T_PATTERN";then T_PATTERN="^[a-z]{3,6}://[A-Za-z0-9.]*[.:][A-Za-z0-
 . ./update-provider.inc.sh && . ./include.sh || exit 1
 if test -f ./my-include.sh;then . ./my-include.sh || exit;fi
 if test -f ./whitelist.dat;then LIST_MODE=; LIST_RGXP="whitelist.dat";else LIST_MODE="-v"; LIST_RGXP="blacklist.dat";fi
-if command -v bspatch > /dev/null 2>&1;then GK_DIFF_MODE="yes";fi
+if command -v xdelta3 > /dev/null 2>&1;then GK_DIFF_MODE="yes";fi
 touch -a blacklist.dat archives/tracker.dat && mkdir -p cache/last_prune archives plugins quarantine sync bkp tmp || exit 1
 trap 'echo "  ## pls wait ...";__CHECK_FOR_UPD;__UPD_NOTIFY; rm -f tmp/tmp.tar tmp/tracker.dat cache/sync-from-nodes.pid; trap - EXIT; exit 0' INT HUP TERM QUIT
 trap 'echo "  ## pls wait ...";__CHECK_FOR_UPD;__UPD_NOTIFY; rm -f tmp/tmp.tar tmp/tracker.dat cache/sync-from-nodes.pid; trap - EXIT; exit' EXIT
