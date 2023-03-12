@@ -238,35 +238,35 @@ __UNPACK(){
   __INIT_FILES
 }
 
-__MOVE_OUT_OF_QUARANTINE (){
-  printf "\n  ## moving $1\n"
-  rm -f "archives/$(basename $1)_"* && mv "$1" archives || exit
-  ./update-archive-date.sh "$(basename "$1")" || exit
-  __INIT_FILES
-}
-
-__DELETE_FROM_QUARANTINE (){
-  printf "\n  ## removing $1\n"
-  if test "$(basename "$ITPFILE")" = "$(basename "${1%.tar.gz}")";then ITPFILE=$OWN_STREAM; __INIT_GLOBALS;fi
-  rm -f "$1" "itp-files/"$(basename "$1" | __collum 1 "." ).itp
-  __INIT_FILES
-  echo -n "  ?? add this stream to your blacklist? y/[n] >"
-  $GK_READ_CMD T_CONFIRM;if test "$T_CONFIRM" != "y";then printf "\n  II blacklisting skipped\n";return;fi
-  echo $(basename "$1") >> blacklist.dat && sort <  blacklist.dat | uniq > tmp/blacklist.dat && mv tmp/blacklist.dat ./blacklist.dat || exit
-}
-
-__QUARANTINE(){
-  set -- "$(ag --depth 0 -f -g '[0-9A-Za-z_]{1,12}-[0-9A-Za-z]{34}\.itp\.tar\.gz$' quarantine/ | pipe_if_not_empty $GK_FZF_CMD)"
-  if test -z "$1" || ! test -f "$1";then echo "  II empty";return;fi
-  echo "$1"
-  printf "  $(tput bold)MM SUBMENU: quarantine$(tput sgr0)  [m]-move-into-archives [d]-delete-from-q [q]-abort >" | fold -s -w "$GK_COLS"
-  $GK_READ_CMD T_CHAR
+__DELETE(){
+  . ./update-provider.inc.sh || exit
+  set -- "$(ls itp-files/*.itp archives/*.itp.tar.gz quarantine/*.itp.tar.gz 2> /dev/null | sed -e "s@^.*/@@" -e "s/\.tar\.gz$//" | grep -E -v "$OWN_STREAM|$UPD_NAME|$VERIFICATION_STREAM" | sort | uniq | pipe_if_not_empty $GK_FZF_CMD)"
+  if test -z "$1";then echo "  II empty";return;fi
+  printf "  $(tput bold)MM SUBMENU: delete$(tput sgr0)  [d]-delete-from-reader [E]-Erase-and-blacklist [q]-abort >" | fold -s -w "$GK_COLS"
+  $GK_READ_CMD T_CHAR;echo
+  ITPFILE=$OWN_STREAM; __INIT_GLOBALS
   case "$T_CHAR" in
-    m) __MOVE_OUT_OF_QUARANTINE "$1";;
-    d) __DELETE_FROM_QUARANTINE "$1";;
+    d) rm -v -f "itp-files/$1"; __INIT_FILES ;;
+    E)
+      set -- "$1" "$(ag -m 1 -o '<url1=[a-z]{3,6}://[A-Za-z0-9.]*[.:][A-Za-z0-9]{1,5}>' "itp-files/$1" 2> /dev/null)"
+      set -- "$1" "${2#*://}"; set -- "$1" "${2%>*}"
+      rm -v -f "archives/$1"* "quarantine/$1"* "itp-files/$1"; __INIT_FILES
+      ./update-archive-date.sh $(basename ""$1".tar.gz") || exit
+      if ! test -z "$2";then sed -i "/$2/d" nodes.dat;fi
+      echo $(basename ""$1".tar.gz") >> blacklist.dat && sort <  blacklist.dat | uniq > tmp/blacklist.dat && mv tmp/blacklist.dat ./blacklist.dat || exit
+    ;;
     q) return ;;
     *) echo "  EE wrong key";return ;;
   esac
+}
+
+__QUARANTINE(){
+  echo "  II move SELECT into archives"
+  set -- "$(ag --depth 0 -f -g '[0-9A-Za-z_]{1,12}-[0-9A-Za-z]{34}\.itp\.tar\.gz$' quarantine/ | pipe_if_not_empty $GK_FZF_CMD)"
+  if test -z "$1" || ! test -f "$1";then echo "  II empty";return;fi
+  rm -f "archives/$(basename $1)_"* && mv "$1" archives || exit
+  ./update-archive-date.sh "$(basename "$1")" || exit
+  __INIT_FILES
 }
 
 __SYNC(){
@@ -450,7 +450,7 @@ while true;do
   GK_COLS=$(tput cols)
   if ! pidof tor > /dev/null && command -v tor > /dev/null;then echo "  II tor off -> [x][t] for restart";fi
   if ! pidof i2pd > /dev/null && command -v i2pd > /dev/null;then echo "  II i2pd off -> [x][i] for restart";fi
-  printf "\n[$GK_MODE] UTC:[$(date --utc "+%m.%d")] MY:$(tput rev)[$OWN_ALIAS]$(tput sgr0) SELECT:$(tput rev)[$GK_ALIAS]$(tput sgr0)$GK_JM\n[v]-view [p]-post [s]-select_stream [u]-unpack [m]-quarantine [a]-archive/release [S]-sync [r]-plugins [!]-edit [x/y]-repairs [h]-help [Q]-quit >" | fold -s -w $GK_COLS
+  printf "\n[$GK_MODE] UTC:[$(date --utc "+%m.%d")] MY:$(tput rev)[$OWN_ALIAS]$(tput sgr0) ACTIVE:$(tput rev)[$GK_ALIAS]$(tput sgr0)$GK_JM\n[v]-view [p]-post [s]-select_stream [u]-unpack [a]-archive/release [S]-sync [r]-plugins [m]-quarantine [D]-delete [!]-edit [x/y]-repairs [h]-help [Q]-quit >" | fold -s -w $GK_COLS
   $GK_READ_CMD T_CHAR
   echo
   case "$T_CHAR" in
@@ -461,10 +461,11 @@ while true;do
     a) __ARCHIVE ;;
     u) __UNPACK ;;
     m) __QUARANTINE ;;
+    D) __DELETE ;;
     x) __REPAIRS ;;
     y) __REPAIRS ;;
     h)
-      echo; fold -w "$GK_COLS" -s < help-en.dat | sed 's/^/   /';echo
+      echo; fold -w "$GK_COLS" -s < help-en.dat; echo
       ls VERSION* ; cat VERSION*;
     ;;
     !) __EDIT ;;

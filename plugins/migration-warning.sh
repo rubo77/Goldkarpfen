@@ -10,7 +10,7 @@ __MIGRATION(){
   if ! test "$(head -n 1 "$ITPFILE" | ag -o '<url1=(\bhttp://\b|\bgopher://\b).*>')" = "$(head -n 1 "$ITPFILE" | ag -o '<url1=.*>')";then
     echo "  II your url1 header tag has no protocol prefix (http:// or gopher://)" | ag .
   fi
-  for T_FILE in $(ls check-dependencies-ubuntu.sh .Goldkarpfen.config.default.sh plugins/add_node.sh plugins/download.sh 2> /dev/null);do
+  for T_FILE in $(ls check-dependencies-ubuntu.sh .Goldkarpfen.config.default.sh plugins/delete.sh plugins/add_node.sh plugins/download.sh 2> /dev/null);do
     echo "  II $T_FILE ist obsolete, you can delete it"
   done
 }

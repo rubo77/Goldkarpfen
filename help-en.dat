@@ -8,6 +8,7 @@ MAIN
 [S]-sync               Pull all the new tarballs from the nodes of your node list.
 
 [r]-run                Run plugins.
+[D]-delete             Delete files.
 [!]-edit               Edit your itp-file by hand.
 [x/y]-repairs          Rebuild alias cache or rebuild all workfiles - only for troubleshooting.
 [h]-help               Show this help.
