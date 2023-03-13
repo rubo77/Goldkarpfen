@@ -1,4 +1,4 @@
-#V0.50
+#V0.51
 
 ### ABOUT (design goal)
   Goldkarpfen was designed to provide a robust communication network, to secure
@@ -219,7 +219,7 @@ cp alias-_key_addr_.itp.tar.gz quarantine/
   month. It will you inform on startup on that day. Check carfully and backup
   some entries you wanna keep (reposting)
 
-### DIFF-PATCH-MODE (not activated yet) # dependency : bsdiff
+### DIFF-PATCH-MODE (not activated yet) # dependency : xdelta3
   If you have bsdiff installed, GK will produce a diff-file and offers it for
   download - there is no user interaction needed, generation and processing of
   diffs works automatically.

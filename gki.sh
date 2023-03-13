@@ -1,13 +1,13 @@
 #!/bin/sh
 #GPL-3 - See LICENSE file for copyright and license details.
-#V0.37
+#V0.41
 if ! test -f $(basename "$0");then echo "  EE run this script in its folder";exit 1;fi
 if ! test "$(pwd)" = "$HOME";then echo "  EE gki.sh is meant to be run in the home folder.";exit 1;fi
 if test "$1" = "-a";then
   echo "  II ios(ish) mode not finished yet"; exit
   INSTALL_MODE="ish";shift
-  #__TOR_DATA_DIR="/data/data/com.termux/files/usr/var/service/tor/"
-  #__TOR_CONFIG_DIR="/data/data/com.termux/files/usr/etc/tor/"
+  __TOR_DATA_DIR="/var/lib/tor/"
+  __TOR_CONFIG_DIR="/etc/tor/"
 else
   __TOR_DATA_DIR="/data/data/com.termux/files/usr/var/service/tor/"
   __TOR_CONFIG_DIR="/data/data/com.termux/files/usr/etc/tor/"
@@ -57,21 +57,27 @@ if ! test -f ~/.i2pd/tunnels.conf && command -v i2pd > /dev/null;then
   T_BUF="$T_BUF  II gki [+] i2pd-tunnel\n"
 fi
 if ! test -z "$T_BUF";then
-  printf "$T_BUF" | ag "."
+  printf "$T_BUF"
   echo "  ?? Start gki ? Y/[N]"
   read T_CONFIRM
   if ! test "$T_CONFIRM" = "Y";then exit;fi
 fi
-if ! command -v tor > /dev/null 2>&1;then pkg install tor || exit;fi
-if ! command -v curl > /dev/null 2>&1;then pkg install curl || exit;fi
+if test "$INSTALL_MODE" = "ish";then
+  if ! command -v tor > /dev/null 2>&1;then apk add tor || exit;fi
+  if ! command -v curl > /dev/null 2>&1;then apk add curl || exit;fi
+else
+  if ! command -v tor > /dev/null 2>&1;then pkg install tor || exit;fi
+  if ! command -v curl > /dev/null 2>&1;then pkg install curl || exit;fi
+fi
 if ! pidof tor > /dev/null;then eval "nohup tor --quiet &";fi
 if ! test -d Goldkarpfen || ! test -f Goldkarpfen/Goldkarpfen.config;then
+  if test -z "$1";then echo "  EE cannot install GKbase without URL";exit;fi
   echo "pls wait ..."
   sleep 6
   T_BUF2="Goldkarpfen-termux.tar.gz"
   if echo "$1" | grep "^https://gitlab.com" > /dev/null;then
     T_BUF1=
-    if ! test -z "$2";then T_BUF2=$2;else T_BUF2="Goldkarpfen-release_277_termux.tar.gz";fi
+    if ! test -z "$2";then T_BUF2=$2;else T_BUF2="Goldkarpfen-release_278_termux.tar.gz";fi
   elif echo "$1" | grep "[A-Za-z0-9.]*\.i2p" > /dev/null;then
     T_BUF1="--proxy localhost:4444"
   elif echo "$1" | grep -E "[[:digit:]]{1,3}\.[[:digit:]]{1,3}\.[[:digit:]]{1,3}\.[[:digit:]]{1,3}" > /dev/null;then
@@ -88,11 +94,11 @@ if ! test -d Goldkarpfen || ! test -f Goldkarpfen/Goldkarpfen.config;then
   tar -xf "$T_BUF2" || exit
   if ! test "$T_BUF3" = "Goldkarpfen/";then mv "$T_BUF3" Goldkarpfen || exit ;fi
   if test "$INSTALL_MODE" = "ish";then
-    apk add mksh darkhttpd fzy openssl silversearch-ag ncurses
-    #apk add mksh darkhttpd fzy openssl silversearch-ag ncurses libqrencode
+    apk add mksh darkhttpd fzf openssl silversearcher-ag ncurses libqrencode
   else
-    pkg install mksh file fzy openssl-tool silversearcher-ag bc darkhttpd iproute2 vim ncurses-utils libqrencode
+    pkg install mksh file fzy openssl-tool silversearcher-ag bc darkhttpd iproute2 vim ncurses-utils libqrencode xdelta3
   fi
+  if test -z "$EDITOR";then export EDITOR=nano;fi
   cd Goldkarpfen || exit
   if test "$(./check-dependencies.sh | tail -n 1)" = "ERROR";then exit;fi
   while ! ./new-account.sh;do
