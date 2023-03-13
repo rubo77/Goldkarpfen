@@ -8,8 +8,8 @@ For quick install instructions see MORE_ABOUT_GOLDKARPFEN.TXT
 **WARNING : will change `torrc`, `~/.bashrc` and `~/.profile` - also : ABSOLUTELY NO WARRANTY!**
 
 1. install the app `termux` on your Android
-2. `pkg upgrade ; pkg install tor curl && if ! pidof tor > /dev/null;then eval "tor --quiet &";fi
-VERSION=278_termux;REPO="https://gitlab.com/rubo77/Goldkarpfen/-";curl -f "$REPO/raw/main/gki.sh" > gki.sh && sh gki.sh "$REPO/archive/release_$VERSION" "Goldkarpfen-release_$VERSION.tar.gz"`
+2. `pkg upgrade ; pkg install tor curl && if ! pidof tor > /dev/null;then eval "tor --quiet &";fi;
+VERSION=278_termux;REPO="https://gitlab.com/rubo77/Goldkarpfen/-";curl -f "$REPO/raw/main/gki.sh" > gki.sh && EDITOR="nano" sh gki.sh "$REPO/archive/release_$VERSION" "Goldkarpfen-release_$VERSION.tar.gz"`
 
 This is the "gitlab way" ; if possible : use the **Mobile2Mobile** installer instead
 
