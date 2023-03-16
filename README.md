@@ -9,7 +9,7 @@ For quick install instructions see MORE_ABOUT_GOLDKARPFEN.TXT
 
 1. install the app `termux` on your Android
 2. `pkg upgrade ; pkg install tor curl && if ! pidof tor > /dev/null;then eval "tor --quiet &";fi;
-VERSION=278_termux;REPO="https://gitlab.com/rubo77/Goldkarpfen/-";curl -f "$REPO/raw/main/gki.sh" > gki.sh && EDITOR="nano" sh gki.sh "$REPO/archive/release_$VERSION" "Goldkarpfen-release_$VERSION.tar.gz"`
+VERSION=320_termux;REPO="https://gitlab.com/rubo77/Goldkarpfen/-";curl -f "$REPO/raw/main/gki.sh" > gki.sh && sh gki.sh "$REPO/archive/release_$VERSION" "Goldkarpfen-release_$VERSION.tar.gz"`
 
 This is the "gitlab way" ; if possible : use the **Mobile2Mobile** installer instead
 
@@ -17,7 +17,7 @@ This is the "gitlab way" ; if possible : use the **Mobile2Mobile** installer ins
 ### 1. Set EDITOR enviroment variable
 Your `EDITOR` enviroment variable needs to be set similar to this (add this to `~/.bashrc` or `~/.mkshrc` or alike):
 
-   export EDITOR="nano"
+   export EDITOR="nano" # or "vi" :)
 
 ### 2. INSTALL THE BASIC DEPENDENCIES  
 ag (the-silver-searcher), fzy (or fzf), libressl/openssl, xxd from vim/xxd-standalone, iproute2, darkhttpd, curl, tor
