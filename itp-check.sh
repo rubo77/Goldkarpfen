@@ -24,7 +24,7 @@ if ! basename "$FILENAME" | ag '^[0-9A-Za-z_]{1,12}-[0-9A-Za-z]{34}.itp$' > /dev
 fi
 
 ###format tests
-BUF1="$(ag --no-numbers "^#" "$FILENAME" | sed 's/\s.*$//' | tr -d '\n')"
+BUF1="$(ag --no-numbers "^#" "$FILENAME" | sed 's/[[:blank:]].*$//' | tr -d '\n')"
 if ! test "$BUF1" = "#ITP#PEM_PUBKEY#POSTS_BEGIN#POSTS_END#COMMENTS_BEGIN#COMMENTS_END#LICENSE:CC0";then
   >&2 echo "  EE $FILENAME contains not the valid lines in order"
   exit 1

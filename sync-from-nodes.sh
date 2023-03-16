@@ -72,7 +72,7 @@ __DOWNLOAD(){
 }
 
 __SYNC_ALL(){
-  ag --no-numbers -v "^[[:blank:]]*#" < nodes.dat | ag "$T_PATTERN" |
+  grep -v "^[[:blank:]]*#" < nodes.dat | ag "$T_PATTERN" |
   while IFS= read -r NODE; do
     if test -z "$NODE";then echo "  II got empty line - break";break;fi
     URL=$(echo "$NODE" | __collum 1)

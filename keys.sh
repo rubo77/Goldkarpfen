@@ -14,7 +14,7 @@ encode_58() {
 }
 
 checksum() {
-    echo $1 | xxd -p -r | openssl dgst -sha256 -binary | openssl dgst -sha256 -binary | xxd -p -c 80 | head -c 8
+    echo $1 | xxd -p -r | openssl dgst -sha256 -binary | openssl dgst -sha256 -binary | xxd -p -c 80 | cut -c 1-8
 }
 
 hash160() {
@@ -36,7 +36,7 @@ if test -z "$1";then
   openssl ecparam -name secp256k1 -genkey -out .keys/priv.pem
   openssl ec -in .keys/priv.pem -pubout -out .keys/pub.pem
   #generating keys
-  openssl ec -in .keys/priv.pem -outform DER|tail -c +8|head -c 32|xxd -p -c 32 > .keys/private-key
+  openssl ec -in .keys/priv.pem -outform DER|tail -c +8|cut -c 1-32|xxd -p -c 32 > .keys/private-key
   openssl ec -in .keys/priv.pem -pubout -outform DER|tail -c 65|xxd -p -c 65 > .keys/public-key
   #ITP59Address encoding
   if openssl ec -pubin -pubout -outform DER < .keys/pub.pem > /dev/null;then

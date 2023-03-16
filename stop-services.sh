@@ -6,6 +6,6 @@ if test -f cache/darkhttpd.pid && ps ax | ag "^ *$3 " > /dev/null; then kill "$3
 
 if test "$2" = "tor-ctrl";then python3 stop-hidden-service.py "$1";else sleep 0.2;fi
 
-if pidof darkhttpd; then
+if pgrep darkhttpd; then
   kill $(ps aux | ag "darkhttpd.*--port $(sed -n '4p' Goldkarpfen.config)" | awk '{print $2}') 2> /dev/null
 fi

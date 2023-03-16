@@ -11,7 +11,7 @@ fi
 #test for dependencies
 echo "  ## startup ..."
 GK_MODE="ERROR"
-if test -f my-check-dependencies.sh;then GK_MODE=$(./my-check-dependencies.sh | tail -n 1);else GK_MODE=$(./check-dependencies.sh | tail -n 1);fi
+if test -f my-check-dependencies.sh;then GK_MODE=$(./my-check-dependencies.sh 2>&1 | tail -n 1);else GK_MODE=$(./check-dependencies.sh 2>&1 | tail -n 1);fi
 if test "$GK_MODE" = "ERROR";then exit;fi
 if command -v xdelta3 > /dev/null 2>&1; then GK_DIFF_MODE="yes";else echo "  II install xdelta3 to enable diff-mode";fi
 
