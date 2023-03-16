@@ -8,6 +8,7 @@
 /archives/*.tar*
 /archives/server.dat
 /archives/share/*
+!/archives/share/gki.sh
 /sync-from-nodes.pid
 /tmp/filtered_server.dat
 /tmp/server.dat

@@ -1,10 +1,9 @@
 #!/bin/sh
 #GPL-3 - See LICENSE file for copyright and license details.
-#V0.41
+#V0.42
 if ! test -f $(basename "$0");then echo "  EE run this script in its folder";exit 1;fi
 if ! test "$(pwd)" = "$HOME";then echo "  EE gki.sh is meant to be run in the home folder.";exit 1;fi
 if test "$1" = "-a";then
-  echo "  II ios(ish) mode not finished yet"; exit
   INSTALL_MODE="ish";shift
   __TOR_DATA_DIR="/var/lib/tor/"
   __TOR_CONFIG_DIR="/etc/tor/"
@@ -94,7 +93,7 @@ if ! test -d Goldkarpfen || ! test -f Goldkarpfen/Goldkarpfen.config;then
   tar -xf "$T_BUF2" || exit
   if ! test "$T_BUF3" = "Goldkarpfen/";then mv "$T_BUF3" Goldkarpfen || exit ;fi
   if test "$INSTALL_MODE" = "ish";then
-    apk add mksh darkhttpd fzf openssl silversearcher-ag ncurses libqrencode
+    apk add mksh darkhttpd fzf openssl the_silver_searcher ncurses libqrencode xdelta3
   else
     pkg install mksh file fzy openssl-tool silversearcher-ag bc darkhttpd iproute2 vim ncurses-utils libqrencode xdelta3
   fi
