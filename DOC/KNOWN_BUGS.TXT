@@ -1,4 +1,4 @@
-#V0.8
+#V0.12
 
 version <208 :
   (no bug - feature update)
@@ -95,3 +95,27 @@ version <269
   url1 qrcode has a "=" before the url
   solution : update to 270
   (fixed in 270+)
+
+gki.sh 0.37
+  (fatal)
+  installer does not work if EDITOR var is not set
+  solution : export editor=nano manually before install / use gki.sh 0.38
+  (fixed in gki.sh 0.38)
+
+gki.sh 0.38
+  (confusing)
+  installer reports "ag not found"
+  solution : installer works anyway
+  (fixed in gki.sh 0.39)
+
+version <283
+  (migration issue/uncritical)
+  new patch files (xdelta3) will produce GARBAGE files
+  solution : update to 283+ ; remove GARBAGE files
+  (fixed in 283+)
+
+version ?-323
+  (can be confusing up to critical)
+  check-dependencies does not exit on $EDITOR or fzy/fzf missing
+  solution : update to 324
+  (fixed in 324+)

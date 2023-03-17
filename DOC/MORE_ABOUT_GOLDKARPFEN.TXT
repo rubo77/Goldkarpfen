@@ -1,4 +1,4 @@
-#V0.51
+#V0.52
 
 ### ABOUT (design goal)
   Goldkarpfen was designed to provide a robust communication network, to secure
@@ -49,6 +49,32 @@ tor --quiet &
 i2pd --daemon --loglevel=none &
   - start Goldkarpfen
 bash Goldkarpfen.sh
+
+### GOLDKARPFEN ON OPENBSD (i guess smt. similar will work on the other BSD's)
+  - install
+  coreutils gtar gsed
+
+  - create an extra-user
+  (you can skip this step if your fine with using GNU- tar, sed, date, stat with your regular account)
+
+  - create ~/bin and make sure it's in PATH (echo $PATH)
+cd ~/bin
+ln -s /usr/local/bin/gtar ./tar
+ln -s /usr/local/bin/gdate ./date
+ln -s /usr/local/bin/gsed ./sed
+ln -s /usr/local/bin/gstat ./stat
+
+  - edit ~/bin/sha512sum to contain this:
+#!/bin/sh
+echo "$(sha512 -q "$1")  $1"
+
+  - make it executable :
+chmod 755 ~/bin/sha512sum
+
+  - for more easy usage you may consider to install mksh
+
+  - proceed with the regular README
+  NOTE : tor-data-dir is : /var/tor
 
 ### INSTALATION WITH ACCESS TO TOR CONTROLLER
   - install the basic dependencies
@@ -220,7 +246,7 @@ cp alias-_key_addr_.itp.tar.gz quarantine/
   some entries you wanna keep (reposting)
 
 ### DIFF-PATCH-MODE (not activated yet) # dependency : xdelta3
-  If you have bsdiff installed, GK will produce a diff-file and offers it for
+  If you have xdelta3 installed, GK will produce a diff-file and offers it for
   download - there is no user interaction needed, generation and processing of
   diffs works automatically.
 
@@ -434,7 +460,7 @@ ccrypt -e .keys/*
   own bandwidth and the bandwidth of the transport layer.
 
   # SERVER CAPACITY
-  The total number of tarballs one node holds is hard capped at 61 tarballs with
+  The total number of tarballs one node holds is hard capped at 51 tarballs with
   a maximum size of 318kB. So the maximum for one node would be ~19MB.
   NOTE: other clients should not increase this numbers, as it is the optimal
   number for a decentralized system like this.
