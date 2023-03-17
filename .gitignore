@@ -8,7 +8,15 @@
 /archives/*.tar*
 /archives/server.dat
 /archives/share/*
+!/archives/share/ITP-DEFINITION
+!/archives/share/GET_PREMIUM.TXT
+!/archives/share/MORE_ABOUT_GOLDKARPFEN.TXT
+!/archives/share/FAQ.TXT
+!/archives/share/RELEASE-NOTES.TXT
+!/archives/share/ITP-DEFINITION
 !/archives/share/gki.sh
+!/archives/share/search.cgi
+!/archives/share/KNOWN_BUGS.TXT
 /sync-from-nodes.pid
 /tmp/filtered_server.dat
 /tmp/server.dat

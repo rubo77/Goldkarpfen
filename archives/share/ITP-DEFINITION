@@ -1,0 +1,133 @@
+#GPL-3 - See LICENSE file for copyright and license details.
+############################################################################
+#VERSION 1.0-RC3
+
+ITP FILESET
+* filenames:
+alias-KEY_ADDR.itp
+alias-KEY_ADDR.itp.sha512sum
+[alias-KEY_ADDR.itp.sha512sum.sig]
+
+* checksum [and signature] is correct
+(sha512sum -c alias-KEY_ADDR.itp.sha512sum returns true)
+
+* alias:
+charset alphanumeric and underscore: [a-zA-Z0-9_]
+the alias has not more than 12 chars
+
+* all files are text files
+
+ITP FILE
+* the backslash is forbidden
+the ITP notation of the backslash is &bsol;
+
+* the maximum line lenght of any line does not exeed 1024 characters
+
+* the file is structered like this:
+#ITP
+#PEM_PUBKEY STRIPPED_PUBKEY  //the line is mandatory, the entry not
+#POSTS_BEGIN //no trailing characters
+...
+'^([0][0-9]|[1][0-2])\.([0][1-9]|[1-2][0-9]|[3][0-1]):[1-9] .*$' // POST
+...
+#POSTS_END //no trailing characters
+
+#COMMENTS_BEGIN //no trailing characters
+...
+'^([0][0-9]|[1][0-2])\.([0][1-9]|[1-2][0-9]|[3][0-1]):[1-9] \d\d\.\d\d:\d @1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa .*$'  \\ COMMENT (example KEY_ADDR)
+...
+#COMMENTS_END //no trailing characters
+#LICENSE:CC0 yy-mm-dd //no trailing characters // any itp-file has the LICENSE: CREATIVE COMMONS CC0 // time stamp optional
+
+* the file is pruned correctly
+  (not conform, it contains a post from january last year, or the order is corrupt)
+  01.12:1
+  02.14:1
+  03.09:1
+  01.11:1
+
+  (conform)
+  06.14:1
+  02.04:1
+  05.25:1
+  05.29:1
+
+* contains no double entries
+  (not conform)
+  06.17:1
+  06.17:1
+
+* the entries are in correct order
+  (not conform)
+  01.12:1
+  01.12:3
+  01.12:2
+
+ARCHIVE
+* comes in a tar.gz file with preserved unix mtime
+archive name: alias-KEY_ADDR.itp.tar.gz
+  alias-KEY_ADDR.itp
+  alias-KEY_ADDR.itp.sha512sum
+  [alias-KEY_ADDR.itp.sig]
+
+* age of the itp file is correct
+unix timestamp is not older than 333 days (preserved mtime in the tar.gz)
+
+############################################################################
+TIME
+ITP uses UTC time
+
+############################################################################
+SIGNATURE FORMAT by example
+
+keypair generation:
+openssl ecparam -name secp256k1 -genkey -out private_key.pem
+openssl ec -in privat_key.pem -pubout -out public_key.pem
+
+sha512sum of FILE:
+sha512sum FILE > FILE.sha512sum
+
+signature:
+openssl dgst -sha256 -sign private_key.pem -out signature.bin FILE.sha512sum
+openssl enc -base64 -in signature.bin -out FILE.sha512sum
+
+stripped public_key.pem format:
+STRIPPED_PUBKEY=$(grep -v "^-----" < public_key.pem | tr -d "\n")
+
+############################################################################
+ADRESS OF PUBLIC KEY
+ITP uses a well known algorithm for the address (KEY_ADDR) of the public key,
+without leading zero byte compression: The ITP59Address encoding.
+
+############################################################################
+HEADER TAGS
+The stream owner may add an url tag in LINE 1, like this:
+#ITP <url1=http://hostname.onion>
+(or <url1=http://hostname.i2p:xyz> or <url1=gopher://hostname.onion>)
+
+MORE HEADER TAGS
+To provide more ways of transportation, the streamowner may want to add more header tags, for example:
+<url2=gopher://hostname.onion> <url3=https://hostname.tld> ...
+
+The header may contain more tags, for example:
+<#music> <prune-size=12K> ...
+
+############################################################################
+ITP CONFORM CLIENTS
+MUST
+0.  MUST check the itp-conformity of an itp-file, before processing it.
+1.  MUST only process and generate itp-conform files (including sha512sum files).
+2.  MUST only generate tarballs with the correct preserved mtimes.
+3.  MUST not overwrite local itp-files with older ones.
+
+Any client not following the MUST's is not valid.
+
+SHOULD (1-2 will possibly be enforced by ITP-DEF. 1.0 or later versions)
+1. SHOULD not generate posts with "^([0][0-9]|[1][0-2])\.([0][1-9]|[1-2][0-9]|[3][0-1]):[1-9] \d\d\.\d\d:\d @"
+2. SHOULD generate comments with "^([0][0-9]|[1][0-2])\.([0][1-9]|[1-2][0-9]|[3][0-1]):[1-9] ([0][0-9]|[1][0-2])\.([0][1-9]|[1-2][0-9]|[3][0-1]):[1-9] @"
+3. SHOULD generate posts (comments) and collum 1 (and collum 2) are real dates (except ^00-entries)
+4. SHOULD have a solution for alias-doublettes.
+5. SHOULD validate KEY adresses and sign/check signatures of itp-files (with the KEY_ADDR).
+6. SHOULD not annoy users with hour-based (or even minute-based) timestamps.
+
+Any client not following the SHOULD's count not as invalid, but i call them unusable.

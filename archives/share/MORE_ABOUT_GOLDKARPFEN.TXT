@@ -1,0 +1,488 @@
+#V0.52
+
+### ABOUT (design goal)
+  Goldkarpfen was designed to provide a robust communication network, to secure
+  a share hosting platform for important Information, that are important for
+                            humans
+  Besides other things it is a network-framework for distributed
+  focus-search-engines (search engines with a limited set of data)
+
+### SPECIAL DISTINGUISHING MARK
+  Goldkarpfen is a p2p-share-hosted daily-routine blog like communication
+  network. The main difference between Goldkarpfen and other systems is the calm
+  way of publishing : NODES WILL ONLY SYNC EACH OTHER ONCE A DAY - keep this in
+  mind.
+  Publishing (archiving) ->ONCE<- a day is advised (publishing more than one time
+  a day is not prohibited, because it will not cause any technical problems, but
+  can lead to different daily version for different users)
+
+### GOLDKARPFEN FOR ANDROID (automated install)
+  - check https://gitlab.com/rubo77/Goldkarpfen/-/blob/main/README.md
+
+  - NOTE : if you enable also i2p support
+pkg install i2pd && i2pd --daemon --loglevel=none &
+  - run gki.sh again
+sh gki.sh
+
+### GOLDKARPFEN FOR ANDROID (manual install)
+  - install termux (from Fdroid, or ...)
+  - upgrade
+pkg upgrade
+  - install the dependencies
+pkg install file fzy openssl-tool silversearcher-ag bc curl darkhttpd iproute2 vim tor ncurses-utils libqrencode #i2pd
+if ! grep "^export EDITOR" .bashrc;then echo "export EDITOR=nano" >> .bashrc;. .bashrc;fi
+  - unpack
+tar xf Goldkarpfen-termux.tar.gz ; cd Goldkarpfen
+  - create an account
+./new-account.sh
+  - note your KEY_ADDR
+  - check the config:
+more ./Goldkarpfen.config
+  - note your SERVER_PORT
+  - add this to your /data/data/com.termux/files/usr/etc/tor/torrc
+HiddenServiceDir /data/data/com.termux/files/usr/var/service/tor/KEY_ADDR/
+HiddenServicePort 80 127.0.0.1:SERVER_PORT
+
+  - (if you are using i2pd -> configure a tunnel in ~/.i2pd using SERVER_PORT)
+  - start tor and/or i2pd
+tor --quiet &
+i2pd --daemon --loglevel=none &
+  - start Goldkarpfen
+bash Goldkarpfen.sh
+
+### GOLDKARPFEN ON OPENBSD (i guess smt. similar will work on the other BSD's)
+  - install
+  coreutils gtar gsed
+
+  - create an extra-user
+  (you can skip this step if your fine with using GNU- tar, sed, date, stat with your regular account)
+
+  - create ~/bin and make sure it's in PATH (echo $PATH)
+cd ~/bin
+ln -s /usr/local/bin/gtar ./tar
+ln -s /usr/local/bin/gdate ./date
+ln -s /usr/local/bin/gsed ./sed
+ln -s /usr/local/bin/gstat ./stat
+
+  - edit ~/bin/sha512sum to contain this:
+#!/bin/sh
+echo "$(sha512 -q "$1")  $1"
+
+  - make it executable :
+chmod 755 ~/bin/sha512sum
+
+  - for more easy usage you may consider to install mksh
+
+  - proceed with the regular README
+  NOTE : tor-data-dir is : /var/tor
+
+### INSTALATION WITH ACCESS TO TOR CONTROLLER
+  - install the basic dependencies
+  ag (the-silver-searcher), fzy (or fzf), libressl/openssl, xxd from vim/xxd-standalone, iproute2, darkhttpd, curl, python3, python-stem, tor
+
+  - edit your /etc/tor/torrc to contain this
+ControlPort 9051
+CookieAuthentication 1
+CookieAuthFile /var/lib/tor/control_auth_cookie
+CookieAuthFileGroupReadable 1
+DataDirectoryGroupReadable 1
+CacheDirectoryGroupReadable 1
+
+  - add your user to the tor group (debian-tor on ubuntu) (restart may be neccessary!)
+  - test your settings
+python3 -c "import stem" && ./check-dependencies.sh
+  Should return: tor-ctrl ...
+
+  - create an account
+./new-account
+
+  - start
+bash ./Goldkarpfen.sh  # or
+mksh ./Goldkarpfen.sh  # or
+busybox sh ./Goldkarpfen.sh
+
+  - get your onion-url
+  Goldkarpfen will show the location of your hostname on start-up
+
+  - add your onion-url url with [r][h]
+
+### INSTALLATION WITH I2PD
+  - install the basic dependencies
+  ag (the-silver-searcher), fzy (or fzf), libressl/openssl, xxd from vim/xxd-standalone, iproute2, darkhttpd, curl, i2pd
+  - start your i2p-daemon
+i2pd
+
+  - test your settings
+./check-dependencies.sh
+  should return: ... i2p ...
+
+  - create an account
+./new-account
+  - check the config
+more ./Goldkarpfen.config
+  note your SERVER_PORT
+
+  - configure a http tunnel (use SERVER_PORT defined in your Goldkarpfen.config) and restart i2pd
+  - get your i2p-url
+curl http://127.0.0.1:7070/?page=i2p_tunnels
+
+  - start
+bash ./Goldkarpfen.sh  # or
+mksh ./Goldkarpfen.sh  # or
+busybox sh ./Goldkarpfen.sh
+
+  - add your i2p-url with [r][h]
+
+### QUICK INSTALL FOR UBUNTU LIKE SYSTEMS
+### NOTE: ABSOLUTELY NO WARRANTY!
+  # GET THE LATEST Goldkarpfen-latest.tar.gz AND GO INTO THE FOLDER CONTAINING IT
+tar xfv Goldkarpfen-latest.tar.gz && cd Goldkarpfen
+sudo apt-get install build-essential python3-stem fzy silversearcher-ag tor dc xxd curl
+if ! grep "^export EDITOR" ~/.bashrc;then echo 'export EDITOR="nano"' >> ~/.bashrc ;. ~/.bashrc;fi
+mkdir -p tmp && cd tmp
+wget https://raw.githubusercontent.com/emikulic/darkhttpd/master/darkhttpd.c
+gcc darkhttpd.c -o darkhttpd; sudo mv darkhttpd /usr/local/bin
+if grep "^ *ControlPort" /etc/tor/torrc;then echo "YOU HAVE ALREADY CONIFGURED YOUR torrc - SKIP THE NEXT STEP AND CHECK IT MANUALLY";fi
+
+  # THE NEXT COMMAND HAS 3 LINES
+sudo printf "ControlPort 9051\nCookieAuthentication 1\n\
+CookieAuthFile /var/lib/tor/control_auth_cookie\nCookieAuthFileGroupReadable 1\n\
+DataDirectoryGroupReadable 1\nCacheDirectoryGroupReadable 1\n" >> /etc/tor/torrc
+
+sudo usermod -a -G debian-tor $USER
+  # RESTART YOUR COMPUTER - GO INTO GOLDKARPFEN FOLDER AND:
+./check-dependencies.sh
+  # The last line should be : tor-ctrl host get ok
+./new-account.sh
+  # AFTER THAT START YOUR GOLDKARPFEN WITH bash
+bash Goldkarpfen.sh
+
+### UPDATES
+  Normally you should update via the update plugin:
+  press [r][A] (sync_all) and [r][U] (update)
+
+  If you have no nodes you can connect to and want to invoke an update:
+  - get the newest Goldkarpfen-1JULSJ5Nnba9So48zi21rpfTuZ3tqNRaFB.itp.tar.gz and
+    Goldkarpfen-latest.tar.gz
+  - mv those two files into archives
+  - start Goldkarpfen and unpack
+    Goldkarpfen-1JULSJ5Nnba9So48zi21rpfTuZ3tqNRaFB.itp.tar.gz, (contains shasum)
+  - (advised) check the shasum (the signature has been checked on unpack)
+    NOTE: This is done automatically when using [r][A] [r][U]
+  - press [r][U] (update)
+
+  If your installation is broken:
+  - copy Goldkarpfen-latest.tar.gz into update
+cd update
+tar -xvf Goldkarpfen-latest.tar.gz
+cp Goldkarpfen/update/sync_runtime_files.sh .
+./sync_runtime_files.sh
+rm Goldkarpfen-latest.tar.gz
+
+### NODE LIST MANAGEMENT
+  You can add nodes to your nodes.dat via [r][a] (stream url1 + node-links).
+  But the management of node labels is done by editing : [!]->nodes.dat
+  Keep your nodes.dat nice and clean!
+  - example nodes.dat :
+
+# comment
+#_peter________#
+http://xranerunarnerunaetunatren...
+#_paul_________#
+gopher://xraar8392893naetunatren...
+#_mary_________#
+http://xraar8392893naetunatren...
+# stop sync-ALL after this
+
+#_barly-on1____#
+http://xraar8392893naetunatren...
+#_local________#
+http://127.0.0.1:8098
+
+### MIGRATING TO A NEW INSTALLATION
+  If you want to migrate your data to a fresh install you have to do:
+  - unpack the latest Goldkarpfen
+  - copy .keys/ Goldkarpfen.config my-start-services.sh my-stop-services.sh
+    nodes.dat blacklist.dat; and user made plugins in plugins/
+  - copy your itp-files {.itp .itp.sha512sum .itp.sha512sum.sig}
+  - copy archives/*.tar.gz
+  - start Goldkarpfen and unpack your favorite archives
+
+### MANUALLY ADDING DATA FILES
+  itp-files:
+  - exit Goldkarpfen
+cp alias-_key_addr_.itp itp-files/
+cp alias-_key_addr_.itp itp-files.sha512sum itp-files/
+cp alias-_key_addr_.itp itp-files.sha512sum.sig itp-files/
+  - start Goldkarpfen
+
+  archives: (works from a running Goldkarpfen)
+cp alias-_key_addr_.itp.tar.gz quarantine/
+  - (optionally) unpack the archive with [u]-unpack
+  - use [m]-quarantine to move it into archives
+
+### MIXED NODES
+  As you know, you can choose to host your node via tor or i2p (or both - adjust
+  your my-start-services.sh my-stop-services.sh accordingly).
+  If you have both tor (tor-static) and i2p running your Goldkarpfen
+  will download from both type of nodes.
+  As long a node url is reachable via tor or i2p, Goldkarpfen will connect to any
+  url listed in your nodes.dat:
+  That means the following are valid urls for GK:
+    http:// ... .onion
+    http:// ... .i2p
+    http:// ... .tld
+    http://localhost:9004
+    gopher://... .onion
+    gopher://... .i2p
+    gopher://... .tld
+    gopher://localhost:9004
+    (https and ftp should also work - no warranty, not tested)
+
+### PRUNING OF ITP-FILES
+  itp-files contain yearly rotational data. That means that they have to be
+  pruned on a regular base. Goldkarpfen prunes old entries on the first of every
+  month. It will you inform on startup on that day. Check carfully and backup
+  some entries you wanna keep (reposting)
+
+### DIFF-PATCH-MODE (not activated yet) # dependency : xdelta3
+  If you have xdelta3 installed, GK will produce a diff-file and offers it for
+  download - there is no user interaction needed, generation and processing of
+  diffs works automatically.
+
+  Other nodes will download the diff file (if they have the according archive)
+  and patch the according archive - this reduces the used bandwidth significantly
+  (~500 B instead of 1-318 kBs per sync)
+
+  GK will only produce and keep one diff (from the last archive) -
+  cascading-diffs are not supported : the recieving user needs to have the last
+  archive to process a diff ; if the "gap" is greater, GK will just download the
+  whole file again.
+
+  Diffs can only be generated if your archive was created ONCE a day; GK will
+  take care of that and block generation of diffs, if your archive has been
+  created more than once a day.
+
+### GOPHER instead of HTTP (dependency: geomyidae or alike)
+  NOTE: Do something similar if you want to use a custom http-server
+cp start-services.sh my-start-services.sh
+cp stop-services.sh my-stop-services.sh
+
+  - Edit my-start-service.sh : comment out darkhttpd lines and add the gopher lines:
+#darkhttpd archives/ --port $2 --daemon --log server.log ...
+geomyidae -b archives -p $2 -logfile server.log
+if test "$3" = "tor-ctrl";then python3 start-hidden-service.py $1 $2 70;else sleep 0.2;fi #80 for http, 70 for gopher
+
+  - Edit my-stop-service.sh and comment out darkhttp lines and add:
+killall geomyidae #or come up with something more elaborated if you are running multiple instances
+
+### USER MADE PLUGINS
+  - host your plugins in archives/share
+  - line 2 must contain the version, line 3 the verification stream (your stream)
+    (with leading #)
+
+  Example (line 1 - 3):
+# <!-- License info // plugin description -->
+#V0.1
+#Goldkarpfen-1JULSJ5Nnba9So48zi21rpfTuZ3tqNRaFB.itp
+
+  - add the sha512sum as a post to your stream
+    Example:
+eea346f85c6f9e08079a80355a069d327993b480b22cd02dccbc3ceae27230fc0734321443543094f51a8952580466210c0a76d73b662ed2d629e4eb5657fee1  example-plugin.sh
+
+  - add a post with the plugin tag (mandatory format <...> #... #...)
+  Example:
+<plugin=share/example-plugin.sh> #Goldkarpfen-1JULSJ5Nnba9So48zi21rpfTuZ3tqNRaFB.itp #V0.1
+
+### PLUGIN DEVELOPEMENT
+  Please remember - all variables in POSIX-SHELL are GLOBAL!
+  (except vars exclusively defined in a while loop)
+  Goldkarpfen uses this globals:
+
+  GENERAL:
+    GK_ALIAS GK_COLS GK_FZF_CMD GK_ID GK_JM GK_LN GK_MODE GK_PATH GK_READ_CMD GK_DIFF_MODE
+    OWN_ADDR OWN_ALIAS OWN_STREAM OWN_SUM
+    ITPFILE  UPD_NAME UPD_NAME_REGEXP VERIFICATION_STREAM
+    USER_PLUGINS_MENU USER_QUIT USER_HOOK_START USER_HOOK_ARCHIVE_START
+
+  SCRATCH VARIABLES (do not call functions in between definition and processing):
+    T_BUF T_BUF1 T_BUF2 T_CHAR T_COUNTER T_FILE T_LINE
+
+  You should avoid using new globals at any cost
+  (use set or scratch variables where ever possible).
+  If you want to use some globals, add a uniq Prefix (e.g. $MYPLUGIN_XYZ)
+
+### CUSTOM SCRIPTS
+  Instead of the default scripts you can use:
+  my-sync-from-nodes.sh
+  my-check-dependencies.sh
+  my-start-services.sh
+  my-stop-services.sh
+
+### WHITLISTING (DOWNLOAD MODE)
+  - create a file in your Goldkarpfen folder called whitelist.dat
+  - edit it and add at least:
+Goldkarpfen-1JULSJ5Nnba9So48zi21rpfTuZ3tqNRaFB.itp.tar.gz
+Goldkarpfen-latest.tar.gz
+  - add more streams of your choice
+
+### SHARE HOSTING / 00-ENTRIES
+  You can share host plugins and other downloads. plugin.sh and download.sh will
+  echo the format for it. If you want to add persistent entries of this technical
+  data, that will not be pruned, you can use 00-entries. Have a look at
+  itp-files/Goldkarpfen-1JULSJ5Nnba9So48zi21rpfTuZ3tqNRaFB.itp .
+  The 00 entries have to be edited manually ([!]-edit) - both, posts and
+  comments, are allowed.
+  BE SURE THAT THOSE ENTRIES ARE ABOVE ALL "real-date-entries" AND IN ORDER.
+
+### FORKING GOLDKARPFEN
+  - edit update-provider.inc.sh and change the entries - use your itp-file as the
+    verification stream
+  - pack a tarball with your forked Goldkarpfen and add a checksum to your
+    itp-file (like in: Goldkarpfen-1JULSJ5Nnba9So48zi21rpfTuZ3tqNRaFB.itp)
+  - move that tarball into your archives with your itp-file.tar.gz
+  - tell your peers to change their update-provider.inc.sh accordingly
+
+### OFFER MORE THAN ONE FORK FOR DOWNLOAD
+  - update to 279+
+  - edit update-provider.inc.sh and have a line like this :
+
+LISTING_REGEXP="Goldkarpfen-latest\.tar\.gz|Goldkarpfen-termux\.tar\.gz"
+
+### ABOUT DISTRIBUTED SEARCH ENGINES
+  CONCEPTION :
+  - 1 out of (X) nodes hosts a (http/gopher) search engine,
+    which holds a database of its archive (+ manually curated search entries);
+    usable via curl (like url?search=what1+what2) to be used from inside GK
+  - each search engine mirrors search data of (Y) search engines
+    (with minimal archive overlap) (=> database size Y*30MB)
+  - each client search request goes to (Z) random search engines
+    the results will be merged/sorted on the client side
+  - important data gets mirrored (share hosted by other nodes) by J% of the nodes
+  - X=60 ; Y=10-20 ; Z=5 and J>2 for important data would result in good
+    search results for important data
+
+  LEVEL 0 SEARCH ENGINE
+  a LVL0 search engine consist of:
+    the search engine with indexed data of:
+    + itp-streams with original content (blogs)
+    + direct downloads/plugins of important content in the context of the search
+      engine hoster
+    + downlinks of important content in the context of the search engine hoster
+    + entries of LVL1 search_engines (LVL0 search engines should de-list
+      search engines that does not meet the requirements for LVL1)
+
+  LEVEL 1 SEARCH ENGINE
+  a LVL1 search engine consist of:
+    the search engine with indexed data of:
+    + itp-streams of downlink collections
+
+  (NOTE : downlink example <url=https://gnu.org>)
+
+### USAGE WITH TOR_BROWSER
+  - if you are using tor browser (port number 9150), add this to Goldkarpfen.config (line 5,6):
+
+# TOR_PORT
+9150
+
+### ABOUT SECURITY
+  You may be concerned about security, and rightfully so.
+
+  So let me clear up some things about how Goldkarpfen works and you can evaluate
+  the risks yourself.
+
+  # NODES
+  Adding nodes (you want to connect to) is done manually.
+  User plugins may deal with this differently. Doing it manually is the safest
+  way.
+
+  # TRANSPORT
+  We are transporting tar.gz files from one node to another by http/gopher
+  onion/i2p. For download we use curl and for hosting darkhttpd.
+  We are only downloading files following the naming conventions.
+  Tarballs from unknown sources get downloaded to quarantine.
+
+  # UNPACKING
+  We are using tar here.
+
+  # FILE CHECKS
+  After unpacking we are testing the files if they are text files and check the
+  signature.
+  Signature checking is done with libressl/openssl.
+
+  # PROCESSING
+  After that the files get processed by several unix text tools like sed, ag,
+  grep, head ...
+
+  Some may critique this point: What if we unpack a tarball (from an unknown
+  source) - and then check the signature of its content.
+  (We do this to get around a central structure for the distribution of public
+  keys)
+
+  We trust tar and libressl/openssl here anyway, even if we unpack a signed
+  tarball (from an unknown source) (with a public key from a centralized
+  provider), we are putting the same kind of trust in both programs, just in a
+  different order.
+
+  # TO BE SURE
+  You can run Goldkarpfen in a very restrictive sandbox/namespace
+  (bubblewrap/firejail).
+
+  # PRIVACY
+  curl sends a user agent string with version number. Daily purging of the
+  server.log file is adviced.
+
+  # ENCRYTED KEYS
+  If you want to encrypt your keys on disk while Goldkarpfen is not running (not
+  tested, no warranty)
+
+cp start-services.sh my-start-services.sh
+cp stop-services.sh my-stop-services.sh
+
+  #add to my-start-services.sh:
+ccrypt -d .keys/*
+  #add to my-stop-services.sh
+ccrypt -e .keys/*
+
+  #NOTE ... or even more secure: leave your Goldkarpfen on an offline computer
+  and carry the archive files via usb-stick to a bare node
+
+### ABOUT SCALING
+  There are no scaling issues whatsoever.
+
+  # TOTAL NODES
+  There is no limitation for the number of total nodes, if the transport layer
+  can handle it.
+
+  # OWN NODE LIST
+  To how many nodes you connect is up to you. A sensible number would be 5 to 12.
+  The limitation of the number of nodes you want to connect to is limited by your
+  own bandwidth and the bandwidth of the transport layer.
+
+  # SERVER CAPACITY
+  The total number of tarballs one node holds is hard capped at 51 tarballs with
+  a maximum size of 318kB. So the maximum for one node would be ~19MB.
+  NOTE: other clients should not increase this numbers, as it is the optimal
+  number for a decentralized system like this.
+
+  # THE ITP-FILE VIEWER
+  The Goldkarpfen is written in POSIX Shell, so due that limitation the number of
+  unpacked tarballs (only those are visible in the viewer) would be limited by
+  your hardware. On slower system, or a ARM-low-budget single board computer, we
+  can assume that a couple of dozens itp streams would be a reasonable number.
+
+  You can write an own itp-file viewer with a database backend to process some
+  thousend itp-files easily, and use that on your itp-file set in your
+  Goldkarpfen folder.
+
+  # HOW DATA GETS DISTRIBUTED
+  You may ask, how is it possible with this low data storage to reach information
+  beyond these limited files set?
+
+  First the Goldkarpfen will pull all itp-tarballs from all your hand selected
+  nodes until it reaches the 61 maximum. Then it will only update those and not
+  download more. From this point on the stored data will be manually curated.
+  This way all file collections get hand selected. Information about interesting
+  nodes can be presented in itp-stream and can be agrregated by others.
+
+#LICENSE:CC0
