@@ -2,7 +2,7 @@
 #GPL-3 - See LICENSE file for copyright and license details.
 if ! test -f $(basename "$0");then echo "  EE run this script in its folder";exit 1;fi
 cd archives || exit 1
-if test "$(stat *.tar.gz* server.dat 2>/dev/null | sha256sum)" = "$(cat ../cache/archives.sha512sum 2> /dev/null)";then exit 0;fi
+if test "$(stat stat -c "%y" -t *.tar.gz* server.dat 2> /dev/null)" = "$(cat ../cache/archives.stat 2> /dev/null)";then exit 0;fi
 touch -a ./server.dat && . ../update-provider.inc.sh || exit 1
 if ! test -z "$LISTING_REGEXP";then UPD_NAME_REGEXP=$LISTING_REGEXP;fi
 __UPDATE_DATE(){
@@ -32,4 +32,4 @@ else
   sed -i "/^$1/d" ./server.dat || exit 1
   if test -f "$1";then __UPDATE_DATE "$1" >> ./server.dat || exit 1;fi
 fi
-stat *.tar.gz* server.dat 2>/dev/null | sha256sum > ../cache/archives.sha512sum || exit 1
+stat -c "%y" -t *.tar.gz* server.dat 2> /dev/null > ../cache/archives.stat || exit 1

@@ -1,3 +1,5 @@
-#V0.324
+#V0.327
 
 release 324 "Kovejo De La Malbono" : bug fix and cleanup of OpenBSD-patch
+
+release 327 "Materio Kunfando" : making the syntax as portable as possible

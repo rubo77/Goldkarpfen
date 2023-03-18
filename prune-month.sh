@@ -2,7 +2,7 @@
 #GPL-3 - See LICENSE file for copyright and license details.
 if ! test -f $(basename "$0");then echo "  EE run this script in its folder";exit 1;fi
 T_BUF="0"
-FIRST=$(( ${1#0}  +1 )); LAST=$(date --utc +"%m")
+FIRST=$(( ${1#0}  +1 )); LAST=$(date -u +"%m")
 if test $LAST -lt $FIRST;then SEQUENCE="$(seq $FIRST 12) $(seq 01 $LAST)";else SEQUENCE="$(seq $FIRST $LAST)";fi
 SEQUENCE=$(echo $SEQUENCE | tr '\n' ' ')
 echo "  II PRUNE_BEGIN"

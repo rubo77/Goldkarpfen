@@ -4,7 +4,7 @@ if ! test -f $(basename "$0");then echo "  EE run this script in its folder";exi
 GK_PATH=$(pwd)
 
 #help
-if test "$1" = "-h" || test "$1" = "--help";then
+if test "$1" = "-h" -o "$1" = "--help";then
   echo "  II USAGE: ./Goldkarpfen.sh" ; exit
 fi
 
@@ -12,7 +12,7 @@ fi
 echo "  ## startup ..."
 GK_MODE="ERROR"
 if test -f my-check-dependencies.sh;then GK_MODE=$(./my-check-dependencies.sh 2>&1 | tail -n 1);else GK_MODE=$(./check-dependencies.sh 2>&1 | tail -n 1);fi
-if test "$GK_MODE" = "ERROR";then exit;fi
+if test "$GK_MODE" = "ERROR";then ./check-dependencies.sh;exit;fi
 if command -v xdelta3 > /dev/null 2>&1; then GK_DIFF_MODE="yes";else echo "  II install xdelta3 to enable diff-mode";fi
 
 #new account?
@@ -64,7 +64,7 @@ __COMMENT(){
   $GK_READ_CMD T_CONFIRM;if test "$T_CONFIRM" != "c";then printf "\n  II aborted\n";return;fi
   echo
   # PASTE_LINE TODAY
-  set -- "$(ag "^#COMMENTS_END" "$OWN_STREAM"| __collum 1 ":")" "$(date --utc "+%m.%d")"
+  set -- "$(ag "^#COMMENTS_END" "$OWN_STREAM"| __collum 1 ":")" "$(date -u "+%m.%d")"
   # PASTE_LINE TODAY POST_NUMBER
   set -- "$1" "$2" "$(ag --no-numbers --no-color -B 1 "^#COMMENTS_END" "$OWN_STREAM" | ag "^$2" | sed 's/:/ /' | __collum 2)"
   if test -z "$3";then set -- "$1" "$2" 1; else set -- "$1" "$2" $(( $3 + 1 ));fi
@@ -162,7 +162,7 @@ __SELECT_STREAM(){
 
 __POST(){
   # PASTE_LINE TODAY
-  set -- "$(ag "^#POSTS_END" "$OWN_STREAM" | __collum 1 ":")" "$(date --utc "+%m.%d")"
+  set -- "$(ag "^#POSTS_END" "$OWN_STREAM" | __collum 1 ":")" "$(date -u "+%m.%d")"
   # PASTE_LINE TODAY POST_NUMBER
   set -- "$1" "$2" "$(ag --no-numbers --no-color -B 1 "^#POSTS_END" "$OWN_STREAM" | ag "^$2" | sed 's/:/ /' | __collum 2)"
   if test -z "$3";then set -- "$1" "$2" 1; else set -- "$1" "$2" $(( $3 + 1 ));fi
@@ -184,9 +184,9 @@ __ARCHIVE(){
   if test -f "archives/$OWN_ALIAS-$OWN_ADDR.itp.tar.gz" && test "$(tar -xOf "archives/$OWN_ALIAS-$OWN_ADDR.itp.tar.gz" "$OWN_ALIAS-$OWN_ADDR.itp.sha512sum")" = "$(cat "itp-files/$OWN_ALIAS-$OWN_ADDR.itp.sha512sum")";then
     echo "  II you haven’t changed anything - abort"; return
   fi
-  sed -i "s/^#LICENSE:CC0.*$/#LICENSE:CC0 $(date --utc '+%y-%m-%d')/" "$OWN_STREAM"
+  sed -i "s/^#LICENSE:CC0.*$/#LICENSE:CC0 $(date -u '+%y-%m-%d')/" "$OWN_STREAM"
   __OWN_SHA_SUM_UPDATE || return
-  echo "  ## archiving UTC $(date --utc +%Y-%m-%d_%H:00:00)"
+  echo "  ## archiving UTC $(date -u +%Y-%m-%d_%H:00:00)"
   tar -cvf "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar" -C itp-files "$OWN_ALIAS-$OWN_ADDR.itp.sha512sum" "$OWN_ALIAS-$OWN_ADDR.itp" "$OWN_ALIAS-$OWN_ADDR.itp.sha512sum.sig" --numeric-owner || return
   if test -f "archives/$OWN_ALIAS-$OWN_ADDR.itp.tar.gz";then
     if test -f "bkp/$OWN_ALIAS-$OWN_ADDR.itp.tar" && test "$GK_DIFF_MODE" = "yes";then
@@ -214,7 +214,7 @@ __TEST_ARCHIVE_DATE(){
   ./check-dates.sh "$T_BUF1" || return 1
   T_BUF="itp-files/$(set -- "$(basename "$1")" ; echo "${1%.tar.gz}").sha512sum"
   if test -f "$T_BUF";then
-    T_BUF2=$(date "+%y-%m-%d" -d "$(TZ=UTC ls --full-time "$T_BUF" | __collum 6)")
+    T_BUF2=$(TZ=UTC stat -c "%y" "$T_BUF" | __collum 1 | ag -o "\d\d-\d\d-\d\d")
   else
     return 0
   fi
@@ -407,11 +407,11 @@ if find plugins -name '*\.sh' | ag '\.sh$' > /dev/null;then
 fi
 
 #prune if month has changed
-if ! test -f cache/last_prune/last_prune;then date --utc +"%m" > cache/last_prune/last_prune;fi
-if test $(cat cache/last_prune/last_prune) != $(date --utc +"%m");then
+if ! test -f cache/last_prune/last_prune;then date -u +"%m" > cache/last_prune/last_prune;fi
+if test $(cat cache/last_prune/last_prune) != $(date -u +"%m");then
   echo "  II pruning $OWN_STREAM"
   if ./prune-month.sh $(cat cache/last_prune/last_prune) "$OWN_STREAM";then
-    if __OWN_SHA_SUM_UPDATE;then date --utc +"%m" > cache/last_prune/last_prune || exit;fi
+    if __OWN_SHA_SUM_UPDATE;then date -u +"%m" > cache/last_prune/last_prune || exit;fi
   fi
 fi
 
@@ -454,7 +454,7 @@ while true;do
   GK_COLS=$(tput cols)
   if ! pidof tor > /dev/null && command -v tor > /dev/null;then echo "  II tor off -> [x][t] for restart";fi
   if ! pidof i2pd > /dev/null && command -v i2pd > /dev/null;then echo "  II i2pd off -> [x][i] for restart";fi
-  printf "\n[$GK_MODE] UTC:[$(date --utc "+%m.%d")] MY:$(tput rev)[$OWN_ALIAS]$(tput sgr0) ACTIVE:$(tput rev)[$GK_ALIAS]$(tput sgr0)$GK_JM\n[v]-view [p]-post [s]-select_stream [u/U]-unpack [a]-archive/release [S]-sync [r]-plugins [m]-quarantine [D]-delete [!]-edit [x/y]-repairs [h]-help [Q]-quit >" | fold -s -w $GK_COLS
+  printf "\n[$GK_MODE] UTC:[$(date -u "+%m.%d")] MY:$(tput rev)[$OWN_ALIAS]$(tput sgr0) ACTIVE:$(tput rev)[$GK_ALIAS]$(tput sgr0)$GK_JM\n[v]-view [p]-post [s]-select_stream [u/U]-unpack [a]-archive/release [S]-sync [r]-plugins [m]-quarantine [D]-delete [!]-edit [x/y]-repairs [h]-help [Q]-quit >" | fold -s -w $GK_COLS
   $GK_READ_CMD T_CHAR
   echo
   case "$T_CHAR" in
