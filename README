@@ -15,7 +15,7 @@ sh gki.sh
   - upgrade
 pkg upgrade
   - install the dependencies
-pkg install file fzy openssl-tool silversearcher-ag bc curl darkhttpd iproute2 vim tor ncurses-utils #i2pd
+pkg install file fzy openssl-tool silversearcher-ag bc curl darkhttpd vim tor ncurses-utils #i2pd
 if ! grep "^export EDITOR" .bashrc;then echo "export EDITOR=nano" >> .bashrc;. .bashrc;fi
   - unpack
 tar xf Goldkarpfen-termux.tar.gz ; cd Goldkarpfen

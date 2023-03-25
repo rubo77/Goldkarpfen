@@ -11,7 +11,7 @@ fi
 #test for dependencies
 echo "  ## startup ..."
 GK_MODE="ERROR"
-if test -f my-check-dependencies.sh;then GK_MODE=$(./my-check-dependencies.sh 2>&1 | tail -n 1);else GK_MODE=$(./check-dependencies.sh 2>&1 | tail -n 1);fi
+if test -x my-check-dependencies.sh;then GK_MODE=$(./my-check-dependencies.sh 2>&1 | tail -n 1);else GK_MODE=$(./check-dependencies.sh 2>&1 | tail -n 1);fi
 if test "$GK_MODE" = "ERROR";then ./check-dependencies.sh;exit;fi
 if command -v xdelta3 > /dev/null 2>&1; then GK_DIFF_MODE="yes";else echo "  II install xdelta3 to enable diff-mode";fi
 
@@ -30,7 +30,6 @@ trap "cd $GK_PATH;. ./.Goldkarpfen.exit.sh; trap - EXIT; exit" EXIT HUP TERM QUI
 
 #source include
 . ./include.sh || exit
-if test -f ./my-include.sh;then . ./my-include.sh || exit;fi
 
 USER_HOOK_START="return"; USER_HOOK_ARCHIVE_START="return"
 
@@ -278,7 +277,7 @@ __SYNC(){
   set -- "${1#*=}"
   if test -z "$1";then echo "  II empty";return;fi
   if test "$1" = "ALL";then set -- ".";fi
-  if test -f my-sync-from-nodes.sh;then ./my-sync-from-nodes.sh "--pattern=$1" || exit;else ./sync-from-nodes.sh "--pattern=$1" || exit;fi
+  if test -x my-sync-from-nodes.sh;then ./my-sync-from-nodes.sh "--pattern=$1" || exit;else ./sync-from-nodes.sh "--pattern=$1" || exit;fi
 }
 
 __EDIT(){
@@ -381,6 +380,7 @@ __OWN_SHA_SUM_UPDATE(){
 }
 
 ### MAIN starts here
+if test -r ./my-include.sh;then . ./my-include.sh || exit;fi
 echo "  ## $(ls VERSION*) $(head -n 1 VERSION*) "
 
 #source start script

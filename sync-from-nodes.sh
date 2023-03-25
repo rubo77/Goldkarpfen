@@ -118,8 +118,8 @@ for T_ARG in $@;do
 done
 if test -z "$T_PATTERN";then T_PATTERN="^[a-z]{3,6}://[A-Za-z0-9.]*[.:][A-Za-z0-9]{1,5}|^$";fi
 . ./update-provider.inc.sh && . ./include.sh || exit 1
-if test -f ./my-include.sh;then . ./my-include.sh || exit;fi
-if test -f ./whitelist.dat;then LIST_MODE=; LIST_RGXP="whitelist.dat";else LIST_MODE="-v"; LIST_RGXP="blacklist.dat";fi
+if test -r ./my-include.sh;then . ./my-include.sh || exit;fi
+if test -r ./whitelist.dat;then LIST_MODE=; LIST_RGXP="whitelist.dat";else LIST_MODE="-v"; LIST_RGXP="blacklist.dat";fi
 if command -v xdelta3 > /dev/null 2>&1;then GK_DIFF_MODE="yes";fi
 touch -a blacklist.dat archives/tracker.dat && mkdir -p cache/last_prune archives plugins quarantine sync bkp tmp || exit 1
 trap 'echo "  ## pls wait ...";__CHECK_FOR_UPD;__UPD_NOTIFY; rm -f tmp/tmp.tar tmp/tracker.dat cache/sync-from-nodes.pid; trap - EXIT; exit 0' INT HUP TERM QUIT

@@ -1,6 +1,6 @@
 #!/bin/sh
 #GPL-3 - See LICENSE file for copyright and license details.
-#V0.42
+#V0.43
 if ! test -f $(basename "$0");then echo "  EE run this script in its folder";exit 1;fi
 if ! test "$(pwd)" = "$HOME";then echo "  EE gki.sh is meant to be run in the home folder.";exit 1;fi
 if test "$1" = "-a";then
@@ -95,7 +95,7 @@ if ! test -d Goldkarpfen || ! test -f Goldkarpfen/Goldkarpfen.config;then
   if test "$INSTALL_MODE" = "ish";then
     apk add mksh darkhttpd fzf openssl the_silver_searcher ncurses libqrencode xdelta3
   else
-    pkg install mksh file fzy openssl-tool silversearcher-ag bc darkhttpd iproute2 vim ncurses-utils libqrencode xdelta3
+    pkg install mksh file fzy openssl-tool silversearcher-ag bc darkhttpd vim ncurses-utils libqrencode xdelta3
   fi
   if test -z "$EDITOR";then export EDITOR=nano;fi
   cd Goldkarpfen || exit

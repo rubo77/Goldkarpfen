@@ -1,7 +1,7 @@
 # Goldkarpfen
 Goldkarpfen is a p2p-share-hosted daily-routine blogging system without any central authority. The unique selling point of Goldkarpfen is its calm way of publishing: nodes will only sync once a day. This is a more human aproach to communication and will reduce stress and improve the quality of content.
 
-## INSTALLATION AND FIRST START
+## INSTALLATION on Linux / BSD / Mac OSX / Windows-Subsystem for Linux?
 For quick install instructions see MORE_ABOUT_GOLDKARPFEN.TXT
 
 ### GOLDKARPFEN FOR ANDROID (automated install)
@@ -9,10 +9,15 @@ For quick install instructions see MORE_ABOUT_GOLDKARPFEN.TXT
 
 1. install the app `termux` on your Android
 2. `pkg upgrade ; pkg install tor curl && if ! pidof tor > /dev/null;then eval "tor --quiet &";fi;
-VERSION=320_termux;REPO="https://gitlab.com/rubo77/Goldkarpfen/-";curl -f "$REPO/raw/main/gki.sh" > gki.sh && sh gki.sh "$REPO/archive/release_$VERSION" "Goldkarpfen-release_$VERSION.tar.gz"`
+VERSION=331_termux;REPO="https://gitlab.com/rubo77/Goldkarpfen/-";curl -f "$REPO/raw/main/gki.sh" > gki.sh && sh gki.sh "$REPO/archive/release_$VERSION" "Goldkarpfen-release_$VERSION.tar.gz"`
 
 This is the "gitlab way" ; if possible : use the **Mobile2Mobile** installer instead
 
+### GOLDKARPFEN FOR IOS (automated install)
+
+1. install the app `iSH` on your iPhone
+2. `pkg upgrade ; pkg install tor curl && if ! pidof tor > /dev/null;then eval "tor --quiet &";fi;
+VERSION=331_termux;REPO="https://gitlab.com/rubo77/Goldkarpfen/-";curl -f "$REPO/raw/main/gki.sh" > gki.sh && sh gki.sh "$REPO/archive/release_$VERSION" "Goldkarpfen-release_$VERSION.tar.gz"`
 
 ### 1. Set EDITOR enviroment variable
 Your `EDITOR` enviroment variable needs to be set similar to this (add this to `~/.bashrc` or `~/.mkshrc` or alike):
@@ -20,7 +25,7 @@ Your `EDITOR` enviroment variable needs to be set similar to this (add this to `
    export EDITOR="nano" # or "vi" :)
 
 ### 2. INSTALL THE BASIC DEPENDENCIES  
-ag (the-silver-searcher), fzy (or fzf), libressl/openssl, xxd from vim/xxd-standalone, iproute2, darkhttpd, curl, tor
+ag (the-silver-searcher), fzy (or fzf), libressl/openssl, xxd from vim/xxd-standalone, darkhttpd, curl, tor
 
 *IMPORTANT:* test if the basic dependencies are met (must not return `ERROR`):  
 `./check-dependencies.sh`
