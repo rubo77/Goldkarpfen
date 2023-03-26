@@ -1,44 +1,46 @@
-#V0.55
+#V0.56
 
-0. ABOUT [45]
+0. ABOUT [47]
 
-1. SPECIAL DISTINGUISHING MARK [53]
+1. SPECIAL DISTINGUISHING MARK [55]
 
-2. PLATFORM SPECIFIC INSTALL INSTRUCTIONS [63]
-  2.1 OpenBSD [64]
-  2.2 ANDROID [93]
-  2.2.1 ANDROID AUTOMATIC INSTALL [94]
-  2.2.2 ANDROID MANUAL INSTALL [102]
-  2.3 UBUNTU QUICK INSTALL WITH TOR CONTROLLER [128]
+2. PLATFORM SPECIFIC INSTALL INSTRUCTIONS [65]
+  2.1 OpenBSD [66]
+  2.2 ANDROID [95]
+  2.2.1 ANDROID AUTOMATIC INSTALL [96]
+  2.2.2 ANDROID MANUAL INSTALL [104]
+  2.3 UBUNTU QUICK INSTALL WITH TOR CONTROLLER [130]
 
-3. SPECIAL INSTALL MODES [153]
-  3.1 INSTALATION WITH ACCESS TO TOR CONTROLLER [154]
-  3.2 USAGE WITH TOR_BROWSER [184]
-  3.3 USAGE WITH i2pd [190]
-  3.4 MIXED NODES [217]
-  3.5 GOPHER instead of HTTP [235]
+3. SPECIAL INSTALL MODES [155]
+  3.1 INSTALATION WITH ACCESS TO TOR CONTROLLER [156]
+  3.2 USAGE WITH TOR_BROWSER [186]
+  3.3 USAGE WITH i2pd [192]
+  3.4 MIXED NODES [219]
+  3.5 GOPHER instead of HTTP [237]
 
-4. BASIC MAINTENANCE [249]
-  4.1 UPDATES [250]
-  4.2 NODE LIST MANAGEMENT [272]
-  4.4 DIFF-PATCH-MODE # dependency : xdelta3 [298]
-  4.3 PRUNING OF ITP-FILES [292]
-  4.5 MIGRATING TO A NEW INSTALLATION [316]
-  4.6 WHITLISTING DOWNLOAD MODE [325]
-  4.7 OFFER MORE THAN ONE FORK FOR DOWNLOAD [332]
-  4.8 DISABLE darkhttpd LOGGING [336]
+4. BASIC MAINTENANCE [251]
+  4.1 UPDATES [252]
+  4.2 NODE LIST MANAGEMENT [274]
+  4.4 DIFF-PATCH-MODE # dependency : xdelta3 [300]
+  4.3 PRUNING OF ITP-FILES [294]
+  4.5 MIGRATING TO A NEW INSTALLATION [318]
+  4.6 WHITLISTING DOWNLOAD MODE [327]
+  4.7 OFFER MORE THAN ONE FORK FOR DOWNLOAD [334]
+  4.8 DISABLE darkhttpd LOGGING [338]
 
-5. ADVANCED USGAE [343]
-  5.1 MANUALLY ADDING DATA FILES [344]
-  5.2 USER MADE PLUGINS [357]
-  5.3 PLUGIN DEVELOPEMENT [375]
-  5.4 CUSTOM SCRIPTS [393]
-  5.5 SHARE HOSTING 00-ENTRIES [403]
-  5.6 FORKING GOLDKARPFEN [412]
+5. ADVANCED USGAE [345]
+  5.1 MANUALLY ADDING DATA FILES [346]
+  5.2 USER MADE PLUGINS [359]
+  5.3 PLUGIN DEVELOPEMENT [377]
+  5.4 CUSTOM SCRIPTS [395]
+  5.5 SHARE HOSTING 00-ENTRIES [405]
+  5.6 FORKING GOLDKARPFEN [414]
 
-6. DISTRIBUTED SEARCH ENGINES [421]
+6. DISTRIBUTED SEARCH ENGINES [423]
+  6.1 CONCEPTION [424]
+  6.2 HOSTING A SEARCH ENGINE [453]
 
-7. ADDENDUM [452]
+7. ADDENDUM [463]
 
 #################################################
 
@@ -67,7 +69,7 @@
 
   - recommended :
     use a start script [¹] OR
-    create an extra-user OR 
+    create an extra-user OR
     setup a chroot-directory
   to avoid global usage of gsed, gtar, gstat, gdate
 
@@ -419,7 +421,7 @@ eea346f85c6f9e08079a80355a069d327993b480b22cd02dccbc3ceae27230fc0734321443543094
 
 
 6. DISTRIBUTED SEARCH ENGINES
-  CONCEPTION :
+6.1 CONCEPTION
   - 1 out of (X) nodes hosts a (http/gopher) search engine,
     which holds a database of its archive (+ manually curated search entries);
     usable via curl (like url?search=what1+what2) to be used from inside GK
@@ -448,6 +450,15 @@ eea346f85c6f9e08079a80355a069d327993b480b22cd02dccbc3ceae27230fc0734321443543094
 
   (NOTE : downlink example <url=https://gnu.org>)
 
+6.2 HOSTING A SEARCH ENGINE
+  - add a gopher hidden-service/i2p-tunnel node and start geomyidae along http
+  - mkdir -p archives/gopher/data
+  - add some itp-files (or .txt/.dat) to data and add an info-suffix, e.g. :
+mv xyz.itp 'xyz.itp http_url-of-that-file.onion'
+  - add a search-plugin compatible search.cgi to archives/gopher/data [²]
+  - change/add features of our search.cgi (search algorithm,database-backend,...)
+  - announce your search engine in your itp-stream like this :
+<search_engine=gopher://---your-url---.onion/gopher/search.cgi? #  my-search (LVL0)>
 
 7. ADDENDUM
   [¹] openBSD start-gk.sh
@@ -462,5 +473,29 @@ for FFF in date tar sed stat;do
 done
 cd ~/Goldkarpfen || exit
 mksh Goldkarpfen.sh
+
+  [²] simple search engine
+#!/bin/sh
+#V0.4
+#GPL-3 - See LICENSE file for copyright and license details.
+# The original Goldkarpfen search engine
+cd __search.cgi_path__ || exit 1
+# edit __search.cgi_path__ accordingly
+set -- "${2%&page=*}" "$(echo "$2" | ag -o "page=\d*$")"
+#echo "search : $1 $2"
+if test "$(printf "%i" "${2#page=}")" = "${2#page=}";then PAGE=${2#page=};else PAGE=;fi
+if test -z "$PAGE";then
+  LINE1=1
+  LINE2=10
+else
+  PAGE=$(echo "$PAGE 0 + p" | dc)
+  LINE1=$(echo "$PAGE 10 * 1 + p" | dc)
+  LINE2=$(echo "$LINE1 9 + p" | dc)
+  set -- "$(echo "$1" | sed "s/ P$PAGE$//")"
+fi
+ag --silent -m 3 --heading --nonumbers "$1" data/*.itp | grep -v '^$' | sed -n "$LINE1,$LINE2 p"
+# or use a list of itp-files instead of *.itp (or .txt/.dat files)
+# NOTE : designed to work with for 15 search streams
+exit 0
 
 #LICENSE:CC0

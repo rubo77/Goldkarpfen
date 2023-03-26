@@ -1,4 +1,4 @@
-#V0.7
+#V0.9
 
 Q: Why is Goldkarpfen needed, aren’t there enough communications platforms?
 A1:
@@ -73,9 +73,13 @@ A3:
   It may be not for you, but you can analyse the ITP-format and crypto (standard old school BTC) and build a compatible
   client in ANY machine dialect: elisp, pyhton, Go, C, C++ ...
 
+Q: Is the Goldkarpfen P23-compliant?
+A:
+  Yes! Since version 331 it is 100% P23-migration-syntax conform and therefore P23-compliant.
+
 Q: What are the resources needed to run Goldkarpfen?
 A:
-  Memory usage : ~500kB
+  Memory usage : ~500kB (+ the mem of the shell itself)
   Disk usage   : fresh install ~300kB ; with full archive ~50Mb
   Network      : 1Mbit connection should be sufficiant
                  Goldkarpfen itself will cause minimal traffic, the transport-layer (i2p,tor) will cause some
@@ -131,8 +135,111 @@ Q: What about that gopher thing?
 A:
   The support for a gopher server makes sense, if you also want to host a gopher-page on your GK-node.
 
+Q: Tell me something about how Goldkarpfen scales
+A:
+  There are no scaling issues whatsoever.
+
+  # TOTAL NODES
+  There is no limitation for the number of total nodes, if the transport layer
+  can handle it.
+
+  # OWN NODE LIST
+  To how many nodes you connect is up to you. A sensible number would be 5 to 12.
+  The limitation of the number of nodes you want to connect to is limited by your
+  own bandwidth and the bandwidth of the transport layer.
+
+  # SERVER CAPACITY
+  The total number of tarballs one node holds is hard capped at 51 tarballs with
+  a maximum size of 318kB. So the maximum for one node would be ~19MB.
+  NOTE: other clients should not increase this numbers, as it is the optimal
+  number for a decentralized system like this.
+
+  # THE ITP-FILE VIEWER
+  The Goldkarpfen is written in POSIX Shell, so due that limitation the number of
+  unpacked tarballs (only those are visible in the viewer) would be limited by
+  your hardware. On slower system, or a ARM-low-budget single board computer, we
+  can assume that a couple of dozens itp streams would be a reasonable number.
+
+  You can write an own itp-file viewer with a database backend to process some
+  thousend itp-files easily, and use that on your itp-file set in your
+  Goldkarpfen folder.
+
+  # HOW DATA GETS DISTRIBUTED
+  You may ask, how is it possible with this low data storage to reach information
+  beyond these limited files set?
+
+  First the Goldkarpfen will pull all itp-tarballs from all your hand selected
+  nodes until it reaches the 51 maximum. Then it will only update those and not
+  download more. From this point on the stored data will be manually curated.
+  This way all file collections get hand selected. Information about interesting
+  nodes can be presented in itp-stream and can be agrregated by others.
+
+
+Q: Tell me something about security!
+A:
+  You may be concerned about security, and rightfully so.
+
+  So let me clear up some things about how Goldkarpfen works and you can evaluate
+  the risks yourself.
+
+  # NODES
+  Adding nodes (you want to connect to) is done manually.
+  User plugins may deal with this differently. Doing it manually is the safest
+  way.
+
+  # TRANSPORT
+  We are transporting tar.gz files from one node to another by http/gopher
+  onion/i2p. For download we use curl and for hosting darkhttpd.
+  We are only downloading files following the naming conventions.
+  Tarballs from unknown sources get downloaded to quarantine.
+
+  # UNPACKING
+  We are using tar here.
+
+  # FILE CHECKS
+  After unpacking we are testing the files if they are text files and check the
+  signature.
+  Signature checking is done with libressl/openssl.
+
+  # PROCESSING
+  After that the files get processed by several unix text tools like sed, ag,
+  grep, head ...
+
+  Some may critique this point: What if we unpack a tarball (from an unknown
+  source) - and then check the signature of its content.
+  (We do this to get around a central structure for the distribution of public
+  keys)
+
+  We trust tar and libressl/openssl here anyway, even if we unpack a signed
+  tarball (from an unknown source) (with a public key from a centralized
+  provider), we are putting the same kind of trust in both programs, just in a
+  different order.
+
+  # TO BE SURE
+  You can run Goldkarpfen in a very restrictive sandbox/namespace
+  (bubblewrap/firejail).
+
+  # PRIVACY
+  curl sends a user agent string with version number. Daily purging of the
+  server.log file is adviced.
+
+  # ENCRYTED KEYS
+  If you want to encrypt your keys on disk while Goldkarpfen is not running (not
+  tested, no warranty)
+
+cp start-services.sh my-start-services.sh
+cp stop-services.sh my-stop-services.sh
+
+  #add to my-start-services.sh:
+ccrypt -d .keys/*
+  #add to my-stop-services.sh
+ccrypt -e .keys/*
+
+  #NOTE ... or even more secure: leave your Goldkarpfen on an offline computer
+  and carry the archive files via usb-stick to a bare node
+
 Q: Which distro/OS do you suggest?
-A1:
+A:
   One of those recommended by the FSF
 
 Q: Which editor do you use/suggest?
