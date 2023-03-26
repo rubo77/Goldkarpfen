@@ -16,8 +16,8 @@ This is the "gitlab way" ; if possible : use the **Mobile2Mobile** installer ins
 ### GOLDKARPFEN FOR IOS (automated install)
 
 1. install the app `iSH` on your iPhone
-2. `pkg upgrade ; pkg install tor curl && if ! pidof tor > /dev/null;then eval "tor --quiet &";fi;
-VERSION=331_termux;REPO="https://gitlab.com/rubo77/Goldkarpfen/-";curl -f "$REPO/raw/main/gki.sh" > gki.sh && sh gki.sh "$REPO/archive/release_$VERSION" "Goldkarpfen-release_$VERSION.tar.gz"`
+2. `apk upgrade ; apk add tor curl && if ! pidof tor > /dev/null;then eval "tor --quiet &";fi;
+VERSION=331_termux;REPO="https://gitlab.com/rubo77/Goldkarpfen/-";curl -f "$REPO/raw/main/gki.sh" > gki.sh && sh gki.sh -a "$REPO/archive/release_$VERSION" "Goldkarpfen-release_$VERSION.tar.gz"`
 
 ### 1. Set EDITOR enviroment variable
 Your `EDITOR` enviroment variable needs to be set similar to this (add this to `~/.bashrc` or `~/.mkshrc` or alike):
