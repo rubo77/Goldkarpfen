@@ -1,5 +1,13 @@
-#V0.327
+#V0.332
 
 release 324 "Kovejo De La Malbono" : bug fix and cleanup of OpenBSD-patch
 
 release 327 "Materio Kunfando" : making the syntax as portable as possible
+
+release 328 "Sekreto De La Ŝtalo" : improved file tests ; source my-include.sh after function-block
+
+release 330 "Sakro Ekzilo" : iproute2 not needed
+
+release 331 "P23" : P23-compliance
+
+release 332 "Evito" : keybindings (archive -> [A], {reason impactful}, post -> [P], {reason doublette with "previous"})

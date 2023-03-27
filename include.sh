@@ -99,7 +99,7 @@ __TEST_ALIAS_FILE(){
 
 __PRUNE_ARCHIVES(){
   set -- "$(__collum 2 < archives/server.dat | sort -t "-" -k1n -k2n -k3n | head -n 1)"
-  if test -z "$1" || ./check-dates.sh "$1";then return;fi
+  if test -z "$1" || ./check-dates.sh "$1" 2> /dev/null;then return;fi
   printf "\n  II OLD ARCHIVES NEED PRUNING!\n"
   mkdir -p quarantine/old-archives || exit
   while IFS= read -r T_LINE; do

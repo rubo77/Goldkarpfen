@@ -245,11 +245,12 @@ __DELETE(){
   . ./update-provider.inc.sh || exit
   set -- "$(ls itp-files/*.itp archives/*.itp.tar.gz quarantine/*.itp.tar.gz 2> /dev/null | sed -e "s@^.*/@@" -e "s/\.tar\.gz$//" | grep -E -v "$OWN_STREAM|$UPD_NAME|$VERIFICATION_STREAM" | sort | uniq | pipe_if_not_empty $GK_FZF_CMD)"
   if test -z "$1";then echo "  II empty";return;fi
-  printf "  $(tput bold)MM SUBMENU: delete$(tput sgr0)  [d]-delete-from-reader [E]-Erase-and-blacklist [q]-abort >" | fold -s -w "$GK_COLS"
+  printf "  $(tput bold)MM SUBMENU: delete$(tput sgr0)  [r]-remove-from-reader [E]-Erase-and-blacklist [q]-abort >" | fold -s -w "$GK_COLS"
   $GK_READ_CMD T_CHAR;echo
   ITPFILE=$OWN_STREAM; __INIT_GLOBALS
   case "$T_CHAR" in
-    d) rm -v -f "itp-files/$1"; __INIT_FILES ;;
+    r) rm -v -f "itp-files/$1"; __INIT_FILES ;;
+    d) echo "d is deprecated, use [r]" ;;
     E)
       set -- "$1" "$(ag -m 1 -o '<url1=[a-z]{3,6}://[A-Za-z0-9.]*[.:][A-Za-z0-9]{1,5}>' "itp-files/$1" 2> /dev/null)"
       set -- "$1" "${2#*://}"; set -- "$1" "${2%>*}"
@@ -269,7 +270,7 @@ __QUARANTINE(){
   if test -z "$1" || ! test -f "$1";then echo "  II empty";return;fi
   rm -f "archives/$(basename $1)_"* && mv "$1" archives || exit
   ./update-archive-date.sh "$(basename "$1")" || exit
-  __INIT_FILES
+  __PRUNE_ARCHIVES
 }
 
 __SYNC(){
@@ -337,7 +338,7 @@ __USER_RETURN(){
 
 __PLUGINS(){
   printf "  $(tput bold)MM SUBMENU: plugins\e[0m\n"
-  printf "$USER_PLUGINS_MENU >" | sed 's/\b:__[A-Za-z_]*\b//g' | fold -s -w "$GK_COLS"
+  printf "$USER_PLUGINS_MENU >" | sed -e 's/\b:__[A-Za-z_]*\b//g' -e 's/ \[.\]-_ / /' | fold -s -w "$GK_COLS"
   $GK_READ_CMD T_CHAR
   echo
   T_BUF1=0
@@ -454,15 +455,17 @@ while true;do
   GK_COLS=$(tput cols)
   if ! pidof tor > /dev/null && command -v tor > /dev/null;then echo "  II tor off -> [x][t] for restart";fi
   if ! pidof i2pd > /dev/null && command -v i2pd > /dev/null;then echo "  II i2pd off -> [x][i] for restart";fi
-  printf "\n[$GK_MODE] UTC:[$(date -u "+%m.%d")] MY:$(tput rev)[$OWN_ALIAS]$(tput sgr0) ACTIVE:$(tput rev)[$GK_ALIAS]$(tput sgr0)$GK_JM\n[v]-view [p]-post [s]-select_stream [u/U]-unpack [a]-archive/release [S]-sync [r]-plugins [m]-quarantine [D]-delete [!]-edit [x/y]-repairs [h]-help [Q]-quit >" | fold -s -w $GK_COLS
+  printf "\n[$GK_MODE] UTC:[$(date -u "+%m.%d")] MY:$(tput rev)[$OWN_ALIAS]$(tput sgr0) ACTIVE:$(tput rev)[$GK_ALIAS]$(tput sgr0)$GK_JM\n[v]-view [P]-post [s]-select_stream [u/U]-unpack [A]-archive/release [S]-sync [r]-plugins [m]-quarantine [D]-delete [!]-edit [x/y]-repairs [h]-help [Q]-quit >" | fold -s -w $GK_COLS
   $GK_READ_CMD T_CHAR
   echo
   case "$T_CHAR" in
     v) __VIEW ;;
     s) __SELECT_STREAM ;;
-    p) __POST ;;
+    P) __POST ;;
+    p) echo "p is deprecated, use [P]" ;;
     S) __SYNC ;;
-    a) __ARCHIVE ;;
+    A) __ARCHIVE ;;
+    a) echo "a is deprecated, use [A]" ;;
     u) __UNPACK ;;
     U) __UNPACK --all;;
     m) __QUARANTINE ;;
