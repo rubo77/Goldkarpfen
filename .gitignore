@@ -13,10 +13,10 @@
 !/archives/share/MORE_ABOUT_GOLDKARPFEN.TXT
 !/archives/share/FAQ.TXT
 !/archives/share/RELEASE-NOTES.TXT
-!/archives/share/ITP-DEFINITION
 !/archives/share/gki.sh
 !/archives/share/search.cgi
 !/archives/share/KNOWN_BUGS.TXT
+/plugins/PREMIUM.sh
 /sync-from-nodes.pid
 /tmp/filtered_server.dat
 /tmp/server.dat
