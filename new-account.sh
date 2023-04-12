@@ -2,10 +2,12 @@
 #GPL-3 - See LICENSE file for copyright and license details.
 if ! test -f $(basename "$0");then echo "  EE run this script in its folder";exit 1;fi
 mkdir -p tmp bkp || exit 1
+if ! test "$(./keys.sh .keys/test.pem 2> /dev/null)" = "134Euv2ifsALzYqfgMrCjstKqAf5pU2nUx";then
+  echo "FATAL ERROR: keys.sh test failed.";exit 1
+fi
 if ./keys.sh;then
   PUBKEY=$(grep -v "^-----" < .keys/pub.pem|tr -d "\n")
   ADDRESS=$(cat .keys/pub_hash)
-  if echo "$ADDRESS" | ag "ERROR" || echo "$ADDRESS" | ag "^000000000";then echo "FATAL ERROR: key generation failed - abort.";rm .keys/*;exit 1;fi
   echo "  II your KEY_ADDR is: $ADDRESS"
   echo -n "  ?? what alias? "
   read BUF

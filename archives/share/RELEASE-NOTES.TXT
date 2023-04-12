@@ -1,4 +1,4 @@
-#V0.332
+#V0.340
 
 release 324 "Kovejo De La Malbono" : bug fix and cleanup of OpenBSD-patch
 
@@ -11,3 +11,17 @@ release 330 "Sakro Ekzilo" : iproute2 not needed
 release 331 "P23" : P23-compliance
 
 release 332 "Evito" : keybindings (archive -> [A], {reason impactful}, post -> [P], {reason doublette with "previous"})
+
+release 333 "Brutala Katastrofo" : update-archive-date.sh bug fix
+
+release 334 "Nebulo" : bug fixes
+
+release 335 "Submondo Katastrofo" : bug fixes
+
+release 337 "Bonaĝo De La Steloj" : platform-independency adjustments
+
+release 338 "Sanktulo" : platform-independency adjustments ; cleanup
+
+release 339 "Ĝibulo" : test keys.sh function before usage in new-account.sh
+
+release 340 "Supernovao" : release of the final episode of the cyber-punk-net-dungeon-exploration-jail-break ; have fun!

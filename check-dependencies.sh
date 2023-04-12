@@ -12,8 +12,8 @@ if ! command -v fzy > /dev/null && ! command -v fzf > /dev/null;then >&2 echo " 
 if ! __WHICH "$1";then echo "ERROR";exit 1;else RE="ok";fi
 if __WHICH "curl";then RE="get $RE";fi
 if __WHICH "darkhttpd";then RE="host $RE";fi
-if pgrep i2pd > /dev/null 2>&1;then RE="i2p $RE";fi
-if pgrep tor > /dev/null 2>&1;then RE="tor-static $RE";fi
+if pgrep "i2pd$" > /dev/null 2>&1;then RE="i2p $RE";fi
+if pgrep "tor$" > /dev/null 2>&1;then RE="tor-static $RE";fi
 if python3 -c "import stem" > /dev/null 2>&1;then
   if ! python3 start-hidden-service.py --test --test --test 2> /dev/null;then >&2 echo "  II cannot access tor auth cookie";echo "$RE";exit;fi
   echo "tor-ctrl ${RE#tor-static }"

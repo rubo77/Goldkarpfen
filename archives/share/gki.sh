@@ -1,6 +1,6 @@
 #!/bin/sh
 #GPL-3 - See LICENSE file for copyright and license details.
-#V0.43
+#V0.45
 if ! test -f $(basename "$0");then echo "  EE run this script in its folder";exit 1;fi
 if ! test "$(pwd)" = "$HOME";then echo "  EE gki.sh is meant to be run in the home folder.";exit 1;fi
 if test "$1" = "-a";then
@@ -76,7 +76,7 @@ if ! test -d Goldkarpfen || ! test -f Goldkarpfen/Goldkarpfen.config;then
   T_BUF2="Goldkarpfen-termux.tar.gz"
   if echo "$1" | grep "^https://gitlab.com" > /dev/null;then
     T_BUF1=
-    if ! test -z "$2";then T_BUF2=$2;else T_BUF2="Goldkarpfen-release_278_termux.tar.gz";fi
+    if ! test -z "$2";then T_BUF2=$2;else T_BUF2="Goldkarpfen-release_335_termux.tar.gz";fi
   elif echo "$1" | grep "[A-Za-z0-9.]*\.i2p" > /dev/null;then
     T_BUF1="--proxy localhost:4444"
   elif echo "$1" | grep -E "[[:digit:]]{1,3}\.[[:digit:]]{1,3}\.[[:digit:]]{1,3}\.[[:digit:]]{1,3}" > /dev/null;then
@@ -93,7 +93,7 @@ if ! test -d Goldkarpfen || ! test -f Goldkarpfen/Goldkarpfen.config;then
   tar -xf "$T_BUF2" || exit
   if ! test "$T_BUF3" = "Goldkarpfen/";then mv "$T_BUF3" Goldkarpfen || exit ;fi
   if test "$INSTALL_MODE" = "ish";then
-    apk add mksh darkhttpd fzf openssl the_silver_searcher ncurses libqrencode xdelta3
+    apk add mksh darkhttpd file fzf openssl the_silver_searcher ncurses libqrencode xdelta3
   else
     pkg install mksh file fzy openssl-tool silversearcher-ag bc darkhttpd vim ncurses-utils libqrencode xdelta3
   fi

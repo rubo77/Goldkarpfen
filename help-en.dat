@@ -22,9 +22,3 @@ DEFAULT PLUGINS
 
 sync_all calls a standalone script, which you can invoke in a separate terminal (e.g.):
 ./sync-from-nodes.sh --loop
-
-DELETING ITP-FILE and ARCHIVES
-  - quit Goldkarpfen
-  - rm itp-files/__stream__.itp and/or archives/__stream__.itp.tar.gz
-  - start Goldkarpfen
-(... or get the plugin : delete.sh)

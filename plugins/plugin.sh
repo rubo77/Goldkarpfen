@@ -1,9 +1,4 @@
 #GPL-3 - See LICENSE file for copyright and license details.
-USER_PLUGINS_MENU="[P]-_:__USER_DEPR_P $USER_PLUGINS_MENU"
-__USER_DEPR_P(){
-  echo "P is deprecated, use [g]"
-}
-
 USER_PLUGINS_MENU="[g]-get_p:__USER_PLUGIN $USER_PLUGINS_MENU"
 __USER_PLUGIN(){
   mkdir -p downloads || exit

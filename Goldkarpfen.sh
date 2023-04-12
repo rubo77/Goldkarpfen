@@ -16,7 +16,7 @@ if test "$GK_MODE" = "ERROR";then ./check-dependencies.sh;exit;fi
 if command -v xdelta3 > /dev/null 2>&1; then GK_DIFF_MODE="yes";else echo "  II install xdelta3 to enable diff-mode";fi
 
 #new account?
-if ! test -d .keys;then
+if ! test -r .keys/pub.pem;then
   printf "  II FIRST START:\n./new-account\n./Goldkarpfen.sh\n" ; exit
 fi
 
@@ -192,7 +192,7 @@ __ARCHIVE(){
       set -- "$(__ARCHIVE_DATE "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar")" "$(__ARCHIVE_DATE "bkp/$OWN_ALIAS-$OWN_ADDR.itp.tar")"
       if ! test "$1" = "$2";then
         echo "  II generating diff from $2"
-        xdelta3 -e -s "bkp/$OWN_ALIAS-$OWN_ADDR.itp.tar" "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar" "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar.gz_D$2"
+        xdelta3 -e -S none -s "bkp/$OWN_ALIAS-$OWN_ADDR.itp.tar" "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar" "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar.gz_D$2"
       fi
     fi
     rm -f "bkp/__$OWN_ALIAS-$OWN_ADDR.itp.tar" && cp "tmp/$OWN_ALIAS-$OWN_ADDR.itp.tar" bkp/ || exit
@@ -250,7 +250,6 @@ __DELETE(){
   ITPFILE=$OWN_STREAM; __INIT_GLOBALS
   case "$T_CHAR" in
     r) rm -v -f "itp-files/$1"; __INIT_FILES ;;
-    d) echo "d is deprecated, use [r]" ;;
     E)
       set -- "$1" "$(ag -m 1 -o '<url1=[a-z]{3,6}://[A-Za-z0-9.]*[.:][A-Za-z0-9]{1,5}>' "itp-files/$1" 2> /dev/null)"
       set -- "$1" "${2#*://}"; set -- "$1" "${2%>*}"
@@ -338,7 +337,7 @@ __USER_RETURN(){
 
 __PLUGINS(){
   printf "  $(tput bold)MM SUBMENU: plugins\e[0m\n"
-  printf "$USER_PLUGINS_MENU >" | sed -e 's/\b:__[A-Za-z_]*\b//g' -e 's/ \[.\]-_ / /' | fold -s -w "$GK_COLS"
+  printf "$USER_PLUGINS_MENU >" | sed 's/\b:__[A-Za-z_]*\b//g' | fold -s -w "$GK_COLS"
   $GK_READ_CMD T_CHAR
   echo
   T_BUF1=0
@@ -389,7 +388,7 @@ echo "  ## $(ls VERSION*) $(head -n 1 VERSION*) "
 
 #set some globals
 GK_JM=; GK_LN=
-if command -v fzy > /dev/null 2>&1;then GK_FZF_CMD="fzy --prompt=__SELECT:";else GK_FZF_CMD="fzf --prompt=__SELECT:";fi
+if command -v fzy > /dev/null 2>&1;then GK_FZF_CMD="fzy --prompt=__SELECT:";else GK_FZF_CMD="fzf --prompt=";fi
 
 #create dirs
 mkdir -p cache/last_prune archives plugins quarantine sync bkp || exit
@@ -462,10 +461,8 @@ while true;do
     v) __VIEW ;;
     s) __SELECT_STREAM ;;
     P) __POST ;;
-    p) echo "p is deprecated, use [P]" ;;
     S) __SYNC ;;
     A) __ARCHIVE ;;
-    a) echo "a is deprecated, use [A]" ;;
     u) __UNPACK ;;
     U) __UNPACK --all;;
     m) __QUARANTINE ;;

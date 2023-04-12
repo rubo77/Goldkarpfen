@@ -19,8 +19,8 @@ if test "$1" = "--first-run";then
   rm -f "$UPD_NAME" Goldkarpfen/VERSION* && tar -xf "../archives/$UPD_NAME" && cp -a Goldkarpfen/update/sync_runtime_files.sh srf.tmp || exit 1
 else
   set -e
-  rm -f ../VERSION* ; mkdir -p ../DOC ../plugins ../archives/share; cd Goldkarpfen
-  for T_FILE in Goldkarpfen.sh plugins/update.sh include.sh sync-from-nodes.sh update-archive-date.sh check-dependencies.sh itp-check.sh keys.sh sign.sh check-sign.sh check-dates.sh prune-month.sh plugins/migration-warning.sh plugins/nodes.sh plugins/plugin.sh start-hidden-service.py start-services.sh stop-hidden-service.py stop-services.sh help-en.dat .Goldkarpfen.start.sh .Goldkarpfen.exit.sh new-account.sh DOC/address_migration.txt archives/share/gki.sh LICENSE README;do
+  rm -f ../VERSION* ; mkdir -p ../DOC ../plugins ../.keys ../archives/share; cd Goldkarpfen
+  for T_FILE in Goldkarpfen.sh plugins/update.sh include.sh sync-from-nodes.sh update-archive-date.sh check-dependencies.sh itp-check.sh keys.sh sign.sh check-sign.sh check-dates.sh prune-month.sh plugins/migration-warning.sh plugins/nodes.sh plugins/plugin.sh start-hidden-service.py start-services.sh stop-hidden-service.py stop-services.sh help-en.dat .Goldkarpfen.start.sh .Goldkarpfen.exit.sh new-account.sh .keys/test.pem DOC/address_migration.txt archives/share/gki.sh LICENSE README;do
     if ! cmp "$T_FILE" "../../$T_FILE" > /dev/null 2>&1;then
       cp -a -v "$T_FILE" "../../$T_FILE"
     fi

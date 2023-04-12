@@ -25,7 +25,7 @@ __CHECK_FOR_UPD(){
 }
 
 __UPD_NOTIFY(){
-  VERSION_ARCHIVES=$(printf "%i" "$(tar -tf archives/"$UPD_NAME" 2> /dev/null | ag "VERSION" | __collum 3 ".")")
+  VERSION_ARCHIVES=$(printf "%i" "$(tar -tf archives/"$UPD_NAME" 2> /dev/null | ag "VERSION" | __collum 3 ".")" 2> /dev/null)
   VERSION_LOCAL=$(ls VERSION-* | tail -n 1);VERSION_LOCAL=$(printf "%i" "${VERSION_LOCAL#VERSION-2.1.}")
   if test "$VERSION_ARCHIVES" -gt "$VERSION_LOCAL";then echo "  II NEW GOLDKARPFEN : 2.1.$VERSION_ARCHIVES -> UPDATE WITH [r][U] " | ag ".";fi
 }
