@@ -1,0 +1,4 @@
+# <- comment like this ; download-processing will stop at first blank line (or EOF)
+# node-labels : #_text-(no-spaces)_# above a node-url will be shown in select-menus
+#_ruboserver......._#
+http://vizqzg53jhnk2y3adrkpgueg7l3twu76pnhqcxdu66ewp5nyhhnl7oyd.onion
