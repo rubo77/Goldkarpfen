@@ -16,7 +16,7 @@ MAIN
 
 DEFAULT PLUGINS
 [U]-updGK              Update your Goldkarpfen from a synced tarball.
-[h]-url1               Show or add your url1 to your header.
+[h]-url1               Add url1 tag to own stream or show url1 of selected stream.
 [a]-nodes              Add the urls to your node list.
 [g]-get_p              Get/Update plugins from the selected stream.
 

@@ -24,10 +24,10 @@ __USER_ADD(){
 
 USER_PLUGINS_MENU="[h]-url1:__USER_HEADER $USER_PLUGINS_MENU"
 __USER_HEADER(){
-  if head -n 1 "$OWN_STREAM" | ag '<url1=.*>';then
-    echo "  II your url1 - edit it with [!]"
+  if head -n 1 "$OWN_STREAM" | ag '<url1=[a-z]{3,6}://[A-Za-z0-9.]*[.:][A-Za-z0-9]{1,5}>' > /dev/null;then
     set -- "$(ag -m 1 -o "^#ITP.*<url1=[a-z]{3,6}://[A-Za-z0-9.]*[.:][A-Za-z0-9]{1,5}>" "$ITPFILE" 2> /dev/null)"
-    if test -z "$1";then echo "  EE your url1 header tag is not valid";return;fi
+    if test -z "$1";then echo "  EE url1 of selected stream is not valid";return;fi
+    echo "$1"
     if ! command -v qrencode > /dev/null 2>&1;then echo "  II install libqrencode (or qrencode) for qrcode";return;fi
     set -- "${1#*<url1=}"; set -- "${1%>*}"
     echo -n "$(tput setab 0)$(tput setaf 15)";qrencode "$1" -t UTF8;echo -n "$(tput sgr0)"
