@@ -1,14 +1,12 @@
 #GPL-3 - See LICENSE file for copyright and license details.
-#V0.12
+#V0.14
 #GKdev-1FHDi5veznUojyHaZQ9wv5dwj5aqZmXYGg.itp
-USER_PLUGINS_MENU="[s]-search:__USER_SEARCH $USER_PLUGINS_MENU"
-
+USER_PLUGINS_MENU="[/]-search:__USER_SEARCH $USER_PLUGINS_MENU"
 __USER_SEARCH_RESULTS(){
   T_CMD=$(__DOWNLOAD_COMMAND "$1" "$2" || echo "__error_getting_dl_cmd;")
-  T_BUF=$(echo "$T_BUF" | sed 's/ P[[:digit:]]*$//')
   $T_CMD |
   while IFS= read -r T_LINE; do
-    if echo $T_LINE | ag "^[0-9A-Za-z_]{1,12}-[0-9A-Za-z]{34}\.itp" > /dev/null;then
+    if echo "$T_LINE" | ag "^data/[0-9A-Za-z_\-]*\.[0-9A-Za-z_]*" > /dev/null;then
       echo $(tput rev)$(echo "$T_LINE" | __collum 1)$(tput sgr0)
       echo "$T_LINE" | __collum 2 | sed 's@_@://@'
     else
@@ -34,7 +32,7 @@ __USER_SEARCH_EDIT(){
 
 __USER_SEARCH_CHOOSE_ENGINE(){
   set -- "$(grep -v "^#" < search.dat | __collum 2 "#" | pipe_if_not_empty $GK_FZF_CMD)"
-  if test -z "$1";then echo "  II empty";else T_ENGINE=$1;fi
+  if test -z "$1";then echo "  II empty";return 1;else T_ENGINE=$1;fi
 }
 
 __USER_SEARCH(){
@@ -42,7 +40,7 @@ __USER_SEARCH(){
     echo "gopher://d735f63fvayqysxgbtlwckomiomuwde22warrroy3u7rhveyn6cdgzqd.onion gopher/search.cgi? #Goldkarpfen search (original)" > search.dat
   fi
   T_PAGE=0;T_CHANGED="yes"
-  __USER_SEARCH_CHOOSE_ENGINE
+  __USER_SEARCH_CHOOSE_ENGINE || return
   __USER_SEARCH_EDIT
   while true;do
     if test "$T_CHANGED" = "yes";then
@@ -60,7 +58,7 @@ __USER_SEARCH(){
       n) T_PAGE=$((T_PAGE + 1)) ; T_CHANGED="yes";;
       p) T_PAGE=$((T_PAGE - 1));if test "$T_PAGE" -lt 0;then T_PAGE=0;T_CHANGED=;else T_CHANGED="yes";fi ;;
       /) T_PAGE=0;__USER_SEARCH_EDIT ; T_CHANGED="yes";;
-      s) __USER_SEARCH_CHOOSE_ENGINE ; T_CHANGED="yes";;
+      s) __USER_SEARCH_CHOOSE_ENGINE || return; T_CHANGED="yes";;
       q) break ;;
       *) echo "  EE wrong key" ; T_CHANGED=;;
     esac
