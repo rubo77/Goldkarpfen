@@ -1,4 +1,4 @@
-#V0.340
+#V0.341
 
 release 324 "Kovejo De La Malbono" : bug fix and cleanup of OpenBSD-patch
 
@@ -25,3 +25,5 @@ release 338 "Sanktulo" : platform-independency adjustments ; cleanup
 release 339 "Ĝibulo" : test keys.sh function before usage in new-account.sh
 
 release 340 "Supernovao" : release of the final episode of the cyber-punk-net-dungeon-exploration-jail-break ; have fun!
+
+release 341 "Mortradio" : [r][h] : add url1 to own stream, or show url1 of selected stream

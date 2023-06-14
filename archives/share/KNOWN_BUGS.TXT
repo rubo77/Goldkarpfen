@@ -1,4 +1,4 @@
-#V0.12
+#V0.14
 
 version <208 :
   (no bug - feature update)
@@ -119,3 +119,15 @@ version ?-323
   check-dependencies does not exit on $EDITOR or fzy/fzf missing
   solution : update to 324
   (fixed in 324+)
+
+version ?-332
+  (can be confusing up to critical)
+  update-archive-date.sh is behaving differently on different platforms
+  solution : update to 333
+  (fixed in 333+)
+
+version ?-333
+  (confusing)
+  verification stream does not get upacked on first sync / can cause "no unpack" of subscribed streams
+  solution : unpack verification stream by hand, update to 334
+  (fixed in 334+)
