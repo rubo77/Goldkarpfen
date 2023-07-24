@@ -1,5 +1,7 @@
 # Goldkarpfen
-Goldkarpfen is a p2p-share-hosted daily-routine blogging system without any central authority. The unique selling point of Goldkarpfen is its calm way of publishing: nodes will only sync once a day. This is a more human aproach to communication and will reduce stress and improve the quality of content.
+Goldkarpfen is a remarkable p2p-share-hosted daily-routine blogging system, operating without any central authority. Its distinguishing feature lies in its serene approach to publishing: nodes synchronize just once a day. This unique aspect promotes a more humane and relaxed mode of communication, leading to reduced stress and enhanced content quality.
+
+Moreover, Goldkarpfen ensures a veil of anonymity, as it is not possible to ascertain who is reading or following your stream. This creates a fascinating and enigmatic writer-reader relationship, fueling the fires of imagination. For those eager to cultivate their writing skills, it becomes crucial to embrace the notion of crafting content for an unknown, distant audience, both in time and space.
 
 ## INSTALLATION on Linux / BSD / Mac OSX / Windows-Subsystem for Linux?
 For quick install instructions see MORE_ABOUT_GOLDKARPFEN.TXT
@@ -102,7 +104,7 @@ Install the dependencies:
 
     i2pd or i2p-java
 
-configure a http tunnel (use SERVER_PORT defined in your Goldkarpfen.config)  
+configure an http tunnel (use SERVER_PORT defined in your Goldkarpfen.config)  
 start your i2p-daemon (example i2pd)
 
     i2pd
