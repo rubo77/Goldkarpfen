@@ -4,6 +4,7 @@ import sys
 from stem.control import Controller
 with Controller.from_port() as controller:
   if sys.argv[3] == "--test":
+    controller.authenticate()
     exit(0)
   else:
     controller.authenticate()

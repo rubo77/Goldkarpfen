@@ -1,10 +1,10 @@
-MAIN
 [v]-view               Open the actual stream (at TOPIC_ID: []) in a pager to view it or add comments.
 [P]-post               Post to your OWN stream.
 [s]-select-stream      Select a stream to read. {fuzzy menu}
 [u/U]-unpack           Unpack a tarball from your ./archives ([U] lists also already unpacked files)
 [m]-quarantine         move/delete tarballs from quarantine.
 [A]-archive/release    Archive your own stream to ./archives. This will publish your stream for others to download.
+[H]-archive/release    Generate HTML-page
 [S]-sync               Pull all the new tarballs from the nodes of your node list.
 
 [r]-run                Run plugins.

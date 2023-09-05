@@ -178,6 +178,12 @@ __POST(){
   if __OWN_SHA_SUM_UPDATE && test "$ITPFILE" = "$OWN_STREAM";then GK_JM="$2:$3"; GK_LN=$1;fi
 }
 
+__HTML_PAGE(){
+  set -- "$(ag --nonumbers --nofilename "sh generate-html\.sh |./generate-html.sh " launcher.dat | tail -n 1)"
+  echo "$1"
+  if test -z "$1";then ./generate-html.sh --out=archives/index.html;else eval "$1";fi
+}
+
 __ARCHIVE(){
   if ! __HOOK_ARCHIVE_START;then return;fi
   if test -f "archives/$OWN_ALIAS-$OWN_ADDR.itp.tar.gz" && test "$(tar -xOf "archives/$OWN_ALIAS-$OWN_ADDR.itp.tar.gz" "$OWN_ALIAS-$OWN_ADDR.itp.sha512sum")" = "$(cat "itp-files/$OWN_ALIAS-$OWN_ADDR.itp.sha512sum")";then
@@ -309,8 +315,12 @@ __REPAIRS(){
     x) rm -f cache/*.sha512sum ; __INIT_FILES ; ITPFILE=$OWN_STREAM ; __INIT_GLOBALS ;;
     y) __REBUILD_ALIASES ;;
     q) return ;;
-    t) pidof tor > /dev/null || eval "nohup tor --quiet &" && printf "\n  ## tor restart\n" ;;
-    i) pidof i2pd > /dev/null || eval "nohup i2pd --daemon --loglevel=none &" && printf "\n  ## i2pd restart\n";;
+    t) pidof tor > /dev/null || eval "nohup tor --quiet &" && printf "\n  ## tor restart\n"
+       if test -x my-check-dependencies.sh;then GK_MODE=$(./my-check-dependencies.sh 2>&1 | tail -n 1);else GK_MODE=$(./check-dependencies.sh 2>&1 | tail -n 1);fi
+    ;;
+    i) pidof i2pd > /dev/null || eval "nohup i2pd --daemon --loglevel=none &" && printf "\n  ## i2pd restart\n"
+       if test -x my-check-dependencies.sh;then GK_MODE=$(./my-check-dependencies.sh 2>&1 | tail -n 1);else GK_MODE=$(./check-dependencies.sh 2>&1 | tail -n 1);fi
+    ;;
     *) echo "  EE wrong key";return ;;
   esac
 }
@@ -379,6 +389,15 @@ __OWN_SHA_SUM_UPDATE(){
   fi
 }
 
+__PRUNE_MONTH(){
+  if test "$(cat cache/last_prune/last_prune)" != "$(date -u +"%m")";then
+    echo "  II pruning $OWN_STREAM"
+    if ./prune-month.sh "$(cat cache/last_prune/last_prune)" "$OWN_STREAM";then
+      if __OWN_SHA_SUM_UPDATE;then date -u +"%m" > cache/last_prune/last_prune || exit;fi
+    fi
+  fi
+}
+
 ### MAIN starts here
 if test -r ./my-include.sh;then . ./my-include.sh || exit;fi
 echo "  ## $(ls VERSION*) $(head -n 1 VERSION*) "
@@ -406,14 +425,8 @@ if find plugins -name '*\.sh' | ag '\.sh$' > /dev/null;then
   echo
 fi
 
-#prune if month has changed
 if ! test -f cache/last_prune/last_prune;then date -u +"%m" > cache/last_prune/last_prune;fi
-if test $(cat cache/last_prune/last_prune) != $(date -u +"%m");then
-  echo "  II pruning $OWN_STREAM"
-  if ./prune-month.sh $(cat cache/last_prune/last_prune) "$OWN_STREAM";then
-    if __OWN_SHA_SUM_UPDATE;then date -u +"%m" > cache/last_prune/last_prune || exit;fi
-  fi
-fi
+__PRUNE_MONTH
 
 #create alias cache if needed - first run or cache rebuild
 if ! test -f cache/aliases;then
@@ -448,13 +461,15 @@ __INIT_FILES
 __INIT_GLOBALS
 __PRUNE_ARCHIVES
 __HOOK_START
+GK_DATE="$(date -u "+%m.%d")"
 
 #main loop
 while true;do
   GK_COLS=$(tput cols)
+  if test "$GK_DATE" != "$(date -u "+%m.%d")";then __PRUNE_MONTH;__PRUNE_ARCHIVES;GK_DATE="$(date -u "+%m.%d")";fi
   if ! pidof tor > /dev/null && command -v tor > /dev/null;then echo "  II tor off -> [x][t] for restart";fi
   if ! pidof i2pd > /dev/null && command -v i2pd > /dev/null;then echo "  II i2pd off -> [x][i] for restart";fi
-  printf "\n[$GK_MODE] UTC:[$(date -u "+%m.%d")] MY:$(tput rev)[$OWN_ALIAS]$(tput sgr0) ACTIVE:$(tput rev)[$GK_ALIAS]$(tput sgr0)$GK_JM\n[v]-view [P]-post [s]-select_stream [u/U]-unpack [A]-archive/release [S]-sync [r]-plugins [m]-quarantine [D]-delete [!]-edit [x/y]-repairs [h]-help [Q]-quit >" | fold -s -w $GK_COLS
+  printf "\n[$GK_MODE] UTC:[$GK_DATE] MY:$(tput rev)[$OWN_ALIAS]$(tput sgr0) ACTIVE:$(tput rev)[$GK_ALIAS]$(tput sgr0)$GK_JM\n[v]-view [P]-post [s]-select_stream [u/U]-unpack [A/H]-archive/release [S]-sync [r]-plugins [m]-quarantine [D]-delete [!]-edit [x/y]-repairs [h]-help [Q]-quit >" | fold -s -w $GK_COLS
   $GK_READ_CMD T_CHAR
   echo
   case "$T_CHAR" in
@@ -463,6 +478,7 @@ while true;do
     P) __POST ;;
     S) __SYNC ;;
     A) __ARCHIVE ;;
+    H) __HTML_PAGE ;;
     u) __UNPACK ;;
     U) __UNPACK --all;;
     m) __QUARANTINE ;;
@@ -470,7 +486,7 @@ while true;do
     x) __REPAIRS ;;
     y) __REPAIRS ;;
     h)
-      echo; fold -w "$GK_COLS" -s < help-en.dat; echo
+      fold -w "$GK_COLS" -s < help-en.dat; echo
       ls VERSION* ; cat VERSION*;
     ;;
     !) __EDIT ;;

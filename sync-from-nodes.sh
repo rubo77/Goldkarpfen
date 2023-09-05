@@ -128,9 +128,10 @@ trap 'echo "  ## pls wait ...";__CHECK_FOR_UPD;__UPD_NOTIFY; rm -f tmp/tmp.tar t
 if ! test -z "$LISTING_REGEXP";then UPD_NAME_REGEXP=$LISTING_REGEXP;fi
 if test "$T_LOOP" = "yes";then
   while true;do
-    __SYNC_ALL
+    __SYNC_ALL;T_COUNT=$((T_COUNT + 1))
+    if test -x "./x_sync-cycle-$T_COUNT.sh";then ./x_sync-cycle-$T_COUNT.sh;T_COUNT=;fi
     echo "  ## idle for $T_PAUSE - exit with ^C (-> ONCE <-)"
-    sleep "$T_PAUSE"
+    sleep "$T_PAUSE";if test "$T_COUNT" = 999999;then T_COUNT=;fi
   done
 else
   __SYNC_ALL

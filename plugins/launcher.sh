@@ -1,10 +1,8 @@
 #GPL-3 - See LICENSE file for copyright and license details.
-#V0.6
-#GKdev-1FHDi5veznUojyHaZQ9wv5dwj5aqZmXYGg.itp
 USER_PLUGINS_MENU="[l]-launch:__USER_LAUNCH $USER_PLUGINS_MENU"
 __USER_LAUNCH(){
   if ! test -f launcher.dat; then
-    printf 'echo "edit launcher.dat to add more programs"\nbash #subshell (exit with [CTRL-d])\nfff #file manager\nnano #editor\ncurl -f --progress-bar --proxy socks5://127.0.0.1:9050 --socks5-hostname 127.0.0.1:9050 rate.sx/btc | grep -v " *│" #check btc price\n' > launcher.dat
+    printf 'echo "edit launcher.dat to add more programs"\nbash #subshell (exit with [CTRL-d])\nsh generate-html.sh --out=archives/index.html\nfff #file manager\nnano #editor\ncurl -f --progress-bar --proxy socks5://127.0.0.1:9050 --socks5-hostname 127.0.0.1:9050 rate.sx/btc | grep -v " *│" #check btc price\n' > launcher.dat
   fi
   set -- "$(
   cat launcher.dat |
